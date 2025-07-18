@@ -1,0 +1,13 @@
+---
+description: |
+  All Node.js code must be optimized for high performance and maximum throughput.
+  - Always utilize all available CPU cores using Node.js cluster or worker_threads where appropriate.
+  - Avoid blocking the event loop; use asynchronous/non-blocking patterns.
+  - Profile and address performance bottlenecks.
+  - Write code that maximizes concurrency and throughput.
+  This rule is always applied to ensure the app can handle the highest possible concurrency.
+globs:
+  - '**/*.js'
+  - '**/*.ts'
+alwaysApply: true
+---

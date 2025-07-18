@@ -1,0 +1,8 @@
+---
+description: |
+  Every new feature file must have a corresponding test file. Every edit or update to a feature file must also update the corresponding test file to ensure tests remain in sync with the implementation.
+globs:
+  - '**/*.js'
+  - '**/*.ts'
+alwaysApply: true
+---
