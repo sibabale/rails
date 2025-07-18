@@ -1,0 +1,3 @@
+[submodule "poc/poc/rails-typescript"]
+	path = poc/poc/rails-typescript
+	url = git@github.com:sibabale/rails-typescript.git

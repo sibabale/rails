@@ -1,0 +1,22 @@
+[
+  {
+    "name": "FNB",
+    "connected": true
+  },
+  {
+    "name": "ABSA",
+    "connected": true
+  },
+  {
+    "name": "NEDBANK",
+    "connected": true
+  },
+  {
+    "name": "CAPITEC",
+    "connected": true
+  },
+  {
+    "name": "STANDARD",
+    "connected": false
+  }
+]
