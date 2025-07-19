@@ -4,6 +4,7 @@ const transactionRouter = require('./transaction');
 const healthRouter = require('./health');
 const simulatorRouter = require('./simulator');
 const dashboardRouter = require('./dashboard');
+const storageRouter = require('./storage');
 
 module.exports = [
   webhookRouter,
@@ -11,5 +12,6 @@ module.exports = [
   transactionRouter,
   healthRouter,
   simulatorRouter,
-  dashboardRouter
+  dashboardRouter,
+  storageRouter
 ]; 

@@ -107,24 +107,5 @@
     "settled": false,
     "status": "pending",
     "timestamp": "2025-07-18T13:50:57.480Z"
-  },
-  {
-    "txn_ref": "TXN001",
-    "userId": "user123",
-    "sender": "ACC001",
-    "receiver": "system",
-    "amount": 100.5,
-    "currency": "ZAR",
-    "type": "debit",
-    "description": "Test transaction",
-    "settled": false,
-    "status": "pending",
-    "timestamp": "2025-07-19T12:51:46.273Z",
-    "created_at": "2025-07-19T12:51:46.273Z",
-    "metadata": {
-      "ip_address": "127.0.0.1",
-      "session_id": "sess123",
-      "processing_node": "node001"
-    }
   }
 ]
