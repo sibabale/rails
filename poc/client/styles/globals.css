@@ -1,0 +1,636 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+:root {
+  --font-size: 14px;
+  --background: #ffffff;
+  --foreground: oklch(0.145 0 0);
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #030213;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Typography scale for responsive text */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.875rem;    /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg: 1.125rem;    /* 18px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-2xl: 1.5rem;     /* 24px */
+  --text-3xl: 1.875rem;   /* 30px */
+  --text-4xl: 2.25rem;    /* 36px */
+  --text-5xl: 3rem;       /* 48px */
+  --text-6xl: 3.75rem;    /* 60px */
+
+  /* Code block color scheme for light mode */
+  --code-bg: #f8fafc;
+  --code-border: #e2e8f0;
+  --code-text: #334155;
+  --code-comment: #64748b;
+  --code-keyword: #0f172a;
+  --code-string: #16a34a;
+  --code-number: #dc2626;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+
+  /* Code block color scheme for dark mode */
+  --code-bg: #1e293b;
+  --code-border: #334155;
+  --code-text: #e2e8f0;
+  --code-comment: #94a3b8;
+  --code-keyword: #f1f5f9;
+  --code-string: #22c55e;
+  --code-number: #ef4444;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  /* Performance optimizations */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: var(--font-size);
+    scroll-behavior: smooth;
+    /* Optimize text rendering */
+    text-rendering: optimizeSpeed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+    /* Improve font rendering */
+    font-feature-settings: 'kern' 1;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+
+  /* Remove default margins */
+  h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd {
+    margin: 0;
+    margin-block-end: 0;
+    margin-block-start: 0;
+  }
+
+  /* Make images easier to work with */
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Improve text defaults */
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+    max-width: 75ch;
+  }
+
+  /* Focus styles for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Remove all animations and transitions for users who prefer not to see them */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    :root {
+      --border: #000000;
+      --ring: #000000;
+    }
+    
+    .dark {
+      --border: #ffffff;
+      --ring: #ffffff;
+    }
+  }
+
+  /* Screen reader only class */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .sr-only:focus,
+  .sr-only:active {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: inherit;
+    margin: inherit;
+    overflow: visible;
+    clip: auto;
+    white-space: inherit;
+  }
+}
+
+/**
+ * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
+ */
+@layer base {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    h1 {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.2;
+      letter-spacing: -0.025em;
+    }
+
+    h2 {
+      font-size: var(--text-xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.3;
+      letter-spacing: -0.015em;
+    }
+
+    h3 {
+      font-size: var(--text-lg);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.4;
+    }
+
+    h4 {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    p {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.6;
+    }
+
+    label {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    button {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    input, textarea, select {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+
+    /* Code formatting improvements */
+    code {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.875em;
+      line-height: 1.6;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    pre {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+      line-height: 1.6;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    /* Ensure proper link styling */
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Button reset */
+    button {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      font-family: inherit;
+    }
+  }
+}
+
+/* Performance: GPU acceleration for animations */
+@layer utilities {
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  /* Enhanced code block styling for react-syntax-highlighter */
+  .code-container {
+    position: relative;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid var(--code-border);
+    background: var(--code-bg);
+  }
+
+  .code-container pre {
+    margin: 0 !important;
+    padding: 1rem !important;
+    background: transparent !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 100% !important;
+    font-size: 0.75rem !important;
+    line-height: 1.6 !important;
+  }
+
+  @media (min-width: 640px) {
+    .code-container pre {
+      padding: 1.5rem !important;
+      font-size: 0.875rem !important;
+    }
+  }
+
+  .code-container code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: pre-wrap !important;
+  }
+
+  /* Better code block styling */
+  .code-block {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+  }
+
+  /* Syntax highlighter responsive overrides */
+  .syntax-highlighter {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .syntax-highlighter pre {
+    margin: 0 !important;
+    padding: 1rem !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    font-size: 0.75rem !important;
+    line-height: 1.6 !important;
+  }
+
+  @media (min-width: 640px) {
+    .syntax-highlighter pre {
+      padding: 1.5rem !important;
+      font-size: 0.875rem !important;
+    }
+  }
+
+  .syntax-highlighter code {
+    font-size: inherit !important;
+    line-height: inherit !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: inherit !important;
+  }
+
+  /* Fix for react-syntax-highlighter token wrapping */
+  .syntax-highlighter .token {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Utility for better CLS (Cumulative Layout Shift) */
+  .aspect-ratio-16-9 {
+    aspect-ratio: 16 / 9;
+  }
+
+  .aspect-ratio-4-3 {
+    aspect-ratio: 4 / 3;
+  }
+
+  .aspect-ratio-1-1 {
+    aspect-ratio: 1 / 1;
+  }
+
+  /* Loading states */
+  .loading {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: .5;
+    }
+  }
+
+  /* Responsive text utilities to override defaults */
+  .text-responsive-xs { font-size: var(--text-xs) !important; }
+  .text-responsive-sm { font-size: var(--text-sm) !important; }
+  .text-responsive-base { font-size: var(--text-base) !important; }
+  .text-responsive-lg { font-size: var(--text-lg) !important; }
+  .text-responsive-xl { font-size: var(--text-xl) !important; }
+  .text-responsive-2xl { font-size: var(--text-2xl) !important; }
+  .text-responsive-3xl { font-size: var(--text-3xl) !important; }
+  .text-responsive-4xl { font-size: var(--text-4xl) !important; }
+  .text-responsive-5xl { font-size: var(--text-5xl) !important; }
+  .text-responsive-6xl { font-size: var(--text-6xl) !important; }
+
+  /* Responsive button spacing overrides */
+  .btn-responsive {
+    padding: 0.75rem 1rem !important;
+    gap: 0.5rem !important;
+    font-size: var(--text-sm) !important;
+    min-height: 44px !important;
+  }
+
+  @media (min-width: 640px) {
+    .btn-responsive {
+      padding: 0.875rem 1.5rem !important;
+      gap: 0.75rem !important;
+      font-size: var(--text-base) !important;
+    }
+  }
+
+  /* Responsive card spacing overrides */
+  .card-responsive {
+    padding: 1rem !important;
+    gap: 1rem !important;
+  }
+
+  @media (min-width: 640px) {
+    .card-responsive {
+      padding: 1.5rem !important;
+      gap: 1.5rem !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .card-responsive {
+      padding: 2rem !important;
+      gap: 2rem !important;
+    }
+  }
+}
+
+/* Grid pattern utility for hero backgrounds */
+.bg-grid-white\/\[0\.05\] {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(255 255 255 / 0.05)'%3e%3cpath d='m0 .5h32m-32 32v-32m32 0v32m-32-16h32m-16-16v32'/%3e%3c/svg%3e");
+}
+
+.bg-grid-16 {
+  background-size: 16px 16px;
+}
+
+/* Print styles for better accessibility */
+@media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+
+  a[href]::after {
+    content: " (" attr(href) ")";
+  }
+
+  img {
+    page-break-inside: avoid;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+
+  pre, code {
+    page-break-inside: avoid;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+  }
+
+  .code-container {
+    border: 1px solid #000 !important;
+    background: #fff !important;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Ensure touch targets are large enough */
+  button, a, input, select, textarea {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+
+  /* Improve touch scrolling for code blocks */
+  .code-container pre {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+  }
+}
+
+/* High DPI display optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .code-container {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* RTL language support */
+[dir="rtl"] .code-container {
+  direction: ltr; /* Code should always be LTR */
+  text-align: left;
+}
+
+/* Accessibility improvements for code blocks */
+.code-container:focus-within {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Better contrast for accessibility */
+@media (prefers-contrast: high) {
+  .code-container {
+    border-color: currentColor;
+  }
+
+  .code-container pre {
+    background: transparent !important;
+  }
+}
+
+/* Reduced data mode optimizations */
+@media (prefers-reduced-data: reduce) {
+  .syntax-highlighter {
+    font-family: monospace !important; /* Use system monospace instead of web fonts */
+  }
+}
