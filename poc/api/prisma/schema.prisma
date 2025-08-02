@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Transaction {
+  id           String    @id @default(cuid())
+  txnRef       String    @unique @map("txn_ref")
+  userId       String    @map("user_id")
+  sender       String
+  receiver     String
+  senderBank   String?   @map("sender_bank")
+  receiverBank String?   @map("receiver_bank")
+  amount       Float
+  currency     String    @default("ZAR")
+  type         String?
+  description  String?
+  settled      Boolean   @default(false)
+  status       String    @default("pending")
+  timestamp    DateTime  @default(now())
+  createdAt    DateTime  @default(now()) @map("created_at")
+  settledAt    DateTime? @map("settled_at")
+  settledBy    String?   @map("settled_by")
+  metadata     String?
+
+  @@map("transactions")
+}
+
+model Bank {
+  id                String         @id @default(cuid())
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  address           String?
+  adminEmail        String         @unique @map("admin_email")
+  adminFirstName    String         @map("admin_first_name")
+  adminLastName     String         @map("admin_last_name")
+  adminPosition     String?        @map("admin_position")
+  bankCode          String         @unique @map("bank_code")
+  bankName          String         @map("bank_name")
+  businessRegNo     String?        @map("business_reg_no")
+  businessType      String?        @map("business_type")
+  contactEmail      String         @map("contact_email")
+  contactPhone      String?        @map("contact_phone")
+  lastLogin         DateTime?      @map("last_login")
+  primaryApiKey     String         @unique @map("primary_api_key")
+  secondaryApiKey   String?        @unique @map("secondary_api_key")
+  settings          String?
+  status            String         @default("pending_approval")
+  taxId             String?        @map("tax_id")
+  totalClients      Int            @default(0) @map("total_clients")
+  totalTransactions Int            @default(0) @map("total_transactions")
+  totalVolume       Float          @default(0) @map("total_volume")
+  apiKeyExpiresAt   DateTime?      @map("api_key_expires_at")
+  mfaEnabled        Boolean        @default(false) @map("mfa_enabled")
+  mfaSecret         String?        @map("mfa_secret")
+  loginAttempts     LoginAttempt?
+  refreshTokens     RefreshToken[]
+
+  @@map("banks")
+}
+
+model LoginAttempt {
+  id                  String    @id @default(cuid())
+  identifier          String    @unique
+  failedAttempts      Int       @default(0) @map("failed_attempts")
+  lastAttemptAt       DateTime  @default(now()) @map("last_attempt_at")
+  lastIpAddress       String?   @map("last_ip_address")
+  lastUserAgent       String?   @map("last_user_agent")
+  isLocked            Boolean   @default(false) @map("is_locked")
+  lockExpiresAt       DateTime? @map("lock_expires_at")
+  lastSuccessfulLogin DateTime? @map("last_successful_login")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  bank                Bank      @relation(fields: [identifier], references: [adminEmail])
+
+  @@map("login_attempts")
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  userId    String    @map("user_id")
+  userType  String    @map("user_type")
+  expiresAt DateTime  @map("expires_at")
+  isRevoked Boolean   @default(false) @map("is_revoked")
+  revokedAt DateTime? @map("revoked_at")
+  ipAddress String?   @map("ip_address")
+  userAgent String?   @map("user_agent")
+  createdAt DateTime  @default(now()) @map("created_at")
+  bank      Bank      @relation(fields: [userId], references: [adminEmail])
+
+  @@map("refresh_tokens")
+}
+
+model Reserve {
+  id        String   @id @default(cuid())
+  total     Float
+  available Float
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("reserve")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  userId    String?  @map("user_id")
+  details   String
+  timestamp DateTime @default(now())
+
+  @@map("audit_logs")
+}
