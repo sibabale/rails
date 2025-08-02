@@ -75,15 +75,15 @@ const createRateLimit = (windowMs, max, message, skipSuccessfulRequests = false)
       return ipKey + ':' + (req.headers['user-agent'] || 'unknown');
     },
     handler: (req, res) => {
-      const requestLogger = req.logger || logger.withCorrelationId(req.correlationId);
+      // const requestLogger = req.logger || logger.withCorrelationId(req.correlationId);
       
-      requestLogger.security('Rate limit exceeded', {
-        ip_address: req.ip,
-        user_agent: req.headers['user-agent'],
-        endpoint: req.originalUrl,
-        method: req.method,
-        event_type: 'rate_limit_exceeded'
-      });
+      // requestLogger.security('Rate limit exceeded', {
+      //   ip_address: req.ip,
+      //   user_agent: req.headers['user-agent'],
+      //   endpoint: req.originalUrl,
+      //   method: req.method,
+      //   event_type: 'rate_limit_exceeded'
+      // });
 
       res.status(429).json({
         error: 'Rate limit exceeded',
@@ -122,15 +122,15 @@ const adminRateLimit = createRateLimit(
 function requireAuth(req, res, next) {
   const authHeader = req.headers['authorization'];
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    const requestLogger = req.logger || logger.withCorrelationId(req.correlationId);
+    // const requestLogger = req.logger || logger.withCorrelationId(req.correlationId);
     
-    requestLogger.security('Authentication attempt without valid Bearer token', {
-      ip_address: req.ip,
-      user_agent: req.headers['user-agent'],
-      endpoint: req.originalUrl,
-      method: req.method,
-      event_type: 'authentication_missing'
-    });
+    // requestLogger.security('Authentication attempt without valid Bearer token', {
+    //   ip_address: req.ip,
+    //   user_agent: req.headers['user-agent'],
+    //   endpoint: req.originalUrl,
+    //   method: req.method,
+    //   event_type: 'authentication_missing'
+    // });
 
     return res.status(401).json({
       error: 'Authentication required',
@@ -156,24 +156,24 @@ function requireAuth(req, res, next) {
     }
 
     // Log successful authentication
-    req.logger.security('User authenticated successfully', {
-      user_id: decoded.userId || decoded.sub,
-      ip_address: req.ip,
-      event_type: 'authentication_success'
-    });
+    // req.logger.security('User authenticated successfully', {
+    //   user_id: decoded.userId || decoded.sub,
+    //   ip_address: req.ip,
+    //   event_type: 'authentication_success'
+    // });
     
     next();
   } catch (error) {
-    const requestLogger = req.logger || logger.withCorrelationId(req.correlationId);
+    // const requestLogger = req.logger || logger.withCorrelationId(req.correlationId);
     
-    requestLogger.security('JWT verification failed', {
-      ip_address: req.ip,
-      user_agent: req.headers['user-agent'],
-      endpoint: req.originalUrl,
-      method: req.method,
-      error_message: error.message,
-      event_type: 'authentication_failed'
-    });
+    // requestLogger.security('JWT verification failed', {
+    //   ip_address: req.ip,
+    //   user_agent: req.headers['user-agent'],
+    //   endpoint: req.originalUrl,
+    //   method: req.method,
+    //   error_message: error.message,
+    //   event_type: 'authentication_failed'
+    // });
 
     return res.status(401).json({
       error: 'Invalid token',
@@ -190,16 +190,16 @@ function requireAdminAuth(req, res, next) {
   const securityConfig = getSecurityConfig();
   
   if (!adminToken || adminToken !== securityConfig.adminToken) {
-    const requestLogger = req.logger || logger.withCorrelationId(req.correlationId);
+    // const requestLogger = req.logger || logger.withCorrelationId(req.correlationId);
     
-    requestLogger.security('Admin authentication failed', {
-      ip_address: req.ip,
-      user_agent: req.headers['user-agent'],
-      endpoint: req.originalUrl,
-      method: req.method,
-      user_id: req.user?.userId || 'anonymous',
-      event_type: 'admin_auth_failed'
-    });
+    // requestLogger.security('Admin authentication failed', {
+    //   ip_address: req.ip,
+    //   user_agent: req.headers['user-agent'],
+    //   endpoint: req.originalUrl,
+    //   method: req.method,
+    //   user_id: req.user?.userId || 'anonymous',
+    //   event_type: 'admin_auth_failed'
+    // });
 
     return res.status(403).json({
       error: 'Admin authorization required',
@@ -212,14 +212,14 @@ function requireAdminAuth(req, res, next) {
   req.isAdmin = true;
   
   // Log admin access
-  const requestLogger = req.logger || logger.withCorrelationId(req.correlationId);
-  requestLogger.audit('Admin operation authorized', {
-    user_id: req.user?.userId || 'system',
-    ip_address: req.ip,
-    endpoint: req.originalUrl,
-    method: req.method,
-    event_type: 'admin_access'
-  });
+  // const requestLogger = req.logger || logger.withCorrelationId(req.correlationId);
+  // requestLogger.audit('Admin operation authorized', {
+  //   user_id: req.user?.userId || 'system',
+  //   ip_address: req.ip,
+  //   endpoint: req.originalUrl,
+  //   method: req.method,
+  //   event_type: 'admin_access'
+  // });
   
   next();
 }
@@ -230,15 +230,15 @@ function validateTransactionAmount(req, res, next) {
   const securityConfig = getSecurityConfig();
   
   if (amount && amount > securityConfig.maxTransactionAmount) {
-    const requestLogger = req.logger || logger.withCorrelationId(req.correlationId);
+    // const requestLogger = req.logger || logger.withCorrelationId(req.correlationId);
     
-    requestLogger.security('Transaction amount exceeds limit', {
-      user_id: req.user?.userId || 'anonymous',
-      ip_address: req.ip,
-      attempted_amount: amount,
-      max_allowed: securityConfig.maxTransactionAmount,
-      event_type: 'amount_limit_exceeded'
-    });
+    // requestLogger.security('Transaction amount exceeds limit', {
+    //   user_id: req.user?.userId || 'anonymous',
+    //   ip_address: req.ip,
+    //   attempted_amount: amount,
+    //   max_allowed: securityConfig.maxTransactionAmount,
+    //   event_type: 'amount_limit_exceeded'
+    // });
 
     return res.status(400).json({
       error: 'Transaction amount exceeds limit',
@@ -261,13 +261,13 @@ function addCorrelationId(req, res, next) {
   req.logger = logger.withCorrelationId(req.correlationId);
   
   // Log incoming request
-  req.logger.info('Incoming request', {
-    method: req.method,
-    url: req.url,
-    ip_address: req.ip || req.connection.remoteAddress,
-    user_agent: req.headers['user-agent'],
-    event_type: 'http_request'
-  });
+  // req.logger.info('Incoming request', {
+  //   method: req.method,
+  //   url: req.url,
+  //   ip_address: req.ip || req.connection.remoteAddress,
+  //   user_agent: req.headers['user-agent'],
+  //   event_type: 'http_request'
+  // });
   
   next();
 }
@@ -292,15 +292,15 @@ function addRequestTiming(req, res, next) {
     const duration = Date.now() - req.startTime;
     
     // Log request completion
-    if (req.logger) {
-      req.logger.performance('Request completed', {
-        method: req.method,
-        url: req.url,
-        status_code: res.statusCode,
-        duration,
-        event_type: 'http_response'
-      });
-    }
+    // if (req.logger) {
+    //   req.logger.performance('Request completed', {
+    //     method: req.method,
+    //     url: req.url,
+    //     status_code: res.statusCode,
+    //     duration,
+    //     event_type: 'http_response'
+    //   });
+    // }
     
     // Call original end method
     originalEnd.apply(this, args);
@@ -315,6 +315,7 @@ module.exports = {
   validateTransactionQuery,
   validateSimulator,
   validateUserAuth,
+
   requireAuth,
   requireAdminAuth,
   validateTransactionAmount,
