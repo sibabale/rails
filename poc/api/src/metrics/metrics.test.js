@@ -62,9 +62,9 @@ describe('metrics', () => {
 
   it('getBankDistribution returns correct distribution', () => {
     getLedger.mockReturnValue([
-      { sender_bank: 'A', receiver_bank: 'B' },
-      { sender_bank: 'A', receiver_bank: 'B' },
-      { sender_bank: 'A', receiver_bank: 'C' }
+      { senderBank: 'A', receiverBank: 'B' },
+      { senderBank: 'A', receiverBank: 'B' },
+      { senderBank: 'A', receiverBank: 'C' }
     ]);
     const dist = metrics.getBankDistribution('A');
     expect(dist.total).toBe(3);
@@ -80,9 +80,9 @@ describe('metrics', () => {
     const now = new Date();
     const earlier = new Date(now.getTime() - 1000);
     getLedger.mockReturnValue([
-      { sender_bank: 'A', timestamp: earlier.toISOString() },
-      { sender_bank: 'A', timestamp: now.toISOString() },
-      { sender_bank: 'B', timestamp: now.toISOString() }
+      { senderBank: 'A', timestamp: earlier.toISOString() },
+      { senderBank: 'A', timestamp: now.toISOString() },
+      { senderBank: 'B', timestamp: now.toISOString() }
     ]);
     const txns = metrics.getRecentTransactionsForBank('A', 1);
     expect(txns.length).toBe(1);
@@ -169,9 +169,9 @@ describe('metrics', () => {
       { name: 'B', connected: true }
     ]);
     getLedger.mockReturnValue([
-      { sender_bank: 'A', status: 'delayed', amount: 100 },
-      { sender_bank: 'A', status: 'pending', amount: 200 },
-      { sender_bank: 'B', status: 'pending', amount: 300 }
+      { senderBank: 'A', status: 'delayed', amount: 100 },
+      { senderBank: 'A', status: 'pending', amount: 200 },
+      { senderBank: 'B', status: 'pending', amount: 300 }
     ]);
     const result = metrics.getMondayClearingPreparation();
     expect(result).toEqual(

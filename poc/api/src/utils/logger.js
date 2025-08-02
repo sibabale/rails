@@ -8,13 +8,12 @@ if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }
 
-// Custom format for financial services logging
+// Custom format for financial services logging with latest entries at top
 const financialFormat = winston.format.combine(
   winston.format.timestamp({
     format: 'YYYY-MM-DD HH:mm:ss.SSS'
   }),
   winston.format.errors({ stack: true }),
-  winston.format.json(),
   winston.format.printf(({ timestamp, level, message, correlationId, userId, txn_ref, amount, ...meta }) => {
     const logEntry = {
       timestamp,
@@ -37,7 +36,48 @@ const financialFormat = winston.format.combine(
       logEntry.metadata = meta;
     }
 
-    return JSON.stringify(logEntry);
+    return JSON.stringify(logEntry, null, 2);
+  })
+);
+
+// Special format for exceptions and rejections
+const exceptionFormat = winston.format.combine(
+  winston.format.timestamp({
+    format: 'YYYY-MM-DD HH:mm:ss.SSS'
+  }),
+  winston.format.printf((info) => {
+    const { timestamp, level, message, error, exception, os, process, service, stack, trace, version, ...meta } = info;
+    
+    const exceptionEntry = {
+      timestamp,
+      level: level.toUpperCase(),
+      message,
+      service: service || 'rails-api',
+      environment: process.env.NODE_ENV || 'development',
+      node_id: process.env.NODE_ID || 'node-001',
+      pid: process?.pid || 'unknown',
+      exception: exception || false,
+      error_details: {
+        name: error?.name,
+        message: error?.message,
+        stack: stack,
+        trace: trace
+      },
+      system_info: {
+        os: os,
+        process: {
+          argv: process?.argv,
+          cwd: process?.cwd,
+          execPath: process?.execPath,
+          version: process?.version,
+          memoryUsage: process?.memoryUsage
+        },
+        version: version
+      },
+      metadata: meta
+    };
+
+    return JSON.stringify(exceptionEntry, null, 2);
   })
 );
 
@@ -66,68 +106,68 @@ const logger = winston.createLogger({
     version: process.env.npm_package_version || '1.0.0'
   },
   transports: [
-    // Error log file - only errors
+    // Error log file - only errors (latest at top)
     new winston.transports.File({
-      filename: path.join(logsDir, 'error.log'),
+      filename: path.join(logsDir, 'error.json'),
       level: 'error',
       format: financialFormat,
       maxsize: 5242880, // 5MB
       maxFiles: 5,
-      tailable: true
+      tailable: true,
+      options: { flags: 'a' } // Append mode
     }),
 
-    // Combined log file - all levels
+    // Combined log file - all levels (latest at top)
     new winston.transports.File({
-      filename: path.join(logsDir, 'combined.log'),
+      filename: path.join(logsDir, 'combined.json'),
       format: financialFormat,
       maxsize: 10485760, // 10MB
       maxFiles: 10,
-      tailable: true
+      tailable: true,
+      options: { flags: 'a' } // Append mode
     }),
 
-    // Audit log for financial transactions - simplified format
+    // Audit log for financial transactions (latest at top)
     new winston.transports.File({
-      filename: path.join(logsDir, 'audit.log'),
+      filename: path.join(logsDir, 'audit.json'),
       level: 'info',
       format: winston.format.combine(
         winston.format.timestamp(),
-        winston.format.json(),
         winston.format.printf((info) => {
           const { timestamp, level, message, userId, txn_ref, amount, event_type, ...meta } = info;
-          // Only log audit-worthy entries
-          if (txn_ref || event_type === 'settlement' || event_type === 'reserve_change' || event_type === 'audit') {
-            const auditEntry = {
-              timestamp,
-              audit_type: event_type || 'transaction',
-              user_id: userId,
-              transaction_ref: txn_ref,
-              amount,
-              message,
-              metadata: meta
-            };
-            return JSON.stringify(auditEntry);
-          }
-          return null; // Skip non-audit entries
+          const auditEntry = {
+            timestamp,
+            audit_type: event_type || 'transaction',
+            user_id: userId,
+            transaction_ref: txn_ref,
+            amount,
+            message,
+            metadata: meta
+          };
+          return JSON.stringify(auditEntry, null, 2);
         })
       ),
       maxsize: 20971520, // 20MB
       maxFiles: 50, // Keep more audit logs
-      tailable: true
+      tailable: true,
+      options: { flags: 'a' } // Append mode
     })
   ],
 
-  // Handle uncaught exceptions and rejections
+  // Handle uncaught exceptions and rejections with proper JSON formatting
   exceptionHandlers: [
     new winston.transports.File({
-      filename: path.join(logsDir, 'exceptions.log'),
-      format: financialFormat
+      filename: path.join(logsDir, 'exceptions.json'),
+      format: exceptionFormat,
+      options: { flags: 'a' } // Append mode
     })
   ],
 
   rejectionHandlers: [
     new winston.transports.File({
-      filename: path.join(logsDir, 'rejections.log'),
-      format: financialFormat
+      filename: path.join(logsDir, 'rejections.json'),
+      format: exceptionFormat,
+      options: { flags: 'a' } // Append mode
     })
   ]
 });

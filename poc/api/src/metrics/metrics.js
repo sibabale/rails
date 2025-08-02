@@ -1,29 +1,30 @@
 const { getLedger, getBanks, getReserve, getDelayedTransactions } = require('../ledger/ledger');
 
-function getActiveBanks() {
-  return getBanks().filter(b => b.connected);
+async function getActiveBanks() {
+  const banks = await getBanks();
+  return banks.filter(b => b.connected);
 }
 
-function getCompletionRate() {
-  const ledger = getLedger();
+async function getCompletionRate() {
+  const ledger = await getLedger();
   const total = ledger.length;
   if (total === 0) return 0;
   const completed = ledger.filter(t => t.status === 'completed').length;
   return (completed / total) * 100;
 }
 
-function getTotalRevenue() {
-  const ledger = getLedger();
+async function getTotalRevenue() {
+  const ledger = await getLedger();
   return ledger.filter(t => t.status === 'completed').reduce((sum, t) => sum + t.amount * 0.01, 0);
 }
 
-function getActiveTransactions() {
-  const ledger = getLedger();
+async function getActiveTransactions() {
+  const ledger = await getLedger();
   return ledger.filter(t => t.status === 'pending').length;
 }
 
-function getRevenueOverview(months = 6) {
-  const ledger = getLedger();
+async function getRevenueOverview(months = 6) {
+  const ledger = await getLedger();
   const now = new Date();
   const result = [];
   for (let i = months - 1; i >= 0; i--) {
@@ -39,14 +40,14 @@ function getRevenueOverview(months = 6) {
   return result;
 }
 
-function getBankDistribution(senderBank) {
-  const ledger = getLedger();
-  const outgoing = ledger.filter(t => t.sender_bank === senderBank);
+async function getBankDistribution(senderBank) {
+  const ledger = await getLedger();
+  const outgoing = ledger.filter(t => t.senderBank === senderBank);
   const total = outgoing.length;
   if (total === 0) return { bank: senderBank, distribution: [], total: 0 };
   const counts = {};
   outgoing.forEach(t => {
-    counts[t.receiver_bank] = (counts[t.receiver_bank] || 0) + 1;
+    counts[t.receiverBank] = (counts[t.receiverBank] || 0) + 1;
   });
   const distribution = Object.entries(counts).map(([to, count]) => ({
     to,
@@ -56,17 +57,17 @@ function getBankDistribution(senderBank) {
   return { bank: senderBank, distribution, total };
 }
 
-function getRecentTransactionsForBank(bank, limit = 5, offset = 0) {
-  const ledger = getLedger();
+async function getRecentTransactionsForBank(bank, limit = 5, offset = 0) {
+  const ledger = await getLedger();
   const txns = ledger
-    .filter(t => t.sender_bank === bank)
+    .filter(t => t.senderBank === bank)
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   return txns.slice(offset, offset + limit);
 }
 
 // New metrics for settlement overview
-function getTodaysTransactionLogs() {
-  const ledger = getLedger();
+async function getTodaysTransactionLogs() {
+  const ledger = await getLedger();
   const today = new Date();
   const isToday = t => {
     const d = new Date(t.timestamp);
@@ -81,13 +82,14 @@ function getTodaysTransactionLogs() {
   };
 }
 
-function getReserveExhausted() {
-  return getDelayedTransactions().length;
+async function getReserveExhausted() {
+  const delayed = await getDelayedTransactions();
+  return delayed.length;
 }
 
-function getBankPerformance() {
+async function getBankPerformance() {
   // Current weekend completion rate vs previous weekend
-  const ledger = getLedger();
+  const ledger = await getLedger();
   const now = new Date();
   // Get current and previous weekend (Saturday/Sunday)
   function getWeekendRange(offset = 0) {
@@ -120,8 +122,8 @@ function getBankPerformance() {
   };
 }
 
-function getProcessingFeesThisWeekend() {
-  const ledger = getLedger();
+async function getProcessingFeesThisWeekend() {
+  const ledger = await getLedger();
   const now = new Date();
   function getWeekendRange(offset = 0) {
     const d = new Date(now);
@@ -141,8 +143,8 @@ function getProcessingFeesThisWeekend() {
   return txns.reduce((sum, t) => sum + t.amount * 0.01, 0);
 }
 
-function getReservePool() {
-  const reserve = getReserve();
+async function getReservePool() {
+  const reserve = await getReserve();
   const utilized = reserve.total - reserve.available;
   const percent = reserve.total ? (utilized / reserve.total) * 100 : 0;
   return {
@@ -153,13 +155,14 @@ function getReservePool() {
   };
 }
 
-function getMondayClearingPreparation() {
-  const banks = getBanks().filter(b => b.connected);
-  const ledger = getLedger();
+async function getMondayClearingPreparation() {
+  const banks = await getBanks();
+  const connectedBanks = banks.filter(b => b.connected);
+  const ledger = await getLedger();
   // For each bank, sum delayed and pending txns as settlement amount
-  return banks.map(bank => {
-    const delayed = ledger.filter(t => t.sender_bank === bank.name && t.status === 'delayed');
-    const pending = ledger.filter(t => t.sender_bank === bank.name && t.status === 'pending');
+  return connectedBanks.map(bank => {
+    const delayed = ledger.filter(t => t.senderBank === bank.name && t.status === 'delayed');
+    const pending = ledger.filter(t => t.senderBank === bank.name && t.status === 'pending');
     const amount = [...delayed, ...pending].reduce((sum, t) => sum + t.amount, 0);
     let status = 'pending';
     if (delayed.length > 0) status = 'ready';
