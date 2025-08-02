@@ -1,41 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { AppProvider } from './lib/context';
-import { Navigation } from './components/Navigation';
-import { HomePage } from './components/HomePage';
-import { DashboardPage } from './components/DashboardPage';
-import { ProductsPage } from './components/ProductsPage';
-import { BankRegistrationForm } from './components/BankRegistrationForm';
-import { BankLoginForm } from './components/BankLoginForm';
+import React, { useEffect } from 'react';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { store, persistor } from './lib/store';
+import { initializeAnalytics, trackPageView } from './lib/analytics';
+import { Navigation } from './components/organisms/Navigation';
+import { HomePage } from './components/pages/HomePage';
+import { BankDashboardPage } from './components/pages/BankDashboardPage';
+import { InternalDashboardPage } from './components/pages/InternalDashboardPage';
+import { ProductsPage } from './components/pages/ProductsPage';
+import { BankRegistrationForm } from './components/organisms/BankRegistrationForm';
+import { BankLoginForm } from './components/organisms/BankLoginForm';
 
-export default function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'dashboard' | 'products' | 'register' | 'login'>('home');
+// Component to handle meta tags and analytics based on route
+function MetaUpdater() {
+  const location = useLocation();
 
-  // Update document title and meta description based on current page
   useEffect(() => {
     const pageConfig = {
-      home: {
+      '/': {
         title: 'Rails - Financial Infrastructure for South Africa',
         description: 'Modern financial infrastructure for South Africa. Build banking products with Rails\' secure, scalable APIs. Weekend settlements and Bank-as-a-Service solutions.'
       },
-      products: {
+      '/products': {
         title: 'Products - Banking APIs & Infrastructure | Rails',
         description: 'Explore Rails financial products: Weekend Settlements for real-time processing and Bank-as-a-Service for complete banking infrastructure. Built for South African banks.'
       },
-      dashboard: {
-        title: 'Dashboard - Rails Financial Platform',
-        description: 'Monitor your financial infrastructure with Rails dashboard. View transaction logs, bank connections, reserves, and settlement analytics in real-time.'
+      '/dashboard': {
+        title: 'Bank Dashboard - Rails Financial Platform',
+        description: 'Monitor your bank transactions and manage weekend settlements with Rails platform.'
       },
-      register: {
+      '/dashboard/internal': {
+        title: 'Internal Dashboard - Rails Financial Platform',
+        description: 'Internal Rails dashboard with full system metrics and controls.'
+      },
+      '/register': {
         title: 'Bank Registration - Join Rails Platform',
         description: 'Register your bank with Rails financial infrastructure platform. Complete compliance verification and get instant access to modern banking APIs.'
       },
-      login: {
+      '/login': {
         title: 'Bank Login - Access Rails Dashboard',
         description: 'Access your Rails banking dashboard. Monitor transactions, manage clients, and view real-time analytics for your bank operations.'
       }
     };
 
-    const config = pageConfig[currentPage];
+    const config = pageConfig[location.pathname] || pageConfig['/'];
     document.title = config.title;
     
     // Update meta description
@@ -55,53 +64,11 @@ export default function App() {
       document.head.appendChild(canonicalLink);
     }
     const baseUrl = 'https://rails.co.za';
-    const pageUrl = currentPage === 'home' ? baseUrl : `${baseUrl}/${currentPage}`;
+    const pageUrl = location.pathname === '/' ? baseUrl : `${baseUrl}${location.pathname}`;
     canonicalLink.setAttribute('href', pageUrl);
 
-    // Update Open Graph tags
-    let ogTitle = document.querySelector('meta[property="og:title"]');
-    if (!ogTitle) {
-      ogTitle = document.createElement('meta');
-      ogTitle.setAttribute('property', 'og:title');
-      document.head.appendChild(ogTitle);
-    }
-    ogTitle.setAttribute('content', config.title);
-
-    let ogDescription = document.querySelector('meta[property="og:description"]');
-    if (!ogDescription) {
-      ogDescription = document.createElement('meta');
-      ogDescription.setAttribute('property', 'og:description');
-      document.head.appendChild(ogDescription);
-    }
-    ogDescription.setAttribute('content', config.description);
-
-    let ogUrl = document.querySelector('meta[property="og:url"]');
-    if (!ogUrl) {
-      ogUrl = document.createElement('meta');
-      ogUrl.setAttribute('property', 'og:url');
-      document.head.appendChild(ogUrl);
-    }
-    ogUrl.setAttribute('content', pageUrl);
-
-    // Update Twitter Card tags
-    let twitterTitle = document.querySelector('meta[name="twitter:title"]');
-    if (!twitterTitle) {
-      twitterTitle = document.createElement('meta');
-      twitterTitle.setAttribute('name', 'twitter:title');
-      document.head.appendChild(twitterTitle);
-    }
-    twitterTitle.setAttribute('content', config.title);
-
-    let twitterDescription = document.querySelector('meta[name="twitter:description"]');
-    if (!twitterDescription) {
-      twitterDescription = document.createElement('meta');
-      twitterDescription.setAttribute('name', 'twitter:description');
-      document.head.appendChild(twitterDescription);
-    }
-    twitterDescription.setAttribute('content', config.description);
-
-    // Add structured data for organization
-    if (currentPage === 'home') {
+    // Add structured data for organization on home page
+    if (location.pathname === '/') {
       let structuredData = document.querySelector('#structured-data');
       if (!structuredData) {
         structuredData = document.createElement('script');
@@ -137,49 +104,68 @@ export default function App() {
       
       structuredData.textContent = JSON.stringify(organizationData);
     }
-  }, [currentPage]);
 
-  const handleNavigation = (page: 'home' | 'dashboard' | 'products' | 'register' | 'login') => {
-    setCurrentPage(page);
-    
-    // Scroll to top on navigation for better UX
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
+    // Track page view for analytics
+    trackPageView(location.pathname, config.title);
+  }, [location.pathname]);
+
+  return null;
+}
+
+// Layout component that includes navigation
+function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Skip link for accessibility */}
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-brand-950 text-white px-4 py-2 rounded-md z-50"
+      >
+        Skip to main content
+      </a>
+      
+      <header>
+        <Navigation />
+      </header>
+      
+      <main id="main-content" role="main">
+        {children}
+      </main>
+    </div>
+  );
+}
+
+export default function App() {
+  // Initialize analytics on app startup
+  useEffect(() => {
+    initializeAnalytics();
+  }, []);
 
   return (
-    <AppProvider>
-      <div className="min-h-screen bg-background">
-        {/* Skip link for accessibility */}
-        <a 
-          href="#main-content" 
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-primary-foreground px-4 py-2 rounded-md z-50"
-        >
-          Skip to main content
-        </a>
-        
-        <header>
-          <Navigation currentPage={currentPage} onNavigate={handleNavigation} />
-        </header>
-        
-        <main id="main-content" role="main">
-          {currentPage === 'home' && <HomePage onNavigate={handleNavigation} />}
-          {currentPage === 'dashboard' && <DashboardPage onNavigate={handleNavigation} />}
-          {currentPage === 'products' && <ProductsPage onNavigate={handleNavigation} />}
-          {currentPage === 'register' && (
-            <div className="container mx-auto px-4 py-8">
-              <BankRegistrationForm />
-            </div>
-          )}
-          {currentPage === 'login' && (
-            <div className="container mx-auto px-4 py-8">
-              <BankLoginForm />
-            </div>
-          )}
-        </main>
-      </div>
-    </AppProvider>
+    <Provider store={store}>
+      <PersistGate loading={<div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>} persistor={persistor}>
+        <BrowserRouter>
+          <MetaUpdater />
+          <Layout>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/dashboard" element={<BankDashboardPage />} />
+              <Route path="/dashboard/internal" element={<InternalDashboardPage />} />
+              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/register" element={
+                <div className="container mx-auto px-4 py-8">
+                  <BankRegistrationForm />
+                </div>
+              } />
+              <Route path="/login" element={
+                <div className="container mx-auto px-4 py-8">
+                  <BankLoginForm />
+                </div>
+              } />
+            </Routes>
+          </Layout>
+        </BrowserRouter>
+      </PersistGate>
+    </Provider>
   );
 }
