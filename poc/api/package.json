@@ -3,21 +3,27 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "dev": "nodemon start-single.js",
     "start": "node start-single.js",
     "start:cluster": "node index.js",
     "test": "NODE_ENV=test jest",
     "test:unit": "NODE_ENV=test jest src/",
     "test:integration": "NODE_ENV=test jest tests/integration/",
     "test:watch": "NODE_ENV=test jest --watch",
-    "test:coverage": "NODE_ENV=test jest --coverage"
+    "test:coverage": "NODE_ENV=test jest --coverage",
+    "db:studio": "npx prisma studio",
+    "db:generate": "npx prisma generate"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@prisma/client": "^6.12.0",
+    "@supabase/supabase-js": "^2.45.4",
     "axios": "^1.10.0",
     "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "express-rate-limit": "^8.0.1",
@@ -25,12 +31,16 @@
     "jsonwebtoken": "^9.0.2",
     "posthog-node": "^5.5.1",
     "proper-lockfile": "^4.1.2",
+    "resend": "^4.0.1",
+    "totp-generator": "^1.0.0",
     "uuid": "^11.1.0",
     "winston": "^3.17.0"
   },
   "devDependencies": {
     "jest": "^30.0.4",
     "nock": "^14.0.6",
+    "nodemon": "^3.1.10",
+    "prisma": "^6.12.0",
     "supertest": "^7.1.3"
   }
 }
