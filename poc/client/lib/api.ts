@@ -1,4 +1,6 @@
-// API client for Rails Financial API
+// API client for Rails Financial API - Functional Approach
+
+import { tokenManager } from './tokenManager';
 
 export interface Transaction {
   txn_ref: string;
@@ -8,8 +10,10 @@ export interface Transaction {
   currency?: string;
   timestamp?: string;
   description: string;
-  source_account: string;
-  destination_account?: string;
+  sender: string;
+  receiver: string;
+  senderBank: string;
+  receiverBank: string;
   metadata: {
     ip_address: string;
     session_id: string;
@@ -93,6 +97,9 @@ export interface BankProfile {
   metrics: any;
   createdAt: string;
   lastLogin: string | null;
+  adminEmail: string;
+  adminFirstName: string;
+  adminLastName: string;
 }
 
 export interface Client {
@@ -149,158 +156,222 @@ export interface ApiError {
   correlation_id?: string;
 }
 
-class RailsApiClient {
-  private baseUrl: string;
-  private headers: HeadersInit;
+// Configuration
+const getBaseUrl = (): string => {
+  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+};
 
-  constructor() {
-    this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-    this.headers = {
-      'Content-Type': 'application/json',
-    };
+const getDefaultHeaders = (): HeadersInit => ({
+  'Content-Type': 'application/json',
+});
+
+// Auth token management
+let authToken: string | null = null;
+
+export const setAuthToken = (token: string): void => {
+  authToken = token;
+};
+
+export const clearAuthToken = (): void => {
+  authToken = null;
+};
+
+const getHeaders = async (customHeaders?: HeadersInit): Promise<HeadersInit> => {
+  const defaultHeaders = getDefaultHeaders();
+  const baseHeaders: Record<string, string> = {};
+
+  // Convert default headers to Record
+  if (typeof defaultHeaders === 'object' && !Array.isArray(defaultHeaders)) {
+    Object.assign(baseHeaders, defaultHeaders);
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-    
-    const config: RequestInit = {
-      ...options,
-      headers: {
-        ...this.headers,
-        ...options.headers,
-      },
-    };
+  // Get current access token from token manager
+  const accessToken = await tokenManager.getAccessToken();
+  if (accessToken) {
+    baseHeaders['Authorization'] = `Bearer ${accessToken}`;
+  }
 
-    try {
-      const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        const errorData: ApiError = await response.json();
-        throw new ApiError(errorData.message || 'Request failed', {
-          status: response.status,
-          data: errorData,
-        });
-      }
-
-      return await response.json();
-    } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-      
-      throw new ApiError('Network error', {
-        status: 0,
-        data: { error: 'Network error', message: error.message },
+  // Convert custom headers to proper format
+  const finalHeaders: Record<string, string> = { ...baseHeaders };
+  
+  if (customHeaders) {
+    if (customHeaders instanceof Headers) {
+      customHeaders.forEach((value, key) => {
+        finalHeaders[key] = value;
       });
+    } else if (Array.isArray(customHeaders)) {
+      customHeaders.forEach(([key, value]) => {
+        if (typeof key === 'string' && typeof value === 'string') {
+          finalHeaders[key] = value;
+        }
+      });
+    } else if (typeof customHeaders === 'object') {
+      Object.assign(finalHeaders, customHeaders);
     }
   }
 
-  // Health check
-  async getHealth(): Promise<HealthStatus> {
-    return this.request<HealthStatus>('/api/health');
-  }
+  return finalHeaders;
+};
 
-  // Submit transaction
-  async submitTransaction(transaction: Transaction): Promise<TransactionResponse> {
-    return this.request<TransactionResponse>('/api/webhook', {
-      method: 'POST',
-      body: JSON.stringify(transaction),
+// Core request function
+const makeRequest = async <T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> => {
+  const url = `${getBaseUrl()}${endpoint}`;
+  
+  const config: RequestInit = {
+    ...options,
+    headers: await getHeaders(options.headers),
+  };
+
+  try {
+    const response = await fetch(url, config);
+    
+    if (!response.ok) {
+      const errorData: ApiError = await response.json();
+      throw new ApiError(errorData.error || 'Request failed', {
+         status: response.status,
+         data: errorData,
+       });
+    }
+
+    return await response.json();
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    
+    throw new ApiError('Network error', {
+      status: 0,
+      data: { error: 'Network error', message: (error as Error).message },
     });
   }
+};
 
-  // Get transactions
-  async getTransactions(params: {
-    userId: string;
-    limit?: number;
-    offset?: number;
-  }): Promise<{ transactions: TransactionRecord[]; pagination: any }> {
-    const searchParams = new URLSearchParams({
-      userId: params.userId,
-      ...(params.limit && { limit: params.limit.toString() }),
-      ...(params.offset && { offset: params.offset.toString() }),
-    });
+// API Functions
 
-    return this.request<{ transactions: TransactionRecord[]; pagination: any }>(
-      `/api/transactions?${searchParams}`
-    );
-  }
+export const getHealth = (): Promise<HealthStatus> => {
+  return makeRequest<HealthStatus>('/api/health');
+};
 
-  // Bank registration
-  async registerBank(bankData: BankRegistration): Promise<any> {
-    return this.request<any>('/api/banks/register', {
-      method: 'POST',
-      body: JSON.stringify(bankData),
-    });
-  }
+export const submitTransaction = (transaction: Transaction): Promise<TransactionResponse> => {
+  return makeRequest<TransactionResponse>('/api/webhook', {
+    method: 'POST',
+    body: JSON.stringify(transaction),
+  });
+};
 
-  // Bank login
-  async loginBank(loginData: BankLogin): Promise<any> {
-    return this.request<any>('/api/banks/login', {
-      method: 'POST',
-      body: JSON.stringify(loginData),
-    });
-  }
+export const getTransactions = (params: {
+  userId: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{ transactions: TransactionRecord[]; pagination: any }> => {
+  const searchParams = new URLSearchParams({
+    userId: params.userId,
+  });
+  if (params.limit !== undefined) searchParams.set('limit', params.limit.toString());
+  if (params.offset !== undefined) searchParams.set('offset', params.offset.toString());
 
-  // Get bank profile
-  async getBankProfile(): Promise<BankProfile> {
-    return this.request<BankProfile>('/api/banks/profile');
-  }
+  return makeRequest<{ transactions: TransactionRecord[]; pagination: any }>(
+    `/api/transactions?${searchParams}`
+  );
+};
 
-  // Get bank clients
-  async getBankClients(params?: {
-    status?: string;
-    clientType?: string;
-    sortBy?: string;
-    limit?: number;
-    offset?: number;
-  }): Promise<{ clients: Client[]; pagination: any }> {
-    const searchParams = new URLSearchParams();
-    if (params?.status) searchParams.set('status', params.status);
-    if (params?.clientType) searchParams.set('clientType', params.clientType);
-    if (params?.sortBy) searchParams.set('sortBy', params.sortBy);
-    if (params?.limit) searchParams.set('limit', params.limit.toString());
-    if (params?.offset) searchParams.set('offset', params.offset.toString());
+export const registerBank = (bankData: BankRegistration): Promise<any> => {
+  console.log('registerBank called with:', bankData);
+  return makeRequest<any>('/api/banks/register', {
+    method: 'POST',
+    body: JSON.stringify(bankData),
+  });
+};
 
-    const query = searchParams.toString();
-    return this.request<{ clients: Client[]; pagination: any }>(
-      `/api/banks/clients${query ? `?${query}` : ''}`
-    );
-  }
+export const loginBank = (loginData: BankLogin): Promise<any> => {
+  return makeRequest<any>('/api/banks/login', {
+    method: 'POST',
+    body: JSON.stringify(loginData),
+  });
+};
 
-  // Register client for bank
-  async registerClient(clientData: Client): Promise<Client> {
-    return this.request<Client>('/api/banks/clients', {
-      method: 'POST',
-      body: JSON.stringify(clientData),
-    });
-  }
+export const getBankProfile = (): Promise<BankProfile> => {
+  return makeRequest<BankProfile>('/api/banks/profile');
+};
 
-  // Admin endpoints
-  async getAdminStatus(adminToken: string): Promise<AdminStatus> {
-    return this.request<AdminStatus>('/api/admin/status', {
-      headers: {
-        'x-admin-token': adminToken,
-      },
-    });
-  }
+export const getBankClients = (params?: {
+  status?: string;
+  clientType?: string;
+  sortBy?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{ clients: Client[]; pagination: any }> => {
+  const searchParams = new URLSearchParams();
+  if (params?.status) searchParams.set('status', params.status);
+  if (params?.clientType) searchParams.set('clientType', params.clientType);
+  if (params?.sortBy) searchParams.set('sortBy', params.sortBy);
+  if (params?.limit) searchParams.set('limit', params.limit.toString());
+  if (params?.offset) searchParams.set('offset', params.offset.toString());
 
-  // Set JWT token for authenticated requests
-  setAuthToken(token: string) {
-    this.headers = {
-      ...this.headers,
-      'Authorization': `Bearer ${token}`,
-    };
-  }
+  const query = searchParams.toString();
+  return makeRequest<{ clients: Client[]; pagination: any }>(
+    `/api/banks/clients${query ? `?${query}` : ''}`
+  );
+};
 
-  // Remove auth token
-  clearAuthToken() {
-    const { Authorization, ...remainingHeaders } = this.headers as any;
-    this.headers = remainingHeaders;
-  }
-}
+export const registerClient = (clientData: Client): Promise<Client> => {
+  return makeRequest<Client>('/api/banks/clients', {
+    method: 'POST',
+    body: JSON.stringify(clientData),
+  });
+};
+
+export const getAdminStatus = (adminToken: string): Promise<AdminStatus> => {
+  return makeRequest<AdminStatus>('/api/admin/status', {
+    headers: {
+      'x-admin-token': adminToken,
+    },
+  });
+};
+
+export const triggerSettlement = (authorizedBy: string, force: boolean = false): Promise<{
+  message: string;
+  settled: any[];
+  settlement_timestamp: string;
+}> => {
+  return makeRequest('/api/ledger/settle', {
+    method: 'POST',
+    body: JSON.stringify({ authorized_by: authorizedBy, force }),
+  });
+};
+
+export const getPendingTransactions = (): Promise<{
+  pending: any[];
+  count: number;
+  timestamp: string;
+}> => {
+  return makeRequest('/api/ledger/pending');
+};
+
+export const getDashboardMetrics = (): Promise<any> => {
+  return makeRequest('/api/dashboard/metrics');
+};
+
+export const refreshAccessToken = (refreshToken: string): Promise<{
+  success: boolean;
+  accessToken?: string;
+  expiresIn?: string;
+  error?: string;
+}> => {
+  return makeRequest('/api/banks/refresh', {
+    method: 'POST',
+    body: JSON.stringify({ refreshToken }),
+  });
+};
+
+export const logout = (): Promise<{ message: string }> => {
+  return makeRequest('/api/banks/logout', {
+    method: 'POST',
+  });
+};
 
 // Custom error class
 export class ApiError extends Error {
@@ -314,9 +385,6 @@ export class ApiError extends Error {
     this.data = data;
   }
 }
-
-// Export singleton instance
-export const apiClient = new RailsApiClient();
 
 // Utility functions
 export const generateSessionId = (): string => {
