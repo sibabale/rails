@@ -115,9 +115,12 @@ if (cluster.isMaster) {
     try {
       console.log(`Worker ${workerId} initializing ledger system...`);
       
-      // Import ledger system
+      // Import Prisma-based ledger system
       const ledgerModule = require("./src/ledger/ledger");
       postTransaction = ledgerModule.postTransaction;
+      
+      // Initialize the database connection
+      await ledgerModule.initializeLedgerSystem();
       
       console.log(`Worker ${workerId} initializing queue system...`);
       
@@ -126,11 +129,12 @@ if (cluster.isMaster) {
       transactionQueue = queueModule.transactionQueue;
       
       // Only start ONE queue processor per cluster (master decides)
+      // Comment out logger usage
       if (process.env.PRIMARY_WORKER === 'true') {
-        logger.info('Starting transaction queue processing (primary worker)', {
-          worker_pid: workerId,
-          event_type: 'system_startup'
-        });
+        // logger.info('Starting transaction queue processing (primary worker)', {
+        //   worker_pid: workerId,
+        //   event_type: 'system_startup'
+        // });
         
         transactionQueue.startProcessing(postTransaction);
         console.log(`✅ Primary worker ${workerId} queue processing started`);
@@ -139,12 +143,12 @@ if (cluster.isMaster) {
       }
       
     } catch (error) {
-      logger.error('Worker initialization failed', {
-        worker_pid: workerId,
-        error_message: error.message,
-        error_stack: error.stack,
-        event_type: 'worker_init_failed'
-      });
+      // logger.error('Worker initialization failed', {
+      //   worker_pid: workerId,
+      //   error_message: error.message,
+      //   error_stack: error.stack,
+      //   event_type: 'worker_init_failed'
+      // });
       
       // Don't exit immediately, let other workers continue
       console.error(`Worker ${workerId} initialization failed:`, error.message);
@@ -165,15 +169,15 @@ if (cluster.isMaster) {
   // Enhanced error handling middleware
   app.use((err, req, res, next) => {
     const correlationId = req.correlationId;
-    const requestLogger = req.logger || logger.withCorrelationId(correlationId);
+    // const requestLogger = req.logger || logger.withCorrelationId(correlationId);
     
-    requestLogger.error('Request processing error', {
-      error_message: err.message,
-      error_stack: err.stack,
-      method: req.method,
-      url: req.url,
-      event_type: 'error'
-    });
+    // requestLogger.error('Request processing error', {
+    //   error_message: err.message,
+    //   error_stack: err.stack,
+    //   method: req.method,
+    //   url: req.url,
+    //   event_type: 'error'
+    // });
 
     // Safe PostHog capture
     try {
@@ -188,7 +192,8 @@ if (cluster.isMaster) {
         }
       });
     } catch (posthogError) {
-      requestLogger.warn('PostHog capture failed for error', { error: posthogError.message });
+      // requestLogger.warn('PostHog capture failed for error', { error: posthogError.message });
+      console.warn('PostHog capture failed for error:', posthogError.message);
     }
 
     res.status(500).json({
@@ -202,10 +207,11 @@ if (cluster.isMaster) {
 
   // Graceful shutdown with proper cleanup
   const gracefulShutdown = async (signal) => {
-    logger.info(`Received ${signal}, starting graceful shutdown`, {
-      worker_pid: process.pid,
-      event_type: 'system_shutdown'
-    });
+    // logger.info(`Received ${signal}, starting graceful shutdown`, {
+    //   worker_pid: process.pid,
+    //   event_type: 'system_shutdown'
+    // });
+    console.log(`Received ${signal}, starting graceful shutdown`);
     
     try {
       // Stop queue processing if initialized
@@ -216,18 +222,20 @@ if (cluster.isMaster) {
       // Flush remaining PostHog events
       await posthogClient.shutdown();
       
-      logger.info('Graceful shutdown completed', {
-        worker_pid: process.pid,
-        event_type: 'system_shutdown_complete'
-      });
+      // logger.info('Graceful shutdown completed', {
+      //   worker_pid: process.pid,
+      //   event_type: 'system_shutdown_complete'
+      // });
+      console.log('Graceful shutdown completed');
       
       process.exit(0);
     } catch (error) {
-      logger.error('Error during shutdown', {
-        error_message: error.message,
-        worker_pid: process.pid,
-        event_type: 'system_shutdown_error'
-      });
+      // logger.error('Error during shutdown', {
+      //   worker_pid: process.pid,
+      //   error_message: error.message,
+      //   event_type: 'shutdown_error'
+      // });
+      console.error('Error during shutdown:', error.message);
       process.exit(1);
     }
   };
@@ -237,23 +245,25 @@ if (cluster.isMaster) {
 
   const { getConfig } = require('./src/config');
   const PORT = getConfig('PORT');
+  const NODE_ENV = process.env.NODE_ENV || 'development';
   const server = app.listen(PORT, () => {
-    logger.info(`Rails API worker started`, {
-      worker_pid: process.pid,
-      port: PORT,
-      node_env: process.env.NODE_ENV || 'development',
-      event_type: 'system_startup'
-    });
-    console.log(`🚀 Worker ${process.pid} running on http://localhost:${PORT}`);
+    // logger.info(`Rails API worker started`, {
+    //   worker_pid: process.pid,
+    //   port: PORT,
+    //   environment: NODE_ENV,
+    //   event_type: 'system_startup'
+    // });
+    console.log(`Rails API worker started - PID: ${process.pid}, Port: ${PORT}, Env: ${NODE_ENV}`);
   });
 
   // Handle server errors
   server.on('error', (error) => {
-    logger.error('Server error', {
-      error_message: error.message,
-      error_code: error.code,
-      worker_pid: process.pid,
-      event_type: 'server_error'
-    });
+    // logger.error('Server error', {
+    //   worker_pid: process.pid,
+    //   error_message: error.message,
+    //   error_code: error.code,
+    //   event_type: 'server_error'
+    // });
+    console.error('Server error:', error.message);
   });
 }

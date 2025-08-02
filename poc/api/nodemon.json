@@ -1,0 +1,16 @@
+{
+  "watch": ["src/", "start-single.js", "index.js"],
+  "ignore": [
+    "node_modules/",
+    "logs/",
+    "*.log",
+    "*.test.js",
+    "tests/",
+    "prisma/migrations/",
+    ".env*",
+    "package-lock.json",
+    "yarn.lock"
+  ],
+  "ext": "js,json",
+  "delay": "2000"
+}

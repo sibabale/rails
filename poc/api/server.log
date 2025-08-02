@@ -1,0 +1,16 @@
+[dotenv@17.2.0] injecting env (18) from .env (tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit)
+✅ Configuration validation passed
+📋 Configuration summary: {
+  "environment": "development",
+  "port": 8000,
+  "nodeId": "node001",
+  "logLevel": "info",
+  "maxTransactionAmount": 1000000,
+  "dailyTransactionLimit": 10000000,
+  "queueProcessingInterval": 1000,
+  "queueMaxRetries": 3,
+  "rateLimitEnabled": true,
+  "posthogEnabled": false,
+  "requestLoggingEnabled": true,
+  "detailedErrorsEnabled": true
+}

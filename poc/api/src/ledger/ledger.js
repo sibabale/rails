@@ -1,18 +1,8 @@
-// ledger.js
-const fs = require('fs').promises;
-const fsSync = require('fs');
-const path = require('path');
+const { PrismaClient } = require('@prisma/client');
 const logger = require('../utils/logger');
 const { posthogClient } = require('../posthog/posthog');
-const { fileStorageManager } = require('../utils/fileStorage');
 
-const LEDGER_FILE = path.join(__dirname, 'ledger.json');
-const BANKS_FILE = path.join(__dirname, 'banks.json');
-const RESERVE_FILE = path.join(__dirname, 'reserve.json');
-
-let ledger = [];
-let banks = [];
-let reserve = { total: 25000000, available: 25000000 }; // R25M default
+const prisma = new PrismaClient();
 
 // Custom error classes for better error handling
 class LedgerError extends Error {
@@ -25,208 +15,56 @@ class LedgerError extends Error {
   }
 }
 
-// Simple atomic write for Windows compatibility
-async function saveToFile(filePath, data) {
-  try {
-    const tempPath = `${filePath}.tmp.${Date.now()}`;
-    
-    // Write to temporary file first
-    await fs.writeFile(tempPath, JSON.stringify(data, null, 2), 'utf8');
-    
-    // Atomic rename (works on Windows)
-    await fs.rename(tempPath, filePath);
-    
-    logger.debug('File saved successfully', { filePath, dataSize: JSON.stringify(data).length });
-  } catch (error) {
-    // Clean up temp file if it exists
-    try {
-      await fs.unlink(`${filePath}.tmp.${Date.now()}`);
-    } catch (cleanupError) {
-      // Ignore cleanup errors
-    }
-    
-    throw new LedgerError(
-      'Failed to save data to file',
-      'FILE_SAVE_FAILED',
-      { originalError: error.message, filePath }
-    );
-  }
-}
-
-async function loadFromFile(filePath, defaultData = null) {
-  try {
-    return await fileStorageManager.safeRead(filePath, {
-      createIfMissing: defaultData !== null,
-      defaultData
-    });
-  } catch (error) {
-    throw new LedgerError(
-      'Failed to load data from file',
-      'FILE_LOAD_FAILED',
-      { originalError: error.message, filePath }
-    );
-  }
-}
-
-// Load ledger from file with error handling
-async function loadLedger() {
-  try {
-    ledger = await loadFromFile(LEDGER_FILE, []);
-    
-    // Validate ledger structure
-    if (!Array.isArray(ledger)) {
-      throw new LedgerError('Invalid ledger format: must be an array', 'INVALID_FORMAT');
-    }
-    
-    console.log(`✅ Loaded ${ledger.length} transactions from ledger`);
-  } catch (error) {
-    console.error('Failed to load ledger:', error);
-    if (error instanceof LedgerError) {
-      throw error;
-    }
-    throw new LedgerError(
-      'Failed to load ledger from file',
-      'LOAD_FAILED',
-      { originalError: error.message }
-    );
-  }
-}
-
-// Save ledger to file with error handling
-async function saveLedger() {
-  try {
-    // Create backup before saving for critical data
-    try {
-      if (fsSync.existsSync(LEDGER_FILE)) {
-        await fileStorageManager.createBackup(LEDGER_FILE);
-      }
-    } catch (backupError) {
-      console.warn('Backup creation failed:', backupError.message);
-      // Continue with save even if backup fails
-    }
-    
-    await saveToFile(LEDGER_FILE, ledger);
-  } catch (error) {
-    console.error('Failed to save ledger:', error);
-    
-    // Try to capture telemetry even if PostHog fails
-    try {
-      posthogClient.capture({
-        distinctId: 'system',
-        event: 'ledger_save_failed',
-        properties: {
-          error: error.message,
-          ledger_size: ledger.length
-        }
-      });
-    } catch (posthogError) {
-      console.warn('PostHog capture failed:', posthogError.message);
-    }
-    
-    throw error;
-  }
-}
-
-// Load banks from file with error handling
-async function loadBanks() {
-  try {
-    const defaultBanks = [
-      { name: 'FNB', code: 'FNB001', connected: true },
-      { name: 'ABSA', code: 'ABSA01', connected: true },
-      { name: 'NEDBANK', code: 'NED001', connected: true },
-      { name: 'CAPITEC', code: 'CAP001', connected: true },
-      { name: 'STANDARD', code: 'STD001', connected: false }
-    ];
-    
-    banks = await loadFromFile(BANKS_FILE, defaultBanks);
-    
-    // Validate banks structure
-    if (!Array.isArray(banks)) {
-      throw new LedgerError('Invalid banks format: must be an array', 'INVALID_FORMAT');
-    }
-    
-    console.log(`✅ Loaded ${banks.length} banks`);
-  } catch (error) {
-    console.error('Failed to load banks:', error);
-    if (error instanceof LedgerError) {
-      throw error;
-    }
-    throw new LedgerError(
-      'Failed to load banks from file',
-      'BANKS_LOAD_FAILED',
-      { originalError: error.message }
-    );
-  }
-}
-
-// Save banks to file with error handling
-async function saveBanks() {
-  try {
-    await saveToFile(BANKS_FILE, banks);
-  } catch (error) {
-    console.error('Failed to save banks:', error);
-    throw error;
-  }
-}
-
-// Load reserve from file with error handling
-async function loadReserve() {
-  try {
-    const defaultReserve = { total: 25000000, available: 25000000 }; // R25M default
-    
-    reserve = await loadFromFile(RESERVE_FILE, defaultReserve);
-    
-    // Validate reserve structure
-    if (typeof reserve.total !== 'number' || typeof reserve.available !== 'number') {
-      throw new LedgerError('Invalid reserve format: must contain total and available numbers', 'INVALID_FORMAT');
-    }
-    
-    if (reserve.available > reserve.total) {
-      throw new LedgerError('Invalid reserve: available cannot exceed total', 'INVALID_RESERVE_STATE');
-    }
-    
-    console.log(`✅ Loaded reserve: R${reserve.total} total, R${reserve.available} available`);
-  } catch (error) {
-    console.error('Failed to load reserve:', error);
-    if (error instanceof LedgerError) {
-      throw error;
-    }
-    throw new LedgerError(
-      'Failed to load reserve from file',
-      'RESERVE_LOAD_FAILED',
-      { originalError: error.message }
-    );
-  }
-}
-
-// Save reserve to file with error handling
-async function saveReserve() {
-  try {
-    await saveToFile(RESERVE_FILE, reserve);
-  } catch (error) {
-    console.error('Failed to save reserve:', error);
-    throw error;
-  }
-}
-
-// Initialize data with proper error handling
+// Initialize ledger system with database
 async function initializeLedgerSystem() {
   try {
-    await loadLedger();
-    await loadBanks();
-    await loadReserve();
+    // Test database connection
+    await prisma.$connect();
+    console.log('✅ Database connection established');
+
+    // Initialize default banks if they don't exist
+    const defaultBanks = [
+      { name: 'FNB', code: 'FNB001' },
+      { name: 'ABSA', code: 'ABSA01' },
+      { name: 'NEDBANK', code: 'NED001' },
+      { name: 'CAPITEC', code: 'CAP001' },
+      { name: 'STANDARD', code: 'STD001' }
+    ];
+
+    for (const bank of defaultBanks) {
+      await prisma.bank.upsert({
+        where: { name: bank.name },
+        update: {},
+        create: {
+          name: bank.name,
+          code: bank.code,
+          connected: bank.name !== 'STANDARD' // Only STANDARD is disconnected by default
+        }
+      });
+    }
+
+    // Initialize reserve if it doesn't exist
+    const reserveCount = await prisma.reserve.count();
+    if (reserveCount === 0) {
+      await prisma.reserve.create({
+        data: {
+          total: 25000000,
+          available: 25000000
+        }
+      });
+      console.log('✅ Initialized reserve with R25M');
+    }
+
     console.log('✅ Ledger system initialized successfully');
   } catch (error) {
     console.error('🚨 Failed to initialize ledger system:', error);
-    throw error;
+    throw new LedgerError(
+      'Database initialization failed',
+      'DB_INIT_FAILED',
+      { originalError: error.message }
+    );
   }
 }
-
-// Initialize immediately
-initializeLedgerSystem().catch(error => {
-  console.error('🚨 CRITICAL: Ledger system initialization failed:', error);
-  process.exit(1); // Exit if we can't initialize critical systems
-});
 
 async function postTransaction(txn) {
   try {
@@ -249,7 +87,10 @@ async function postTransaction(txn) {
     }
 
     // Check for duplicate transaction reference
-    const existingTxn = ledger.find(t => t.txn_ref === txn.txn_ref);
+    const existingTxn = await prisma.transaction.findUnique({
+      where: { txnRef: txn.txn_ref }
+    });
+
     if (existingTxn) {
       throw new LedgerError(
         'Transaction reference already exists',
@@ -258,56 +99,85 @@ async function postTransaction(txn) {
       );
     }
 
-    let status = 'pending';
-    
-    // Check reserve availability
-    if (reserve.available >= txn.amount) {
-      reserve.available -= txn.amount;
-      await saveReserve();
-    } else {
-      status = 'delayed';
+    // Use database transaction for atomicity
+    const result = await prisma.$transaction(async (tx) => {
+      // Get current reserve
+      const reserve = await tx.reserve.findFirst();
+    console.log('💰 Reserve:', reserve);
+
+      if (!reserve) {
+        throw new LedgerError('Reserve not found', 'RESERVE_NOT_FOUND');
+      }
+
+      let status = 'pending';
       
-      // Safe PostHog capture for insufficient reserve
-      try {
-        posthogClient.capture({
-          distinctId: txn.userId,
-          event: 'transaction_delayed',
-          properties: {
+      // Check reserve availability
+      if (reserve.available >= txn.amount) {
+        // Update reserve
+        await tx.reserve.update({
+          where: { id: reserve.id },
+          data: { available: reserve.available - txn.amount }
+        });
+      } else {
+        status = 'delayed';
+        
+        // Safe PostHog capture for insufficient reserve
+        try {
+          posthogClient.capture({
+            distinctId: txn.userId,
+            event: 'transaction_delayed',
+            properties: {
+              txn_ref: txn.txn_ref,
+              amount: txn.amount,
+              reason: 'insufficient_reserve',
+              reserve_available: reserve.available
+            }
+          });
+        } catch (posthogError) {
+          console.warn('PostHog capture failed for delayed transaction:', posthogError.message);
+        }
+      }
+
+      // Create transaction record
+      const entry = await tx.transaction.create({
+        data: {
+          txnRef: txn.txn_ref,
+          userId: txn.userId,
+          sender: txn.sender,
+          receiver: txn.receiver,
+          senderBank: txn.senderBank,
+          receiverBank: txn.receiverBank,
+          amount: parseFloat(txn.amount.toFixed(2)),
+          currency: txn.currency || 'ZAR',
+          type: txn.type,
+          description: txn.description,
+          status,
+          timestamp: txn.timestamp || new Date(),
+          metadata: JSON.stringify({
+            ...txn.metadata,
+            processing_node: process.env.NODE_ID || 'node-001'
+          })
+        }
+      });
+
+      // Create audit log
+      await tx.auditLog.create({
+        data: {
+          action: 'transaction_posted',
+          userId: txn.userId,
+          details: JSON.stringify({
             txn_ref: txn.txn_ref,
             amount: txn.amount,
-            reason: 'insufficient_reserve',
-            reserve_available: reserve.available
-          }
-        });
-      } catch (posthogError) {
-        console.warn('PostHog capture failed for delayed transaction:', posthogError.message);
-      }
-    }
+            type: txn.type,
+            status
+          })
+        }
+      });
 
-    // Create ledger entry with strict field mapping
-    const entry = {
-      txn_ref: txn.txn_ref,
-      userId: txn.userId,
-      sender: txn.source_account,
-      receiver: txn.destination_account || 'system',
-      amount: parseFloat(txn.amount.toFixed(2)), // Ensure 2 decimal places
-      currency: txn.currency || 'ZAR',
-      type: txn.type,
-      description: txn.description,
-      settled: false,
-      status,
-      timestamp: txn.timestamp || new Date().toISOString(),
-      created_at: new Date().toISOString(),
-      metadata: {
-        ...txn.metadata,
-        processing_node: process.env.NODE_ID || 'node-001'
-      }
-    };
+      return entry;
+    });
 
-    ledger.push(entry);
-    await saveLedger();
-
-    console.log(`📒 Ledger: R${entry.amount} ${entry.type} for ${entry.userId} [${status}]`);
+    console.log(`📒 Ledger: R${result.amount} ${result.type} for ${result.userId} [${result.status}]`);
     
     // Safe PostHog capture for successful posting
     try {
@@ -318,14 +188,14 @@ async function postTransaction(txn) {
           txn_ref: txn.txn_ref,
           amount: txn.amount,
           type: txn.type,
-          status: status
+          status: result.status
         }
       });
     } catch (posthogError) {
       console.warn('PostHog capture failed for transaction posting:', posthogError.message);
     }
 
-    return entry;
+    return result;
   } catch (error) {
     console.error('Failed to post transaction:', error);
     
@@ -356,18 +226,24 @@ async function postTransaction(txn) {
   }
 }
 
-function getPendingTransactions() {
+async function getPendingTransactions() {
   try {
-    return ledger.filter(t => t.status === 'pending');
+    return await prisma.transaction.findMany({
+      where: { status: 'pending' },
+      orderBy: { timestamp: 'asc' }
+    });
   } catch (error) {
     console.error('Failed to get pending transactions:', error);
     throw new LedgerError('Failed to retrieve pending transactions', 'QUERY_FAILED');
   }
 }
 
-function getDelayedTransactions() {
+async function getDelayedTransactions() {
   try {
-    return ledger.filter(t => t.status === 'delayed');
+    return await prisma.transaction.findMany({
+      where: { status: 'delayed' },
+      orderBy: { timestamp: 'asc' }
+    });
   } catch (error) {
     console.error('Failed to get delayed transactions:', error);
     throw new LedgerError('Failed to retrieve delayed transactions', 'QUERY_FAILED');
@@ -380,34 +256,60 @@ async function settleTransactions(authorizedBy, force = false) {
       throw new LedgerError('Settlement requires authorization', 'UNAUTHORIZED_SETTLEMENT');
     }
 
-    const pending = ledger.filter(t => t.status === 'pending');
-    if (pending.length === 0 && !force) {
+    const pendingCount = await prisma.transaction.count({
+      where: { status: 'pending' }
+    });
+
+    if (pendingCount === 0 && !force) {
       return { settled: [], message: 'No pending transactions to settle' };
     }
 
-    const settled = [];
-    const settlementTimestamp = new Date().toISOString();
-    
-    for (let txn of ledger) {
-      if (txn.status === 'pending') {
-        txn.settled = true;
-        txn.status = 'completed';
-        txn.settled_at = settlementTimestamp;
-        txn.settled_by = authorizedBy;
-        settled.push({ ...txn }); // Return copy for safety
-      }
-    }
+    const settlementTimestamp = new Date();
 
-    await saveLedger();
-    
+    // Use database transaction for atomicity
+    const result = await prisma.$transaction(async (tx) => {
+      // Get all pending transactions
+      const pendingTransactions = await tx.transaction.findMany({
+        where: { status: 'pending' },
+        orderBy: { timestamp: 'asc' }
+      });
+
+      // Update all pending transactions to settled
+      const settledTransactions = await tx.transaction.updateMany({
+        where: { status: 'pending' },
+        data: {
+          settled: true,
+          status: 'completed',
+          settledAt: settlementTimestamp,
+          settledBy: authorizedBy
+        }
+      });
+
+      // Create audit log
+      await tx.auditLog.create({
+        data: {
+          action: 'settlement_completed',
+          userId: authorizedBy,
+          details: JSON.stringify({
+            transactions_settled: pendingTransactions.length,
+            total_amount: pendingTransactions.reduce((sum, t) => sum + t.amount, 0),
+            authorized_by: authorizedBy,
+            timestamp: settlementTimestamp
+          })
+        }
+      });
+
+      return pendingTransactions;
+    });
+
     // Safe telemetry capture
     try {
       posthogClient.capture({
         distinctId: 'system',
         event: 'settlement_completed',
         properties: {
-          transactions_settled: settled.length,
-          total_amount: settled.reduce((sum, t) => sum + t.amount, 0),
+          transactions_settled: result.length,
+          total_amount: result.reduce((sum, t) => sum + t.amount, 0),
           authorized_by: authorizedBy,
           timestamp: settlementTimestamp
         }
@@ -416,8 +318,8 @@ async function settleTransactions(authorizedBy, force = false) {
       console.warn('PostHog capture failed for settlement:', posthogError.message);
     }
 
-    console.log(`✅ Settlement completed: ${settled.length} transactions by ${authorizedBy}`);
-    return { settled, settlement_timestamp: settlementTimestamp };
+    console.log(`✅ Settlement completed: ${result.length} transactions by ${authorizedBy}`);
+    return { settled: result, settlement_timestamp: settlementTimestamp };
   } catch (error) {
     console.error('Failed to settle transactions:', error);
     if (error instanceof LedgerError) {
@@ -431,44 +333,65 @@ async function settleTransactions(authorizedBy, force = false) {
   }
 }
 
-function getLedger(filters = {}) {
+async function getLedger(filters = {}) {
   try {
-    let filtered = [...ledger]; // Return copy for safety
+    const whereClause = {};
     
     if (filters.userId) {
-      filtered = filtered.filter(t => t.userId === filters.userId);
+      whereClause.userId = filters.userId;
     }
     if (filters.status) {
-      filtered = filtered.filter(t => t.status === filters.status);
+      whereClause.status = filters.status;
     }
     if (filters.start_date) {
-      filtered = filtered.filter(t => new Date(t.timestamp) >= new Date(filters.start_date));
+      whereClause.timestamp = {
+        ...whereClause.timestamp,
+        gte: new Date(filters.start_date)
+      };
     }
     if (filters.end_date) {
-      filtered = filtered.filter(t => new Date(t.timestamp) <= new Date(filters.end_date));
+      whereClause.timestamp = {
+        ...whereClause.timestamp,
+        lte: new Date(filters.end_date)
+      };
     }
-    
-    return filtered;
+
+    return await prisma.transaction.findMany({
+      where: whereClause,
+      orderBy: { timestamp: 'desc' }
+    });
   } catch (error) {
     console.error('Failed to get ledger:', error);
     throw new LedgerError('Failed to retrieve ledger data', 'QUERY_FAILED');
   }
 }
 
-function getBanks() {
+async function getBanks() {
   try {
-    return [...banks]; // Return copy for safety
+    return await prisma.bank.findMany({
+      orderBy: { name: 'asc' }
+    });
   } catch (error) {
     console.error('Failed to get banks:', error);
     throw new LedgerError('Failed to retrieve banks data', 'QUERY_FAILED');
   }
 }
 
-function getReserve() {
+async function getReserve() {
   try {
-    return { ...reserve }; // Return copy for safety
+    const reserve = await prisma.reserve.findFirst();
+    console.log('💰 Reserve:', reserve);
+
+    if (!reserve) {
+      
+      throw new LedgerError('Reserve not found', 'RESERVE_NOT_FOUND');
+    }
+    return reserve;
   } catch (error) {
     console.error('Failed to get reserve:', error);
+    if (error instanceof LedgerError) {
+      throw error;
+    }
     throw new LedgerError('Failed to retrieve reserve data', 'QUERY_FAILED');
   }
 }
@@ -483,20 +406,46 @@ async function setReserve(amount, authorizedBy) {
       throw new LedgerError('Reserve amount must be a positive number', 'INVALID_RESERVE_AMOUNT');
     }
 
-    const oldReserve = { ...reserve };
-    reserve.total = amount;
-    reserve.available = amount;
-    
-    await saveReserve();
-    
+    const result = await prisma.$transaction(async (tx) => {
+      const oldReserve = await tx.reserve.findFirst();
+    console.log('💰 Reserve:', reserve);
+
+      if (!oldReserve) {
+        throw new LedgerError('Reserve not found', 'RESERVE_NOT_FOUND');
+      }
+
+      const updatedReserve = await tx.reserve.update({
+        where: { id: oldReserve.id },
+        data: {
+          total: amount,
+          available: amount
+        }
+      });
+
+      // Create audit log
+      await tx.auditLog.create({
+        data: {
+          action: 'reserve_updated',
+          userId: authorizedBy,
+          details: JSON.stringify({
+            old_total: oldReserve.total,
+            new_total: amount,
+            authorized_by: authorizedBy
+          })
+        }
+      });
+
+      return { oldReserve, newReserve: updatedReserve };
+    });
+
     // Safe telemetry capture
     try {
       posthogClient.capture({
         distinctId: 'system',
         event: 'reserve_updated',
         properties: {
-          old_total: oldReserve.total,
-          new_total: reserve.total,
+          old_total: result.oldReserve.total,
+          new_total: result.newReserve.total,
           authorized_by: authorizedBy,
           timestamp: new Date().toISOString()
         }
@@ -505,8 +454,8 @@ async function setReserve(amount, authorizedBy) {
       console.warn('PostHog capture failed for reserve update:', posthogError.message);
     }
 
-    console.log(`💰 Reserve updated: R${oldReserve.total} → R${reserve.total} by ${authorizedBy}`);
-    return reserve;
+    console.log(`💰 Reserve updated: R${result.oldReserve.total} → R${result.newReserve.total} by ${authorizedBy}`);
+    return result.newReserve;
   } catch (error) {
     console.error('Failed to set reserve:', error);
     if (error instanceof LedgerError) {
@@ -520,6 +469,11 @@ async function setReserve(amount, authorizedBy) {
   }
 }
 
+// Graceful shutdown
+process.on('beforeExit', async () => {
+  await prisma.$disconnect();
+});
+
 module.exports = {
   postTransaction,
   getPendingTransactions,
@@ -530,9 +484,6 @@ module.exports = {
   getReserve,
   setReserve,
   LedgerError,
-  // For testability
-  _saveLedger: saveLedger,
-  _saveBanks: saveBanks,
-  _saveReserve: saveReserve,
-  _initializeLedgerSystem: initializeLedgerSystem
-};
+  initializeLedgerSystem,
+  prisma
+}; 

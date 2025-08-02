@@ -9,7 +9,7 @@ const { posthogClient } = require('../posthog/posthog');
 const router = express.Router();
 
 // Basic health check - no authentication required for monitoring systems
-router.get('/health', async (req, res) => {
+router.get('/', async (req, res) => {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
   
@@ -74,7 +74,7 @@ router.get('/health', async (req, res) => {
 });
 
 // Detailed health check with authentication required
-router.get('/health/detailed', async (req, res) => {
+router.get('/detailed', async (req, res) => {
   // This endpoint could require authentication for sensitive details
   // For now, keeping it open for POC but adding correlation ID
   const correlationId = req.correlationId || req.headers['x-correlation-id'];

@@ -27,7 +27,7 @@ router.get('/transactions', (req, res) => {
     filtered = filtered.filter(t => t.status === status);
   }
   if (bank) {
-    filtered = filtered.filter(t => t.sender_bank === bank);
+    filtered = filtered.filter(t => t.senderBank === bank);
   }
   if (type) {
     filtered = filtered.filter(t => t.type === type);
@@ -49,7 +49,7 @@ router.get('/transactions', (req, res) => {
   res.json({
     transactions: paged.map(t => ({
       txn_ref: t.txn_ref,
-      bank: t.sender_bank,
+      bank: t.senderBank,
       amount: t.amount,
       type: t.type || 'transfer',
       status: t.status,

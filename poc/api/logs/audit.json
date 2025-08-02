@@ -1,0 +1,3851 @@
+{
+  "timestamp": "2025-07-25T04:38:55.147Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Reserve not found\nLedgerError: Reserve not found\n    at getReserve (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:382:13)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "RESERVE_NOT_FOUND",
+      "details": {},
+      "timestamp": "2025-07-25T04:38:55.135Z"
+    },
+    "stack": "LedgerError: Reserve not found\n    at getReserve (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:382:13)",
+    "rejection": true,
+    "date": "Fri Jul 25 2025 06:38:55 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 4756,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 72056832,
+        "heapTotal": 20938752,
+        "heapUsed": 17484112,
+        "external": 3579705,
+        "arrayBuffers": 67960
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 677020.265
+    },
+    "trace": [
+      {
+        "column": 13,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getReserve",
+        "line": 382,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-25T04:39:46.389Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Reserve not found\nLedgerError: Reserve not found\n    at getReserve (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:382:13)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "RESERVE_NOT_FOUND",
+      "details": {},
+      "timestamp": "2025-07-25T04:39:46.381Z"
+    },
+    "stack": "LedgerError: Reserve not found\n    at getReserve (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:382:13)",
+    "rejection": true,
+    "date": "Fri Jul 25 2025 06:39:46 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 28748,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 71548928,
+        "heapTotal": 19628032,
+        "heapUsed": 17766120,
+        "external": 3580105,
+        "arrayBuffers": 68760
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 677071.515
+    },
+    "trace": [
+      {
+        "column": 13,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getReserve",
+        "line": 382,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-25T04:55:13.599Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Reserve not found\nLedgerError: Reserve not found\n    at getReserve (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:382:13)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "RESERVE_NOT_FOUND",
+      "details": {},
+      "timestamp": "2025-07-25T04:55:13.591Z"
+    },
+    "stack": "LedgerError: Reserve not found\n    at getReserve (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:382:13)",
+    "rejection": true,
+    "date": "Fri Jul 25 2025 06:55:13 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 31716,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 76312576,
+        "heapTotal": 20152320,
+        "heapUsed": 17645360,
+        "external": 3580105,
+        "arrayBuffers": 68760
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 677998.718
+    },
+    "trace": [
+      {
+        "column": 13,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getReserve",
+        "line": 382,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-25T05:05:14.652Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Reserve not found\nLedgerError: Reserve not found\n    at getReserve (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:382:13)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "RESERVE_NOT_FOUND",
+      "details": {},
+      "timestamp": "2025-07-25T05:05:14.643Z"
+    },
+    "stack": "LedgerError: Reserve not found\n    at getReserve (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:382:13)",
+    "rejection": true,
+    "date": "Fri Jul 25 2025 07:05:14 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 35928,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 75771904,
+        "heapTotal": 20152320,
+        "heapUsed": 17234600,
+        "external": 3605636,
+        "arrayBuffers": 68136
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 678599.765
+    },
+    "trace": [
+      {
+        "column": 13,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getReserve",
+        "line": 382,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-25T05:42:33.517Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-25T05:42:33.510Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Fri Jul 25 2025 07:42:33 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 38992,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 78151680,
+        "heapTotal": 21200896,
+        "heapUsed": 17710504,
+        "external": 3606436,
+        "arrayBuffers": 68136
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 680838.625
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-25T06:45:02.795Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve reserve data\nLedgerError: Failed to retrieve reserve data\n    at getReserve (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:395:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-25T06:45:02.301Z"
+    },
+    "stack": "LedgerError: Failed to retrieve reserve data\n    at getReserve (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:395:11)",
+    "rejection": true,
+    "date": "Fri Jul 25 2025 08:45:02 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 29760,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 73678848,
+        "heapTotal": 20414464,
+        "heapUsed": 17920392,
+        "external": 3606436,
+        "arrayBuffers": 68136
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 684587.906
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getReserve",
+        "line": 395,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-25T10:52:50.865Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-25T10:52:50.853Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Fri Jul 25 2025 12:52:50 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 42592,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 77983744,
+        "heapTotal": 21463040,
+        "heapUsed": 17714528,
+        "external": 3606436,
+        "arrayBuffers": 68136
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 699455.968
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T14:32:31.797Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T14:32:31.788Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 16:32:31 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 10944,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 69459968,
+        "heapTotal": 20414464,
+        "heapUsed": 18380448,
+        "external": 3606436,
+        "arrayBuffers": 68936
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1058232.359
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T14:35:47.263Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T14:35:47.258Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 16:35:47 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 11964,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 75776000,
+        "heapTotal": 20152320,
+        "heapUsed": 18279000,
+        "external": 3606436,
+        "arrayBuffers": 68936
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1058427.828
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T14:43:11.720Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T14:43:11.710Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 16:43:11 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 18348,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 74862592,
+        "heapTotal": 21200896,
+        "heapUsed": 17797608,
+        "external": 3606036,
+        "arrayBuffers": 68536
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1058872.281
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T14:44:45.634Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T14:44:45.601Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 16:44:45 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 14084,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 77180928,
+        "heapTotal": 20414464,
+        "heapUsed": 17954136,
+        "external": 3606036,
+        "arrayBuffers": 68536
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1058966.171
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T14:45:02.402Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T14:45:02.395Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 16:45:02 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 34436,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 76009472,
+        "heapTotal": 20414464,
+        "heapUsed": 17866776,
+        "external": 3606036,
+        "arrayBuffers": 68536
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1058982.968
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T14:45:10.203Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T14:45:10.185Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 16:45:10 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 45656,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 85966848,
+        "heapTotal": 34762752,
+        "heapUsed": 22502912,
+        "external": 3606036,
+        "arrayBuffers": 68536
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1058990.75
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T14:45:44.701Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T14:45:44.692Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 16:45:44 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 22376,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 76369920,
+        "heapTotal": 20152320,
+        "heapUsed": 17559128,
+        "external": 3605636,
+        "arrayBuffers": 68136
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1059025.265
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T14:46:24.071Z",
+  "audit_type": "validation_failed",
+  "message": "Bank registration validation failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "errors": [
+      {
+        "field": "compliance.sarb_license_number",
+        "message": "\"compliance.sarb_license_number\" is not allowed to be empty",
+        "value": ""
+      }
+    ]
+  }
+}
+{
+  "timestamp": "2025-07-29T14:50:13.905Z",
+  "audit_type": "bank_registration_error",
+  "message": "Bank registration failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error_message": "Cannot read properties of undefined (reading 'bankCode')",
+    "error_stack": "TypeError: Cannot read properties of undefined (reading 'bankCode')\n    at C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:60:32\n    at Layer.handleRequest (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\route.js:157:13)\n    at Route.dispatch (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\route.js:117:3)\n    at handle (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:435:11)\n    at Layer.handleRequest (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\layer.js:152:17)\n    at C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:295:15\n    at processParams (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:582:12)\n    at next (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:291:5)\n    at Function.handle (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:186:3)"
+  }
+}
+{
+  "timestamp": "2025-07-29T14:53:22.882Z",
+  "audit_type": "registration_request",
+  "message": "Bank registration request received",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T14:53:22.884Z",
+  "audit_type": "validation_result",
+  "message": "Validation result",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": false
+  }
+}
+{
+  "timestamp": "2025-07-29T14:53:22.888Z",
+  "audit_type": "bank_registration_error",
+  "message": "Bank registration failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error_message": "Cannot read properties of undefined (reading 'bankCode')",
+    "error_stack": "TypeError: Cannot read properties of undefined (reading 'bankCode')\n    at C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:72:32\n    at Layer.handleRequest (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\route.js:157:13)\n    at Route.dispatch (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\route.js:117:3)\n    at handle (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:435:11)\n    at Layer.handleRequest (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\layer.js:152:17)\n    at C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:295:15\n    at processParams (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:582:12)\n    at next (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:291:5)\n    at Function.handle (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:186:3)"
+  }
+}
+{
+  "timestamp": "2025-07-29T14:53:37.450Z",
+  "audit_type": "registration_request",
+  "message": "Bank registration request received",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T14:53:37.451Z",
+  "audit_type": "validation_result",
+  "message": "Validation result",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": false
+  }
+}
+{
+  "timestamp": "2025-07-29T14:53:37.453Z",
+  "audit_type": "bank_registration_error",
+  "message": "Bank registration failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error_message": "Cannot read properties of undefined (reading 'bankCode')",
+    "error_stack": "TypeError: Cannot read properties of undefined (reading 'bankCode')\n    at C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:72:32\n    at Layer.handleRequest (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\route.js:157:13)\n    at Route.dispatch (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\route.js:117:3)\n    at handle (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:435:11)\n    at Layer.handleRequest (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\layer.js:152:17)\n    at C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:295:15\n    at processParams (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:582:12)\n    at next (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:291:5)\n    at Function.handle (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:186:3)"
+  }
+}
+{
+  "timestamp": "2025-07-29T14:57:23.171Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T14:57:23.164Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 16:57:23 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 32904,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 75485184,
+        "heapTotal": 19628032,
+        "heapUsed": 18131456,
+        "external": 3606036,
+        "arrayBuffers": 68536
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1059723.734
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T14:58:28.725Z",
+  "audit_type": "registration_request",
+  "message": "Bank registration request received",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "body": {
+      "bankName": "ZBank",
+      "bankCode": "ZBN001",
+      "contactEmail": "jojasibabale@gmail.com",
+      "contactPhone": "+27716947769",
+      "address": {
+        "street": "447 Nkululekweni Location",
+        "city": "Mount Fletcher",
+        "province": "Mpumalanga",
+        "postalCode": "4770",
+        "country": "South Africa"
+      },
+      "adminUser": {
+        "firstName": "Sibabale",
+        "lastName": "Joja",
+        "email": "jojasibabale@gmail.com",
+        "phone": "+27716947769",
+        "idNumber": "0123456789012",
+        "position": "CTO"
+      },
+      "businessDetails": {
+        "registrationNumber": "2020/232323/02",
+        "vatNumber": "1232356789",
+        "website": "https://www.zbank.com",
+        "establishedYear": 2025,
+        "bankType": "commercial",
+        "expectedVolume": "medium"
+      },
+      "compliance": {
+        "sarb_registered": false,
+        "sarb_license_number": "",
+        "fica_compliant": true,
+        "popi_compliant": true,
+        "accepts_terms": true
+      }
+    },
+    "bodyKeys": [
+      "bankName",
+      "bankCode",
+      "contactEmail",
+      "contactPhone",
+      "address",
+      "adminUser",
+      "businessDetails",
+      "compliance"
+    ],
+    "contentType": "application/json",
+    "bodyLength": 726
+  }
+}
+{
+  "timestamp": "2025-07-29T14:58:28.828Z",
+  "audit_type": "validation_result",
+  "message": "Validation result",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": true,
+    "hasValue": true,
+    "errorDetails": [
+      {
+        "message": "\"compliance.sarb_license_number\" is not allowed to be empty",
+        "path": [
+          "compliance",
+          "sarb_license_number"
+        ],
+        "type": "string.empty",
+        "context": {
+          "label": "compliance.sarb_license_number",
+          "value": "",
+          "key": "sarb_license_number"
+        }
+      }
+    ]
+  }
+}
+{
+  "timestamp": "2025-07-29T14:58:28.830Z",
+  "audit_type": "validation_failed",
+  "message": "Bank registration validation failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "errors": [
+      {
+        "field": "compliance.sarb_license_number",
+        "message": "\"compliance.sarb_license_number\" is not allowed to be empty",
+        "value": ""
+      }
+    ]
+  }
+}
+{
+  "timestamp": "2025-07-29T14:59:56.687Z",
+  "audit_type": "registration_request",
+  "message": "Bank registration request received",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "body": {
+      "bankName": "ZBank",
+      "bankCode": "ZBN001",
+      "contactEmail": "jojasibabale@gmail.com",
+      "contactPhone": "+27716947769",
+      "address": {
+        "street": "447 Nkululekweni Location",
+        "city": "Mount Fletcher",
+        "province": "Mpumalanga",
+        "postalCode": "4770",
+        "country": "South Africa"
+      },
+      "adminUser": {
+        "firstName": "Sibabale",
+        "lastName": "Joja",
+        "email": "jojasibabale@gmail.com",
+        "phone": "+27716947769",
+        "idNumber": "0123456789012",
+        "position": "CTO"
+      },
+      "businessDetails": {
+        "registrationNumber": "2020/232323/02",
+        "vatNumber": "1232356789",
+        "website": "https://www.zbank.com",
+        "establishedYear": 2025,
+        "bankType": "commercial",
+        "expectedVolume": "medium"
+      },
+      "compliance": {
+        "sarb_registered": true,
+        "sarb_license_number": "9003333",
+        "fica_compliant": true,
+        "popi_compliant": true,
+        "accepts_terms": true
+      }
+    },
+    "bodyKeys": [
+      "bankName",
+      "bankCode",
+      "contactEmail",
+      "contactPhone",
+      "address",
+      "adminUser",
+      "businessDetails",
+      "compliance"
+    ],
+    "contentType": "application/json",
+    "bodyLength": 732
+  }
+}
+{
+  "timestamp": "2025-07-29T14:59:56.699Z",
+  "audit_type": "validation_result",
+  "message": "Validation result",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": true,
+    "errorDetails": null
+  }
+}
+{
+  "timestamp": "2025-07-29T15:00:04.896Z",
+  "audit_type": "bank_registration_error",
+  "message": "Bank registration failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error_message": "\nInvalid `prisma.bank.create()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:96:38\n\n  93 const apiKey = `bank_${value.bankCode}_${uuidv4().replace(/-/g, '')}`;\n  94 \n  95 // Register the bank\n→ 96 const result = await prisma.bank.create({\n       data: {\n         bankCode: \"ZBN001\",\n         bankName: \"ZBank\",\n         contactEmail: \"jojasibabale@gmail.com\",\n         contactPhone: \"+27716947769\",\n         address: {\n           street: \"447 Nkululekweni Location\",\n           city: \"Mount Fletcher\",\n           province: \"Mpumalanga\",\n           postalCode: \"4770\",\n           country: \"South Africa\"\n         },\n         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n         adminFirstName: \"Sibabale\",\n         adminLastName: \"Joja\",\n         adminEmail: \"jojasibabale@gmail.com\",\n         adminPosition: \"CTO\",\n         primaryApiKey: \"bank_ZBN001_56c7db6841724f16aebfcd848d33fbd8\",\n         businessType: undefined,\n         businessRegNo: \"2020/232323/02\",\n         taxId: undefined,\n         settings: \"{\\\"timezone\\\":\\\"Africa/Johannesburg\\\",\\\"currency\\\":\\\"ZAR\\\",\\\"businessHours\\\":{\\\"start\\\":\\\"09:00\\\",\\\"end\\\":\\\"17:00\\\",\\\"weekends\\\":false},\\\"notifications\\\":{\\\"email\\\":true,\\\"sms\\\":false,\\\"webhook\\\":null}}\"\n       }\n     })\n\nArgument `address`: Invalid value provided. Expected String or Null, provided Object.",
+    "error_stack": "PrismaClientValidationError: \nInvalid `prisma.bank.create()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:96:38\n\n  93 const apiKey = `bank_${value.bankCode}_${uuidv4().replace(/-/g, '')}`;\n  94 \n  95 // Register the bank\n→ 96 const result = await prisma.bank.create({\n       data: {\n         bankCode: \"ZBN001\",\n         bankName: \"ZBank\",\n         contactEmail: \"jojasibabale@gmail.com\",\n         contactPhone: \"+27716947769\",\n         address: {\n           street: \"447 Nkululekweni Location\",\n           city: \"Mount Fletcher\",\n           province: \"Mpumalanga\",\n           postalCode: \"4770\",\n           country: \"South Africa\"\n         },\n         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n         adminFirstName: \"Sibabale\",\n         adminLastName: \"Joja\",\n         adminEmail: \"jojasibabale@gmail.com\",\n         adminPosition: \"CTO\",\n         primaryApiKey: \"bank_ZBN001_56c7db6841724f16aebfcd848d33fbd8\",\n         businessType: undefined,\n         businessRegNo: \"2020/232323/02\",\n         taxId: undefined,\n         settings: \"{\\\"timezone\\\":\\\"Africa/Johannesburg\\\",\\\"currency\\\":\\\"ZAR\\\",\\\"businessHours\\\":{\\\"start\\\":\\\"09:00\\\",\\\"end\\\":\\\"17:00\\\",\\\"weekends\\\":false},\\\"notifications\\\":{\\\"email\\\":true,\\\"sms\\\":false,\\\"webhook\\\":null}}\"\n       }\n     })\n\nArgument `address`: Invalid value provided. Expected String or Null, provided Object.\n    at Dn (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:29:1363)\n    at ri.handleRequestError (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:7102)\n    at ri.handleAndLogRequestError (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:6784)\n    at ri.request (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:6491)\n    at async l (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:130:9812)\n    at async C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:96:20"
+  }
+}
+{
+  "timestamp": "2025-07-29T15:02:39.091Z",
+  "audit_type": "registration_request",
+  "message": "Bank registration request received",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bodyKeys": [],
+    "contentType": "text/plain",
+    "bodyLength": 2
+  }
+}
+{
+  "timestamp": "2025-07-29T15:02:39.094Z",
+  "audit_type": "validation_result",
+  "message": "Validation result",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": false,
+    "errorDetails": null
+  }
+}
+{
+  "timestamp": "2025-07-29T15:02:39.096Z",
+  "audit_type": "bank_registration_error",
+  "message": "Bank registration failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error_message": "Cannot read properties of undefined (reading 'details')",
+    "error_stack": "TypeError: Cannot read properties of undefined (reading 'details')\n    at C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:54:34\n    at Layer.handleRequest (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\route.js:157:13)\n    at Route.dispatch (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\route.js:117:3)\n    at handle (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:435:11)\n    at Layer.handleRequest (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\lib\\layer.js:152:17)\n    at C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:295:15\n    at processParams (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:582:12)\n    at next (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:291:5)\n    at Function.handle (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\router\\index.js:186:3)"
+  }
+}
+{
+  "timestamp": "2025-07-29T15:03:53.738Z",
+  "audit_type": "registration_request",
+  "message": "Bank registration request received",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bodyKeys": [],
+    "contentType": "text/plain",
+    "bodyLength": 2
+  }
+}
+{
+  "timestamp": "2025-07-29T15:03:53.741Z",
+  "audit_type": "validation_result",
+  "message": "Validation result",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": false,
+    "errorDetails": null
+  }
+}
+{
+  "timestamp": "2025-07-29T15:03:53.742Z",
+  "audit_type": "empty_request_body",
+  "message": "Bank registration failed - empty body",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T15:08:07.933Z",
+  "audit_type": "registration_request",
+  "message": "Bank registration request received",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bodyKeys": [],
+    "contentType": "text/plain",
+    "bodyLength": 2
+  }
+}
+{
+  "timestamp": "2025-07-29T15:08:07.936Z",
+  "audit_type": "validation_result",
+  "message": "Validation result",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": false,
+    "errorDetails": null
+  }
+}
+{
+  "timestamp": "2025-07-29T15:08:07.938Z",
+  "audit_type": "empty_request_body",
+  "message": "Bank registration failed - empty body",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T15:24:47.597Z",
+  "audit_type": "registration_request",
+  "message": "Bank registration request received",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "body": {
+      "bankName": "ZBank",
+      "bankCode": "ZBN001",
+      "contactEmail": "jojasibabale@gmail.com",
+      "contactPhone": "+27716947769",
+      "address": {
+        "street": "17 Dalton Street",
+        "city": "Sandton",
+        "province": "Gauteng",
+        "postalCode": "2091",
+        "country": "South Africa"
+      },
+      "adminUser": {
+        "firstName": "Sibabale",
+        "lastName": "Joja",
+        "email": "jojasibabale@gmail.com",
+        "phone": "+27716947769",
+        "idNumber": "0123456789012",
+        "position": "CTO"
+      },
+      "businessDetails": {
+        "registrationNumber": "2020/232323/02",
+        "vatNumber": "1232356789",
+        "website": "https://www.zbank.com",
+        "establishedYear": 2025,
+        "bankType": "commercial",
+        "expectedVolume": "medium"
+      },
+      "compliance": {
+        "sarb_registered": false,
+        "sarb_license_number": "123453",
+        "fica_compliant": true,
+        "popi_compliant": true,
+        "accepts_terms": true
+      }
+    },
+    "bodyKeys": [
+      "bankName",
+      "bankCode",
+      "contactEmail",
+      "contactPhone",
+      "address",
+      "adminUser",
+      "businessDetails",
+      "compliance"
+    ],
+    "contentType": "application/json",
+    "bodyLength": 713
+  }
+}
+{
+  "timestamp": "2025-07-29T15:24:47.600Z",
+  "audit_type": "validation_result",
+  "message": "Validation result",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": true,
+    "errorDetails": null
+  }
+}
+{
+  "timestamp": "2025-07-29T15:24:54.035Z",
+  "audit_type": "bank_registration_success",
+  "message": "Bank registered successfully",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "bankName": "ZBank",
+    "adminEmail": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-07-29T15:25:12.843Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T15:25:12.842Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 17:25:12 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 46296,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 79933440,
+        "heapTotal": 20676608,
+        "heapUsed": 18533496,
+        "external": 3616276,
+        "arrayBuffers": 76728
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1061393.406
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T15:26:14.174Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-07-29T15:26:27.976Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T15:26:27.975Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 17:26:27 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 43980,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 79765504,
+        "heapTotal": 20676608,
+        "heapUsed": 18627448,
+        "external": 3606036,
+        "arrayBuffers": 68536
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1061468.546
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T15:32:12.161Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T15:32:12.159Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 17:32:12 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 27212,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 77987840,
+        "heapTotal": 21200896,
+        "heapUsed": 17714872,
+        "external": 3606436,
+        "arrayBuffers": 68136
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1061812.734
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T15:46:16.465Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T15:46:16.460Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 17:46:16 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 37524,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 77217792,
+        "heapTotal": 21200896,
+        "heapUsed": 18254096,
+        "external": 3606436,
+        "arrayBuffers": 68936
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1062657.031
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T15:46:24.269Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T15:46:24.266Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 17:46:24 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 46660,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 86642688,
+        "heapTotal": 35024896,
+        "heapUsed": 22777840,
+        "external": 3606436,
+        "arrayBuffers": 68936
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1062664.843
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T16:16:53.420Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T16:16:53.400Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 18:16:53 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 45728,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 78209024,
+        "heapTotal": 20152320,
+        "heapUsed": 18203728,
+        "external": 3606436,
+        "arrayBuffers": 68936
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1064493.968
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T16:17:25.353Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T16:17:25.321Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 18:17:25 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 32692,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 77873152,
+        "heapTotal": 20152320,
+        "heapUsed": 18168352,
+        "external": 3606436,
+        "arrayBuffers": 68936
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1064525.89
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T16:30:47.635Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T16:30:47.627Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 18:30:47 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 30784,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 77275136,
+        "heapTotal": 21200896,
+        "heapUsed": 18147880,
+        "external": 3606436,
+        "arrayBuffers": 68936
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1065328.203
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T16:31:21.886Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-07-29T16:33:47.402Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T16:33:47.394Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 18:33:47 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 6944,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 77844480,
+        "heapTotal": 20152320,
+        "heapUsed": 18312256,
+        "external": 3606436,
+        "arrayBuffers": 68936
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1065507.968
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T16:34:37.154Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T16:34:37.146Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 18:34:37 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 43800,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 79286272,
+        "heapTotal": 21463040,
+        "heapUsed": 18035024,
+        "external": 3606436,
+        "arrayBuffers": 68136
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1065557.718
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T16:35:59.506Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T16:35:59.503Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 18:35:59 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 39928,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 79208448,
+        "heapTotal": 21463040,
+        "heapUsed": 18128624,
+        "external": 3606436,
+        "arrayBuffers": 68136
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1065640.078
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T16:42:35.877Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-07-29T16:56:11.958Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T16:56:11.954Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 18:56:11 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 37684,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 79806464,
+        "heapTotal": 20676608,
+        "heapUsed": 18404232,
+        "external": 3606436,
+        "arrayBuffers": 68136
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1066852.531
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T16:56:33.397Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-07-29T16:58:30.717Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T16:58:30.711Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 18:58:30 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 45704,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 78028800,
+        "heapTotal": 20152320,
+        "heapUsed": 18315800,
+        "external": 3606436,
+        "arrayBuffers": 68936
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1066991.281
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T16:58:39.971Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-07-29T17:00:23.883Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T17:00:23.879Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 19:00:23 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 4436,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 78647296,
+        "heapTotal": 20938752,
+        "heapUsed": 17572600,
+        "external": 3605636,
+        "arrayBuffers": 68136
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1067104.453
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T17:00:33.673Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-07-29T17:03:06.079Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T17:03:06.075Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 19:03:06 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 39448,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 78278656,
+        "heapTotal": 20414464,
+        "heapUsed": 18367864,
+        "external": 3606436,
+        "arrayBuffers": 68936
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1067266.64
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T17:03:37.396Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-07-29T17:05:11.178Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T17:05:11.171Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 19:05:11 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 7484,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 77295616,
+        "heapTotal": 20152320,
+        "heapUsed": 18006280,
+        "external": 3606036,
+        "arrayBuffers": 68536
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1067391.75
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T17:05:43.323Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T17:05:43.318Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 19:05:43 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 31548,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 77660160,
+        "heapTotal": 19628032,
+        "heapUsed": 18172384,
+        "external": 3606436,
+        "arrayBuffers": 68936
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1067423.89
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T17:06:01.530Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-07-29T17:09:32.640Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-07-29T17:25:47.509Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T17:25:47.507Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 19:25:47 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 41652,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 80109568,
+        "heapTotal": 20414464,
+        "heapUsed": 18622584,
+        "external": 3606836,
+        "arrayBuffers": 69336
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1068628.078
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T17:34:46.532Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve reserve data\nLedgerError: Failed to retrieve reserve data\n    at getReserve (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:395:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T17:34:46.521Z"
+    },
+    "stack": "LedgerError: Failed to retrieve reserve data\n    at getReserve (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:395:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 19:34:46 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 23524,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 76595200,
+        "heapTotal": 21200896,
+        "heapUsed": 18049472,
+        "external": 3606036,
+        "arrayBuffers": 68536
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1069167.093
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getReserve",
+        "line": 395,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T19:22:14.770Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T19:22:14.755Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 21:22:14 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 25608,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 64651264,
+        "heapTotal": 20152320,
+        "heapUsed": 18394616,
+        "external": 3606436,
+        "arrayBuffers": 68936
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1075615.328
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T19:27:55.888Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T19:27:55.878Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 21:27:55 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 31404,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 77258752,
+        "heapTotal": 21200896,
+        "heapUsed": 17722648,
+        "external": 3606436,
+        "arrayBuffers": 68136
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1075956.437
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T19:28:05.234Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T19:28:05.226Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 21:28:05 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 31432,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 78970880,
+        "heapTotal": 21200896,
+        "heapUsed": 17524992,
+        "external": 3605636,
+        "arrayBuffers": 68136
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1075965.796
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T19:29:28.557Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-07-29T19:29:44.221Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T19:29:44.216Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 21:29:44 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 14436,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 81203200,
+        "heapTotal": 20938752,
+        "heapUsed": 19191072,
+        "external": 3606436,
+        "arrayBuffers": 68936
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1076064.796
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T19:31:32.271Z",
+  "audit_type": "bank_login_error",
+  "message": "Bank login failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error_message": "\nInvalid `prisma.bank.findFirst()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:213:36\n\n  210 }\n  211 \n  212 // Authenticate bank\n→ 213 const bank = await prisma.bank.findFirst(\nCan't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`\n\nPlease make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.",
+    "error_stack": "PrismaClientInitializationError: \nInvalid `prisma.bank.findFirst()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:213:36\n\n  210 }\n  211 \n  212 // Authenticate bank\n→ 213 const bank = await prisma.bank.findFirst(\nCan't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`\n\nPlease make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.\n    at ri.handleRequestError (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:7759)\n    at ri.handleAndLogRequestError (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:6784)\n    at ri.request (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:6491)\n    at async l (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:130:9812)\n    at async C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:213:18"
+  }
+}
+{
+  "timestamp": "2025-07-29T19:31:52.550Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-07-29T19:32:22.482Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve banks data\nLedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T19:32:22.471Z"
+    },
+    "stack": "LedgerError: Failed to retrieve banks data\n    at getBanks (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:376:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 21:32:22 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 38624,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 79392768,
+        "heapTotal": 20152320,
+        "heapUsed": 18688136,
+        "external": 3606436,
+        "arrayBuffers": 68936
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1076223.046
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getBanks",
+        "line": 376,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T19:41:54.754Z",
+  "audit_type": "transaction",
+  "message": "unhandledRejection: Failed to retrieve reserve data\nLedgerError: Failed to retrieve reserve data\n    at getReserve (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:395:11)",
+  "metadata": {
+    "error": {
+      "name": "LedgerError",
+      "code": "QUERY_FAILED",
+      "details": {},
+      "timestamp": "2025-07-29T19:41:54.735Z"
+    },
+    "stack": "LedgerError: Failed to retrieve reserve data\n    at getReserve (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js:395:11)",
+    "rejection": true,
+    "date": "Tue Jul 29 2025 21:41:54 GMT+0200 (South Africa Standard Time)",
+    "process": {
+      "pid": 22200,
+      "uid": null,
+      "gid": null,
+      "cwd": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api",
+      "execPath": "C:\\Program Files\\nodejs\\node.exe",
+      "version": "v22.17.0",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\start-single.js"
+      ],
+      "memoryUsage": {
+        "rss": 73744384,
+        "heapTotal": 21200896,
+        "heapUsed": 18038728,
+        "external": 3606436,
+        "arrayBuffers": 68536
+      }
+    },
+    "os": {
+      "loadavg": [
+        0,
+        0,
+        0
+      ],
+      "uptime": 1076795.312
+    },
+    "trace": [
+      {
+        "column": 11,
+        "file": "C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\ledger\\ledger.js",
+        "function": "getReserve",
+        "line": 395,
+        "method": null,
+        "native": false
+      }
+    ],
+    "service": "rails-api",
+    "version": "1.0.0"
+  }
+}
+{
+  "timestamp": "2025-07-29T20:43:17.858Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-07-29T21:21:41.306Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-07-29T21:26:48.912Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdooua3w0000ejq00i9ffk04",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-01T17:38:02.891Z",
+  "audit_type": "login_validation_failed",
+  "message": "Bank login validation failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "errors": [
+      {
+        "field": "authToken",
+        "message": "\"authToken\" with value \"bank_ZBN001_b8f151dfc90243f7b683dc2e3d1a2a17\" fails to match the required pattern: /^[A-Za-z0-9+/=]+$/"
+      }
+    ]
+  }
+}
+{
+  "timestamp": "2025-08-02T08:08:01.162Z",
+  "audit_type": "registration_request",
+  "message": "Bank registration request received",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "body": {
+      "bankName": "ZBank",
+      "bankCode": "ZBN001",
+      "contactEmail": "jojasibabale@gmail.com",
+      "contactPhone": "+27716947769",
+      "address": {
+        "street": "447 Nkululekweni Location",
+        "city": "Mount Fletcher",
+        "province": "Eastern Cape",
+        "postalCode": "4770",
+        "country": "South Africa"
+      },
+      "adminUser": {
+        "firstName": "Sibabale",
+        "lastName": "Joja",
+        "email": "jojasibabale@gmail.com",
+        "phone": "+27716947769",
+        "idNumber": "0123456789012",
+        "position": "CTO"
+      },
+      "businessDetails": {
+        "registrationNumber": "2020/232323/02",
+        "vatNumber": "1232356789",
+        "website": "https://yousource.co.za",
+        "establishedYear": 2025,
+        "bankType": "commercial",
+        "expectedVolume": "medium"
+      },
+      "compliance": {
+        "sarb_registered": false,
+        "sarb_license_number": "",
+        "fica_compliant": true,
+        "popi_compliant": true,
+        "accepts_terms": true
+      }
+    },
+    "bodyKeys": [
+      "bankName",
+      "bankCode",
+      "contactEmail",
+      "contactPhone",
+      "address",
+      "adminUser",
+      "businessDetails",
+      "compliance"
+    ],
+    "contentType": "application/json",
+    "bodyLength": 730
+  }
+}
+{
+  "timestamp": "2025-08-02T08:08:01.167Z",
+  "audit_type": "validation_result",
+  "message": "Validation result",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": true,
+    "errorDetails": null
+  }
+}
+{
+  "timestamp": "2025-08-02T08:08:10.794Z",
+  "audit_type": "bank_registration_success",
+  "message": "Bank registered successfully",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdtz025u0000ejp890fb1l30",
+    "bankCode": "ZBN001",
+    "bankName": "ZBank",
+    "adminEmail": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-02T16:15:32.494Z",
+  "audit_type": "registration_request",
+  "message": "Bank registration request received",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "body": {
+      "bankName": "ZBank",
+      "bankCode": "ZBN001",
+      "contactEmail": "jojasibabale@gmail.com",
+      "contactPhone": "+27716947769",
+      "address": {
+        "street": "447 Nkululekweni Location",
+        "city": "Mount Fletcher",
+        "province": "Eastern Cape",
+        "postalCode": "4770",
+        "country": "South Africa"
+      },
+      "adminUser": {
+        "firstName": "Sibabale",
+        "lastName": "Joja",
+        "email": "jojasibabale@gmail.com",
+        "phone": "+27716947769",
+        "idNumber": "0123456789012",
+        "position": "CTO"
+      },
+      "businessDetails": {
+        "registrationNumber": "2020/232323/02",
+        "vatNumber": "1232356789",
+        "website": "https://www.zbank.com",
+        "establishedYear": 2025,
+        "bankType": "commercial",
+        "expectedVolume": "medium"
+      },
+      "compliance": {
+        "sarb_registered": false,
+        "sarb_license_number": "",
+        "fica_compliant": true,
+        "popi_compliant": true,
+        "accepts_terms": true
+      }
+    },
+    "bodyKeys": [
+      "bankName",
+      "bankCode",
+      "contactEmail",
+      "contactPhone",
+      "address",
+      "adminUser",
+      "businessDetails",
+      "compliance"
+    ],
+    "contentType": "application/json",
+    "bodyLength": 728
+  }
+}
+{
+  "timestamp": "2025-08-02T16:15:32.498Z",
+  "audit_type": "validation_result",
+  "message": "Validation result",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": true,
+    "errorDetails": null
+  }
+}
+{
+  "timestamp": "2025-08-02T16:15:37.516Z",
+  "audit_type": "bank_registration_error",
+  "message": "Bank registration failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error_message": "\nInvalid `prisma.bank.findUnique()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:83:44\n\n  80 }\n  81 \n  82 // Check if bank code already exists\n→ 83 const existingBank = await prisma.bank.findUnique(\nCan't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`\n\nPlease make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.",
+    "error_stack": "PrismaClientInitializationError: \nInvalid `prisma.bank.findUnique()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:83:44\n\n  80 }\n  81 \n  82 // Check if bank code already exists\n→ 83 const existingBank = await prisma.bank.findUnique(\nCan't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`\n\nPlease make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.\n    at ri.handleRequestError (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:7759)\n    at ri.handleAndLogRequestError (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:6784)\n    at ri.request (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:6491)\n    at async l (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:130:9812)\n    at async C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:83:26"
+  }
+}
+{
+  "timestamp": "2025-08-02T16:15:46.063Z",
+  "audit_type": "registration_request",
+  "message": "Bank registration request received",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "body": {
+      "bankName": "ZBank",
+      "bankCode": "ZBN001",
+      "contactEmail": "jojasibabale@gmail.com",
+      "contactPhone": "+27716947769",
+      "address": {
+        "street": "447 Nkululekweni Location",
+        "city": "Mount Fletcher",
+        "province": "Eastern Cape",
+        "postalCode": "4770",
+        "country": "South Africa"
+      },
+      "adminUser": {
+        "firstName": "Sibabale",
+        "lastName": "Joja",
+        "email": "jojasibabale@gmail.com",
+        "phone": "+27716947769",
+        "idNumber": "0123456789012",
+        "position": "CTO"
+      },
+      "businessDetails": {
+        "registrationNumber": "2020/232323/02",
+        "vatNumber": "1232356789",
+        "website": "https://www.zbank.com",
+        "establishedYear": 2025,
+        "bankType": "commercial",
+        "expectedVolume": "medium"
+      },
+      "compliance": {
+        "sarb_registered": false,
+        "sarb_license_number": "",
+        "fica_compliant": true,
+        "popi_compliant": true,
+        "accepts_terms": true
+      }
+    },
+    "bodyKeys": [
+      "bankName",
+      "bankCode",
+      "contactEmail",
+      "contactPhone",
+      "address",
+      "adminUser",
+      "businessDetails",
+      "compliance"
+    ],
+    "contentType": "application/json",
+    "bodyLength": 728
+  }
+}
+{
+  "timestamp": "2025-08-02T16:15:46.065Z",
+  "audit_type": "validation_result",
+  "message": "Validation result",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": true,
+    "errorDetails": null
+  }
+}
+{
+  "timestamp": "2025-08-02T16:15:52.248Z",
+  "audit_type": "bank_registration_error",
+  "message": "Bank registration failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error_message": "\nInvalid `prisma.bank.create()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:119:38\n\n  116 }\n  117 \n  118 // Register the bank (API key will be generated upon approval)\n→ 119 const result = await prisma.bank.create({\n        data: {\n          bankCode: \"ZBN001\",\n          bankName: \"ZBank\",\n          contactEmail: \"jojasibabale@gmail.com\",\n          contactPhone: \"+27716947769\",\n          address: \"{\\\"street\\\":\\\"447 Nkululekweni Location\\\",\\\"city\\\":\\\"Mount Fletcher\\\",\\\"province\\\":\\\"Eastern Cape\\\",\\\"postalCode\\\":\\\"4770\\\",\\\"country\\\":\\\"South Africa\\\"}\",\n          adminFirstName: \"Sibabale\",\n          adminLastName: \"Joja\",\n          adminEmail: \"jojasibabale@gmail.com\",\n          adminPosition: \"CTO\",\n          apiKeyExpiresAt: null,\n          businessType: undefined,\n          businessRegNo: \"2020/232323/02\",\n          taxId: undefined,\n          settings: \"{\\\"timezone\\\":\\\"Africa/Johannesburg\\\",\\\"currency\\\":\\\"ZAR\\\",\\\"businessHours\\\":{\\\"start\\\":\\\"09:00\\\",\\\"end\\\":\\\"17:00\\\",\\\"weekends\\\":false},\\\"notifications\\\":{\\\"email\\\":true,\\\"sms\\\":false,\\\"webhook\\\":null}}\",\n      +   primaryApiKey: String\n        }\n      })\n\nArgument `primaryApiKey` must not be null.",
+    "error_stack": "PrismaClientValidationError: \nInvalid `prisma.bank.create()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:119:38\n\n  116 }\n  117 \n  118 // Register the bank (API key will be generated upon approval)\n→ 119 const result = await prisma.bank.create({\n        data: {\n          bankCode: \"ZBN001\",\n          bankName: \"ZBank\",\n          contactEmail: \"jojasibabale@gmail.com\",\n          contactPhone: \"+27716947769\",\n          address: \"{\\\"street\\\":\\\"447 Nkululekweni Location\\\",\\\"city\\\":\\\"Mount Fletcher\\\",\\\"province\\\":\\\"Eastern Cape\\\",\\\"postalCode\\\":\\\"4770\\\",\\\"country\\\":\\\"South Africa\\\"}\",\n          adminFirstName: \"Sibabale\",\n          adminLastName: \"Joja\",\n          adminEmail: \"jojasibabale@gmail.com\",\n          adminPosition: \"CTO\",\n          apiKeyExpiresAt: null,\n          businessType: undefined,\n          businessRegNo: \"2020/232323/02\",\n          taxId: undefined,\n          settings: \"{\\\"timezone\\\":\\\"Africa/Johannesburg\\\",\\\"currency\\\":\\\"ZAR\\\",\\\"businessHours\\\":{\\\"start\\\":\\\"09:00\\\",\\\"end\\\":\\\"17:00\\\",\\\"weekends\\\":false},\\\"notifications\\\":{\\\"email\\\":true,\\\"sms\\\":false,\\\"webhook\\\":null}}\",\n      +   primaryApiKey: String\n        }\n      })\n\nArgument `primaryApiKey` must not be null.\n    at Dn (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:29:1363)\n    at ri.handleRequestError (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:7102)\n    at ri.handleAndLogRequestError (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:6784)\n    at ri.request (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:6491)\n    at async l (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:130:9812)\n    at async C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:119:20"
+  }
+}
+{
+  "timestamp": "2025-08-02T16:18:40.100Z",
+  "audit_type": "registration_request",
+  "message": "Bank registration request received",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "body": {
+      "bankName": "ZBank",
+      "bankCode": "ZBN001",
+      "contactEmail": "jojasibabale@gmail.com",
+      "contactPhone": "+27716947769",
+      "address": {
+        "street": "447 Nkululekweni Location",
+        "city": "Mount Fletcher",
+        "province": "Eastern Cape",
+        "postalCode": "4770",
+        "country": "South Africa"
+      },
+      "adminUser": {
+        "firstName": "Sibabale",
+        "lastName": "Joja",
+        "email": "jojasibabale@gmail.com",
+        "phone": "+27716947769",
+        "idNumber": "0123456789012",
+        "position": "CTO"
+      },
+      "businessDetails": {
+        "registrationNumber": "2020/232323/02",
+        "vatNumber": "1232356789",
+        "website": "https://www.zbank.com",
+        "establishedYear": 2025,
+        "bankType": "commercial",
+        "expectedVolume": "medium"
+      },
+      "compliance": {
+        "sarb_registered": true,
+        "sarb_license_number": "9003333",
+        "fica_compliant": true,
+        "popi_compliant": true,
+        "accepts_terms": true
+      }
+    },
+    "bodyKeys": [
+      "bankName",
+      "bankCode",
+      "contactEmail",
+      "contactPhone",
+      "address",
+      "adminUser",
+      "businessDetails",
+      "compliance"
+    ],
+    "contentType": "application/json",
+    "bodyLength": 734
+  }
+}
+{
+  "timestamp": "2025-08-02T16:18:40.101Z",
+  "audit_type": "validation_result",
+  "message": "Validation result",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": true,
+    "errorDetails": null
+  }
+}
+{
+  "timestamp": "2025-08-02T16:18:44.071Z",
+  "audit_type": "bank_registration_error",
+  "message": "Bank registration failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error_message": "\nInvalid `prisma.bank.create()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:119:38\n\n  116 }\n  117 \n  118 // Register the bank (API key will be generated upon approval)\n→ 119 const result = await prisma.bank.create({\n        data: {\n          bankCode: \"ZBN001\",\n          bankName: \"ZBank\",\n          contactEmail: \"jojasibabale@gmail.com\",\n          contactPhone: \"+27716947769\",\n          address: \"{\\\"street\\\":\\\"447 Nkululekweni Location\\\",\\\"city\\\":\\\"Mount Fletcher\\\",\\\"province\\\":\\\"Eastern Cape\\\",\\\"postalCode\\\":\\\"4770\\\",\\\"country\\\":\\\"South Africa\\\"}\",\n          adminFirstName: \"Sibabale\",\n          adminLastName: \"Joja\",\n          adminEmail: \"jojasibabale@gmail.com\",\n          adminPosition: \"CTO\",\n          apiKeyExpiresAt: null,\n          businessType: undefined,\n          businessRegNo: \"2020/232323/02\",\n          taxId: undefined,\n          settings: \"{\\\"timezone\\\":\\\"Africa/Johannesburg\\\",\\\"currency\\\":\\\"ZAR\\\",\\\"businessHours\\\":{\\\"start\\\":\\\"09:00\\\",\\\"end\\\":\\\"17:00\\\",\\\"weekends\\\":false},\\\"notifications\\\":{\\\"email\\\":true,\\\"sms\\\":false,\\\"webhook\\\":null}}\",\n      +   primaryApiKey: String\n        }\n      })\n\nArgument `primaryApiKey` must not be null.",
+    "error_stack": "PrismaClientValidationError: \nInvalid `prisma.bank.create()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:119:38\n\n  116 }\n  117 \n  118 // Register the bank (API key will be generated upon approval)\n→ 119 const result = await prisma.bank.create({\n        data: {\n          bankCode: \"ZBN001\",\n          bankName: \"ZBank\",\n          contactEmail: \"jojasibabale@gmail.com\",\n          contactPhone: \"+27716947769\",\n          address: \"{\\\"street\\\":\\\"447 Nkululekweni Location\\\",\\\"city\\\":\\\"Mount Fletcher\\\",\\\"province\\\":\\\"Eastern Cape\\\",\\\"postalCode\\\":\\\"4770\\\",\\\"country\\\":\\\"South Africa\\\"}\",\n          adminFirstName: \"Sibabale\",\n          adminLastName: \"Joja\",\n          adminEmail: \"jojasibabale@gmail.com\",\n          adminPosition: \"CTO\",\n          apiKeyExpiresAt: null,\n          businessType: undefined,\n          businessRegNo: \"2020/232323/02\",\n          taxId: undefined,\n          settings: \"{\\\"timezone\\\":\\\"Africa/Johannesburg\\\",\\\"currency\\\":\\\"ZAR\\\",\\\"businessHours\\\":{\\\"start\\\":\\\"09:00\\\",\\\"end\\\":\\\"17:00\\\",\\\"weekends\\\":false},\\\"notifications\\\":{\\\"email\\\":true,\\\"sms\\\":false,\\\"webhook\\\":null}}\",\n      +   primaryApiKey: String\n        }\n      })\n\nArgument `primaryApiKey` must not be null.\n    at Dn (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:29:1363)\n    at ri.handleRequestError (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:7102)\n    at ri.handleAndLogRequestError (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:6784)\n    at ri.request (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:121:6491)\n    at async l (C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\node_modules\\@prisma\\client\\runtime\\library.js:130:9812)\n    at async C:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\routes\\banks.js:119:20"
+  }
+}
+{
+  "timestamp": "2025-08-02T16:22:34.984Z",
+  "audit_type": "registration_request",
+  "message": "Bank registration request received",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "body": {
+      "bankName": "ZBank",
+      "bankCode": "ZBN001",
+      "contactEmail": "jojasibabale@gmail.com",
+      "contactPhone": "+27716947769",
+      "address": {
+        "street": "447 Nkululekweni Location",
+        "city": "Mount Fletcher",
+        "province": "Eastern Cape",
+        "postalCode": "4770",
+        "country": "South Africa"
+      },
+      "adminUser": {
+        "firstName": "Sibabale",
+        "lastName": "Joja",
+        "email": "jojasibabale@gmail.com",
+        "phone": "+27716947769",
+        "idNumber": "0123456789012",
+        "position": "CTO"
+      },
+      "businessDetails": {
+        "registrationNumber": "2020/232323/02",
+        "vatNumber": "1232356789",
+        "website": "https://www.zbank.com",
+        "establishedYear": 2025,
+        "bankType": "commercial",
+        "expectedVolume": "medium"
+      },
+      "compliance": {
+        "sarb_registered": true,
+        "sarb_license_number": "9003333",
+        "fica_compliant": true,
+        "popi_compliant": true,
+        "accepts_terms": true
+      }
+    },
+    "bodyKeys": [
+      "bankName",
+      "bankCode",
+      "contactEmail",
+      "contactPhone",
+      "address",
+      "adminUser",
+      "businessDetails",
+      "compliance"
+    ],
+    "contentType": "application/json",
+    "bodyLength": 734
+  }
+}
+{
+  "timestamp": "2025-08-02T16:22:35.006Z",
+  "audit_type": "validation_result",
+  "message": "Validation result",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": true,
+    "errorDetails": null
+  }
+}
+{
+  "timestamp": "2025-08-02T16:22:43.155Z",
+  "audit_type": "bank_application_submitted",
+  "message": "Bank application submitted",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdugo1kq0000ejcgsmcet16x",
+    "bankCode": "ZBN001",
+    "bankName": "ZBank",
+    "adminEmail": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-02T16:22:44.815Z",
+  "audit_type": "email_sent_application_received",
+  "message": "Bank application received email sent",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdugo1kq0000ejcgsmcet16x",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-02T16:28:42.669Z",
+  "audit_type": "login_validation_failed",
+  "message": "Bank login validation failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "errors": [
+      {
+        "field": "authToken",
+        "message": "\"authToken\" with value \"rails_c984faeb2ed140c497c34d40c433b2b7\" fails to match the required pattern: /^[A-Za-z0-9+/=]+$/"
+      }
+    ]
+  }
+}
+{
+  "timestamp": "2025-08-02T16:33:46.984Z",
+  "audit_type": "bank_auth_error",
+  "message": "Bank authentication error",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "Input buffers must have the same byte length",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T16:33:46.985Z",
+  "audit_type": "bank_auth_failed",
+  "message": "Bank authentication failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "error": "Authentication failed"
+  }
+}
+{
+  "timestamp": "2025-08-02T16:35:03.430Z",
+  "audit_type": "bank_auth_error",
+  "message": "Bank authentication error",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "Input buffers must have the same byte length",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T16:35:03.431Z",
+  "audit_type": "bank_auth_failed",
+  "message": "Bank authentication failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "error": "Authentication failed"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:00:45.310Z",
+  "audit_type": "registration_request",
+  "message": "Bank registration request received",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "body": {
+      "bankName": "ZBank",
+      "bankCode": "ZBN001",
+      "contactEmail": "jojasibabale@gmail.com",
+      "contactPhone": "+27716947769",
+      "address": {
+        "street": "447 Nkululekweni Location",
+        "city": "Mount Fletcher",
+        "province": "North West",
+        "postalCode": "4770",
+        "country": "South Africa"
+      },
+      "adminUser": {
+        "firstName": "Sibabale",
+        "lastName": "Joja",
+        "email": "jojasibabale@gmail.com",
+        "phone": "+27716947769",
+        "idNumber": "0123456789123",
+        "position": "CTO"
+      },
+      "businessDetails": {
+        "registrationNumber": "2020/232323/02",
+        "vatNumber": "1232356789",
+        "website": "https://www.zbank.com",
+        "establishedYear": 2025,
+        "bankType": "commercial",
+        "expectedVolume": "medium"
+      },
+      "compliance": {
+        "sarb_registered": false,
+        "sarb_license_number": "",
+        "fica_compliant": true,
+        "popi_compliant": true,
+        "accepts_terms": true
+      }
+    },
+    "bodyKeys": [
+      "bankName",
+      "bankCode",
+      "contactEmail",
+      "contactPhone",
+      "address",
+      "adminUser",
+      "businessDetails",
+      "compliance"
+    ],
+    "contentType": "application/json",
+    "bodyLength": 726
+  }
+}
+{
+  "timestamp": "2025-08-02T17:00:45.315Z",
+  "audit_type": "validation_result",
+  "message": "Validation result",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": true,
+    "errorDetails": null
+  }
+}
+{
+  "timestamp": "2025-08-02T17:00:54.742Z",
+  "audit_type": "bank_application_submitted",
+  "message": "Bank application submitted",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdui15mc0000ej201yjeza46",
+    "bankCode": "ZBN001",
+    "bankName": "ZBank",
+    "adminEmail": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:00:56.682Z",
+  "audit_type": "email_sent_application_received",
+  "message": "Bank application received email sent",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdui15mc0000ej201yjeza46",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:02:17.343Z",
+  "audit_type": "bank_auth_error",
+  "message": "Bank authentication error",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "\nInvalid `prisma.loginAttempt.findFirst()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\services\\authService.js:102:50\n\n   99  * @returns {Object} Lock status\n  100  */\n  101 async checkAccountLock(identifier) {\n→ 102   const lockRecord = await prisma.loginAttempt.findFirst(\nCan't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`\n\nPlease make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:02:17.345Z",
+  "audit_type": "bank_auth_failed",
+  "message": "Bank authentication failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "error": "Authentication failed"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:03:02.852Z",
+  "audit_type": "login_attempts_reset",
+  "message": "Login attempts reset after successful login",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "identifier": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:03:04.997Z",
+  "audit_type": "bank_auth_error",
+  "message": "Bank authentication error",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "\nInvalid `prisma.refreshToken.create()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\services\\authService.js:312:33\n\n  309 const refreshToken = this.generateToken(tokenPayload, 'refresh');\n  310 \n  311 // Store refresh token\n→ 312 await prisma.refreshToken.create({\n        data: {\n          token: \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJiYW5rSWQiOiJjbWR1aTE1bWMwMDAwZWoyMDF5amV6YTQ2IiwiYmFua0NvZGUiOiJaQk4wMDEiLCJiYW5rTmFtZSI6IlpCYW5rIiwidXNlcklkIjoiam9qYXNpYmFiYWxlQGdtYWlsLmNvbSIsInJvbGUiOiJiYW5rX2FkbWluIiwidHlwZSI6InJlZnJlc2giLCJpYXQiOjE3NTQxNTQxODQsImlzcyI6InJhaWxzLWFwaSIsImF1ZCI6ImJhbmstY2xpZW50IiwiZXhwIjoxNzU0NzU4OTg0fQ.6qcAL2yoDcha_Xom-kH9Z9tBg3BfAE-dwq5Mi8FJkQM\",\n          userId: \"jojasibabale@gmail.com\",\n          userType: \"bank\",\n          expiresAt: new Date(\"Invalid Date\"),\n                     ~~~~~~~~~~~~~~~~~~~~~~~~\n          ipAddress: \"::1\",\n          userAgent: \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"\n        }\n      })\n\nInvalid value for argument `expiresAt`: Provided Date object is invalid. Expected Date.",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:03:04.998Z",
+  "audit_type": "bank_auth_failed",
+  "message": "Bank authentication failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "error": "Authentication failed"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:08:30.058Z",
+  "audit_type": "bank_auth_error",
+  "message": "Bank authentication error",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "\nInvalid `prisma.loginAttempt.findFirst()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\services\\authService.js:116:50\n\n  113  * @returns {Object} Lock status\n  114  */\n  115 async checkAccountLock(identifier) {\n→ 116   const lockRecord = await prisma.loginAttempt.findFirst(\nCan't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`\n\nPlease make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:08:30.087Z",
+  "audit_type": "bank_auth_failed",
+  "message": "Bank authentication failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "error": "Authentication failed"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:09:05.285Z",
+  "audit_type": "login_attempts_reset",
+  "message": "Login attempts reset after successful login",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "identifier": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:09:07.450Z",
+  "audit_type": "bank_auth_error",
+  "message": "Bank authentication error",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "\nInvalid `prisma.refreshToken.create()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\services\\authService.js:326:33\n\n  323 const refreshToken = this.generateToken(tokenPayload, 'refresh');\n  324 \n  325 // Store refresh token\n→ 326 await prisma.refreshToken.create({\n        data: {\n          token: \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJiYW5rSWQiOiJjbWR1aTE1bWMwMDAwZWoyMDF5amV6YTQ2IiwiYmFua0NvZGUiOiJaQk4wMDEiLCJiYW5rTmFtZSI6IlpCYW5rIiwidXNlcklkIjoiam9qYXNpYmFiYWxlQGdtYWlsLmNvbSIsInJvbGUiOiJiYW5rX2FkbWluIiwidHlwZSI6InJlZnJlc2giLCJpYXQiOjE3NTQxNTQ1NDcsImlzcyI6InJhaWxzLWFwaSIsImF1ZCI6ImJhbmstY2xpZW50IiwiZXhwIjoxNzU0NzU5MzQ3fQ.q5ZCmvUnrgqewNko8xNU8r7CcTDJSfpnaxPoYXhhmzM\",\n          userId: \"jojasibabale@gmail.com\",\n          userType: \"bank\",\n          expiresAt: new Date(\"Invalid Date\"),\n                     ~~~~~~~~~~~~~~~~~~~~~~~~\n          ipAddress: \"::1\",\n          userAgent: \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"\n        }\n      })\n\nInvalid value for argument `expiresAt`: Provided Date object is invalid. Expected Date.",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:09:07.458Z",
+  "audit_type": "bank_auth_failed",
+  "message": "Bank authentication failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "error": "Authentication failed"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:13:17.771Z",
+  "audit_type": "login_attempts_reset",
+  "message": "Login attempts reset after successful login",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "identifier": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:13:19.847Z",
+  "audit_type": "bank_auth_error",
+  "message": "Bank authentication error",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "\nInvalid `prisma.refreshToken.create()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\services\\authService.js:345:33\n\n  342 const refreshToken = this.generateToken(tokenPayload, 'refresh');\n  343 \n  344 // Store refresh token\n→ 345 await prisma.refreshToken.create({\n        data: {\n          token: \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJiYW5rSWQiOiJjbWR1aTE1bWMwMDAwZWoyMDF5amV6YTQ2IiwiYmFua0NvZGUiOiJaQk4wMDEiLCJiYW5rTmFtZSI6IlpCYW5rIiwidXNlcklkIjoiam9qYXNpYmFiYWxlQGdtYWlsLmNvbSIsInJvbGUiOiJiYW5rX2FkbWluIiwidHlwZSI6InJlZnJlc2giLCJpYXQiOjE3NTQxNTQ3OTksImlzcyI6InJhaWxzLWFwaSIsImF1ZCI6ImJhbmstY2xpZW50IiwiZXhwIjoxNzU0NzU5NTk5fQ.xI2vPzV1aVYO2uACuSrhqEEFXYuNd-IJsoerWFAWr7s\",\n          userId: \"jojasibabale@gmail.com\",\n          userType: \"bank\",\n          expiresAt: new Date(\"Invalid Date\"),\n                     ~~~~~~~~~~~~~~~~~~~~~~~~\n          ipAddress: \"::1\",\n          userAgent: \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"\n        }\n      })\n\nInvalid value for argument `expiresAt`: Provided Date object is invalid. Expected Date.",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:13:19.864Z",
+  "audit_type": "bank_auth_failed",
+  "message": "Bank authentication failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "error": "Authentication failed"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:17:02.131Z",
+  "audit_type": "bank_auth_error",
+  "message": "Bank authentication error",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "\nInvalid `prisma.loginAttempt.findFirst()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\services\\authService.js:116:50\n\n  113  * @returns {Object} Lock status\n  114  */\n  115 async checkAccountLock(identifier) {\n→ 116   const lockRecord = await prisma.loginAttempt.findFirst(\nCan't reach database server at `aws-0-ap-southeast-1.pooler.supabase.com:6543`\n\nPlease make sure your database server is running at `aws-0-ap-southeast-1.pooler.supabase.com:6543`.",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:17:02.155Z",
+  "audit_type": "bank_auth_failed",
+  "message": "Bank authentication failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "error": "Authentication failed"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:31:03.104Z",
+  "audit_type": "login_attempts_reset",
+  "message": "Login attempts reset after successful login",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "identifier": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:31:03.965Z",
+  "audit_type": "bank_auth_error",
+  "message": "Bank authentication error",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "\nInvalid `prisma.refreshToken.create()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\services\\authService.js:318:33\n\n  315 const refreshToken = this.generateToken(tokenPayload, 'refresh');\n  316 \n  317 // Store refresh token\n→ 318 await prisma.refreshToken.create({\n        data: {\n          token: \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJiYW5rSWQiOiJjbWR1aTE1bWMwMDAwZWoyMDF5amV6YTQ2IiwiYmFua0NvZGUiOiJaQk4wMDEiLCJiYW5rTmFtZSI6IlpCYW5rIiwidXNlcklkIjoiam9qYXNpYmFiYWxlQGdtYWlsLmNvbSIsInJvbGUiOiJiYW5rX2FkbWluIiwidHlwZSI6InJlZnJlc2giLCJpYXQiOjE3NTQxNTU4NjMsImlzcyI6InJhaWxzLWFwaSIsImF1ZCI6ImJhbmstY2xpZW50IiwiZXhwIjoxNzU0NzYwNjYzfQ.7K9pW8nTj0Y8mcvvuTbw8lHHILpvA-3Xf5wL5BqAgTU\",\n          userId: \"jojasibabale@gmail.com\",\n          userType: \"bank\",\n          expiresAt: new Date(\"Invalid Date\"),\n                     ~~~~~~~~~~~~~~~~~~~~~~~~\n          ipAddress: \"::1\",\n          userAgent: \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"\n        }\n      })\n\nInvalid value for argument `expiresAt`: Provided Date object is invalid. Expected Date.",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:31:03.968Z",
+  "audit_type": "bank_auth_failed",
+  "message": "Bank authentication failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "error": "Authentication failed"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:31:27.179Z",
+  "audit_type": "login_attempts_reset",
+  "message": "Login attempts reset after successful login",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "identifier": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:31:27.570Z",
+  "audit_type": "bank_auth_error",
+  "message": "Bank authentication error",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "\nInvalid `prisma.refreshToken.create()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\services\\authService.js:318:33\n\n  315 const refreshToken = this.generateToken(tokenPayload, 'refresh');\n  316 \n  317 // Store refresh token\n→ 318 await prisma.refreshToken.create({\n        data: {\n          token: \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJiYW5rSWQiOiJjbWR1aTE1bWMwMDAwZWoyMDF5amV6YTQ2IiwiYmFua0NvZGUiOiJaQk4wMDEiLCJiYW5rTmFtZSI6IlpCYW5rIiwidXNlcklkIjoiam9qYXNpYmFiYWxlQGdtYWlsLmNvbSIsInJvbGUiOiJiYW5rX2FkbWluIiwidHlwZSI6InJlZnJlc2giLCJpYXQiOjE3NTQxNTU4ODcsImlzcyI6InJhaWxzLWFwaSIsImF1ZCI6ImJhbmstY2xpZW50IiwiZXhwIjoxNzU0NzYwNjg3fQ.5ugZmW6Mowp_ZP6yDyjzreql2BZch1KO-qydsr01QVc\",\n          userId: \"jojasibabale@gmail.com\",\n          userType: \"bank\",\n          expiresAt: new Date(\"Invalid Date\"),\n                     ~~~~~~~~~~~~~~~~~~~~~~~~\n          ipAddress: \"::1\",\n          userAgent: \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"\n        }\n      })\n\nInvalid value for argument `expiresAt`: Provided Date object is invalid. Expected Date.",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:31:27.571Z",
+  "audit_type": "bank_auth_failed",
+  "message": "Bank authentication failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "error": "Authentication failed"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:32:17.069Z",
+  "audit_type": "login_attempts_reset",
+  "message": "Login attempts reset after successful login",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "identifier": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:32:18.197Z",
+  "audit_type": "bank_auth_error",
+  "message": "Bank authentication error",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "\nInvalid `prisma.refreshToken.create()` invocation in\nC:\\Users\\x519316\\projects\\tests\\rails\\poc\\api\\src\\services\\authService.js:318:33\n\n  315 const refreshToken = this.generateToken(tokenPayload, 'refresh');\n  316 \n  317 // Store refresh token\n→ 318 await prisma.refreshToken.create({\n        data: {\n          token: \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJiYW5rSWQiOiJjbWR1aTE1bWMwMDAwZWoyMDF5amV6YTQ2IiwiYmFua0NvZGUiOiJaQk4wMDEiLCJiYW5rTmFtZSI6IlpCYW5rIiwidXNlcklkIjoiam9qYXNpYmFiYWxlQGdtYWlsLmNvbSIsInJvbGUiOiJiYW5rX2FkbWluIiwidHlwZSI6InJlZnJlc2giLCJpYXQiOjE3NTQxNTU5MzgsImlzcyI6InJhaWxzLWFwaSIsImF1ZCI6ImJhbmstY2xpZW50IiwiZXhwIjoxNzU0NzYwNzM4fQ.WmBAHe4NTIE4kx1gMRsWtag_2iK6pcGfayBGp4-oapw\",\n          userId: \"jojasibabale@gmail.com\",\n          userType: \"bank\",\n          expiresAt: new Date(\"Invalid Date\"),\n                     ~~~~~~~~~~~~~~~~~~~~~~~~\n          ipAddress: \"::1\",\n          userAgent: \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"\n        }\n      })\n\nInvalid value for argument `expiresAt`: Provided Date object is invalid. Expected Date.",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:32:18.237Z",
+  "audit_type": "bank_auth_failed",
+  "message": "Bank authentication failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+    "error": "Authentication failed"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:34:00.192Z",
+  "audit_type": "login_attempts_reset",
+  "message": "Login attempts reset after successful login",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "identifier": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:34:02.387Z",
+  "audit_type": "bank_auth_success",
+  "message": "Bank authentication successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdui15mc0000ej201yjeza46",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:34:02.424Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdui15mc0000ej201yjeza46",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:41:02.609Z",
+  "audit_type": "login_attempts_reset",
+  "message": "Login attempts reset after successful login",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "identifier": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:41:04.234Z",
+  "audit_type": "bank_auth_success",
+  "message": "Bank authentication successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdui15mc0000ej201yjeza46",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:41:04.244Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdui15mc0000ej201yjeza46",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:44:38.622Z",
+  "audit_type": "login_attempts_reset",
+  "message": "Login attempts reset after successful login",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "identifier": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:44:39.569Z",
+  "audit_type": "bank_auth_success",
+  "message": "Bank authentication successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdui15mc0000ej201yjeza46",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-02T17:44:39.652Z",
+  "audit_type": "bank_login_success",
+  "message": "Bank login successful",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "bankId": "cmdui15mc0000ej201yjeza46",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}

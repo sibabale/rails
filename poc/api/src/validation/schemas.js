@@ -8,12 +8,10 @@ const transactionSchema = Joi.object({
   currency: Joi.string().length(3).uppercase().default('ZAR'), // ISO currency code
   timestamp: Joi.date().iso().optional(), // Optional client timestamp for audit context
   description: Joi.string().required().min(1).max(255), // Required transaction description
-  source_account: Joi.string().required().min(1).max(50), // Source account identifier
-  destination_account: Joi.string().when('type', {
-    is: 'credit',
-    then: Joi.required(),
-    otherwise: Joi.optional()
-  }),
+  sender: Joi.string().required().min(1).max(100), // Sender identifier
+  receiver: Joi.string().required().min(1).max(100), // Receiver identifier
+  senderBank: Joi.string().required().min(1).max(50).pattern(/^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$|^[0-9]{6,9}$/), // SWIFT code or routing number
+  receiverBank: Joi.string().required().min(1).max(50).pattern(/^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$|^[0-9]{6,9}$/), // SWIFT code or routing number
   metadata: Joi.object({
     ip_address: Joi.string().ip().required(), // Track originating IP
     user_agent: Joi.string().max(500).optional(),
