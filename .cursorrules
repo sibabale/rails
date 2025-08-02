@@ -1,0 +1,77 @@
+# Rails API Project - Cursor Rules
+
+## Context
+Read and follow the guidelines in CLAUDE.md for comprehensive project context, architecture, and development standards.
+
+## Core Rules
+
+### Testing Requirements
+- Every new feature file must have a corresponding test file
+- Every edit to a feature file must update the corresponding test file to ensure tests remain in sync
+- Maintain minimum 80% test coverage for all modules
+- Use Jest for testing with React Testing Library for components
+
+### Performance Guidelines
+- Use Prisma's `select` to fetch only needed fields
+- Implement pagination for large datasets: `prisma.transaction.findMany({ take: 20, skip: 0 })`
+- Use `findUnique` instead of `findFirst` when you have unique constraints
+- Batch operations using `prisma.$transaction`
+- Use React.memo() for expensive components
+- Implement useMemo/useCallback for expensive calculations
+- Avoid inline object/function creation in render methods
+
+### Code Quality
+- Follow atomic design principles for React components
+- Use TypeScript for type safety
+- Implement proper error handling with structured error objects
+- Use conventional commit format
+- Keep functions focused and single-purpose
+- Write self-documenting code
+
+### Architecture Patterns
+- Follow atomic design: atoms → molecules → organisms → pages → templates
+- Use RESTful API conventions
+- Implement proper HTTP status codes and error messages
+- Use consistent response formats
+- Validate inputs early to reject invalid requests
+
+### Database Best Practices
+- Add indexes for frequently queried fields
+- Use database transactions for atomic operations
+- Implement proper connection cleanup
+- Use connection pooling effectively
+- Stream large datasets instead of loading into memory
+
+### Security Standards
+- Validate all inputs thoroughly
+- Implement rate limiting
+- Use HTTPS for all communications
+- Log security events
+- Never commit sensitive data
+
+## File-Specific Rules
+
+### Backend (.js, .ts files in poc/api/)
+- Use structured logging in `poc/api/src/utils/logger.js`
+- Implement graceful shutdown in `poc/api/index.js`
+- Follow ledger patterns from `poc/api/src/ledger/ledger.js`
+- Use queue processing patterns from `poc/api/src/queue/queue.js`
+
+### Frontend (.tsx, .jsx files in poc/client/)
+- Follow atomic design structure in `poc/client/components/`
+- Use proper component interfaces and exports
+- Implement proper loading states
+- Use efficient data fetching patterns from `poc/client/lib/api.ts`
+
+### Database (.prisma files)
+- Add proper indexes for performance
+- Use meaningful table and column names
+- Implement foreign keys for data integrity
+- Use soft deletes where appropriate
+
+## Always Apply
+- Performance optimization guidelines
+- Testing requirements
+- Security standards
+- Code quality rules
+- Architecture patterns
