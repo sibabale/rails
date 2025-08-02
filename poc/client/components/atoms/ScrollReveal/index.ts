@@ -1,0 +1,2 @@
+export { ScrollReveal, StaggeredReveal } from './ScrollReveal';
+export type { ScrollRevealProps, ScrollRevealState, ScrollRevealEvents, ScrollRevealDirection, ScrollRevealEasing } from './ScrollReveal.interface'; 

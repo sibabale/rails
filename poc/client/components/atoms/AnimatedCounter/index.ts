@@ -1,0 +1,2 @@
+export { AnimatedCounter, percentageFormatter, currencyFormatter, compactFormatter } from './AnimatedCounter';
+export type { AnimatedCounterProps, AnimatedCounterState, AnimatedCounterEvents, AnimatedCounterEasing } from './AnimatedCounter.interface'; 
