@@ -183,7 +183,7 @@ describe('HomePage', () => {
       
       expect(screen.getByText('Uptime SLA')).toBeInTheDocument();
       expect(screen.getByText('Avg Response')).toBeInTheDocument();
-      expect(screen.getByText('Major Banks')).toBeInTheDocument();
+      expect(screen.getByText('Banks Supported')).toBeInTheDocument();
     });
   });
 
@@ -232,24 +232,7 @@ describe('HomePage', () => {
     });
   });
 
-  describe('Connected Banks Section', () => {
-    test('displays bank information', () => {
-      render(<HomePage />);
-      
-      expect(screen.getByText('Connected to South Africa\'s Top Banks')).toBeInTheDocument();
-      expect(screen.getByText('First National Bank')).toBeInTheDocument();
-      expect(screen.getByText('ABSA Bank')).toBeInTheDocument();
-      expect(screen.getByText('Standard Bank')).toBeInTheDocument();
-      expect(screen.getByText('Nedbank')).toBeInTheDocument();
-    });
 
-    test('displays connection status', () => {
-      render(<HomePage />);
-      
-      const connectedStatuses = screen.getAllByText('Connected');
-      expect(connectedStatuses.length).toBe(4); // 4 banks
-    });
-  });
 
   describe('Interactive API Section', () => {
     test('includes interactive API section', () => {
@@ -306,7 +289,6 @@ describe('HomePage', () => {
       const sectionHeadings = [
         'Why Choose Rails?',
         'Our Products',
-        'Connected to South Africa\'s Top Banks',
         'Ready to Build the Future of Finance?'
       ];
       

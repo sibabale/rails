@@ -9,7 +9,7 @@ import { Footer } from '../../organisms/Footer';
 import { AnimatedCounter, percentageFormatter } from '../../atoms/AnimatedCounter';
 import { ScrollReveal, StaggeredReveal } from '../../atoms/ScrollReveal';
 import { InteractiveApiSection } from '../../organisms/InteractiveApiSection';
-import type { HomePageProps, Feature, Bank } from './HomePage.interface';
+import type { HomePageProps, Feature } from './HomePage.interface';
 import { cn } from '../../ui/utils';
 
 export function HomePage({ 
@@ -36,12 +36,7 @@ export function HomePage({
     }
   ];
 
-  const banks: Bank[] = [
-    { name: "First National Bank", abbr: "FNB", status: "Connected" },
-    { name: "ABSA Bank", abbr: "ABSA", status: "Connected" },
-    { name: "Standard Bank", abbr: "SB", status: "Connected" },
-    { name: "Nedbank", abbr: "NB", status: "Connected" }
-  ];
+
 
   const handleProductsClick = () => {
     if (onNavigate) {
@@ -175,7 +170,7 @@ export function HomePage({
                   <div className="text-xl sm:text-2xl font-bold text-primary-foreground">
                     <AnimatedCounter to={4} duration={1.5} />
                   </div>
-                  <div className="text-xs sm:text-sm">Major Banks</div>
+                  <div className="text-xs sm:text-sm">Banks Supported</div>
                 </div>
               </motion.div>
             </motion.div>
@@ -261,7 +256,7 @@ export function HomePage({
                     </motion.div>
                     <CardTitle className="text-xl sm:text-2xl">Weekend Settlements</CardTitle>
                     <CardDescription className="text-sm sm:text-base lg:text-lg">
-                      Process transactions from South Africa's top 4 banks during weekends with real-time clearing
+                      Process transactions from major South African banks during weekends with real-time clearing
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-0">
@@ -360,51 +355,7 @@ export function HomePage({
       {/* Interactive API Section */}
       <InteractiveApiSection />
 
-      {/* Connected Banks */}
-      <section className="py-16 sm:py-20 lg:py-24 bg-muted/30">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <ScrollReveal>
-            <div className="text-center mb-12 sm:mb-16">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">Connected to South Africa's Top Banks</h2>
-              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground">
-                Direct integrations with all major South African financial institutions
-              </p>
-            </div>
-          </ScrollReveal>
-          
-          <StaggeredReveal className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 max-w-none sm:max-w-2xl lg:max-w-4xl mx-auto">
-            {banks.map((bank, index) => (
-              <motion.div
-                key={index}
-                whileHover={cardHover}
-                className="cursor-pointer"
-              >
-                <Card className="p-4 sm:p-6 text-center h-full hover:shadow-lg transition-shadow duration-300">
-                  <motion.div 
-                    className="w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4"
-                    whileHover={{ 
-                      rotate: 5,
-                      scale: 1.1,
-                      transition: { type: "spring", stiffness: 300, damping: 15 }
-                    }}
-                  >
-                    <span className="text-base sm:text-xl font-bold text-primary">{bank.abbr}</span>
-                  </motion.div>
-                  <h3 className="font-medium mb-2 text-sm sm:text-base">{bank.name}</h3>
-                  <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 text-xs">
-                    <motion.div 
-                      className="w-2 h-2 bg-emerald-500 rounded-full mr-2"
-                      animate={{ scale: [1, 1.2, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    />
-                    {bank.status}
-                  </Badge>
-                </Card>
-              </motion.div>
-            ))}
-          </StaggeredReveal>
-        </div>
-      </section>
+
 
       {/* CTA Section */}
       <section 

@@ -44,15 +44,6 @@ export interface Feature {
   description: string;
 }
 
-export interface Bank {
-  /** Bank name */
-  name: string;
-  
-  /** Bank abbreviation */
-  abbr: string;
-  
-  /** Connection status */
-  status: string;
-}
+
 
 export type HomePageNavigationTarget = HomePageProps['onNavigate'] extends (page: infer T) => void ? T : never;
