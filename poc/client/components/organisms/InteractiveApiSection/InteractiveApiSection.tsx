@@ -391,12 +391,12 @@ echo "Settlement ID: " . $settlement->id;`
               <Tabs defaultValue="rest" className="w-full">
                 {/* API Type Selector - Override default spacing */}
                 <div className="mb-8 sm:mb-12">
-                  <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-0 h-auto p-1 bg-muted/50">
+                  <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-0 h-auto p-1 bg-white border border-gray-200 shadow-sm">
                     {apiTypes.map((type) => (
                       <TabsTrigger
                         key={type.id}
                         value={type.id}
-                        className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 p-3 sm:p-4 min-h-[60px] sm:min-h-[44px] text-left data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
+                        className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 p-3 sm:p-4 min-h-[60px] sm:min-h-[44px] text-left border border-transparent data-[state=active]:bg-gray-50 data-[state=active]:shadow-sm data-[state=active]:border-gray-300 transition-all duration-200"
                         style={{
                           padding: 'clamp(0.75rem, 2vw, 1rem)',
                           gap: 'clamp(0.5rem, 1.5vw, 0.75rem)',
