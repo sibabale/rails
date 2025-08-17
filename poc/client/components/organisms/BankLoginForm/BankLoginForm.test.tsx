@@ -1,14 +1,10 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-import { BrowserRouter } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
 import { BankLoginForm } from './BankLoginForm';
 import type { BankLoginFormProps } from './BankLoginForm.interface';
-import authReducer from '../../../lib/slices/authSlice';
-import bankReducer from '../../../lib/slices/bankSlice';
+import { renderWithProviders, TestWrapper, createMockState } from '../../../lib/test-utils';
 
 // Mock dependencies
 jest.mock('../../../lib/api', () => ({

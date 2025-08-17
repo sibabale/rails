@@ -72,7 +72,7 @@ export function Navigation() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full backdrop-blur border-b bg-white/95 border-gray-200">
+    <nav className="sticky top-0 z-50 w-full backdrop-blur border-b bg-white/95 border-gray-200" aria-label="Main navigation">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-14 sm:h-16 items-center justify-between">
           {/* Logo and Navigation Links */}

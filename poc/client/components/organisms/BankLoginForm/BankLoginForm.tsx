@@ -102,12 +102,23 @@ export function BankLoginForm() {
       
       let errorMessage = 'Login failed. Please check your credentials.';
       
-      if (error.includes('Account temporarily locked')) {
-        errorMessage = 'Account temporarily locked due to multiple failed attempts. Please try again later.';
-      } else if (error.includes('API key has expired')) {
-        errorMessage = 'API key has expired. Please contact support for a new key.';
-      } else if (error) {
-        errorMessage = error;
+      // Handle different error types safely
+      if (typeof error === 'string') {
+        if (error.includes('Account temporarily locked')) {
+          errorMessage = 'Account temporarily locked due to multiple failed attempts. Please try again later.';
+        } else if (error.includes('API key has expired')) {
+          errorMessage = 'API key has expired. Please contact support for a new key.';
+        } else {
+          errorMessage = error;
+        }
+      } else if (error?.message && typeof error.message === 'string') {
+        if (error.message.includes('Account temporarily locked')) {
+          errorMessage = 'Account temporarily locked due to multiple failed attempts. Please try again later.';
+        } else if (error.message.includes('API key has expired')) {
+          errorMessage = 'API key has expired. Please contact support for a new key.';
+        } else {
+          errorMessage = error.message;
+        }
       }
       
       toast.error('Login failed', {

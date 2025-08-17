@@ -119,7 +119,7 @@ describe('FormField', () => {
   });
 
   describe('Character Count', () => {
-    test('should show character count when enabled', () =>[
+    test('should show character count when enabled', () => {
       render(
         <FormField
           {...defaultProps}

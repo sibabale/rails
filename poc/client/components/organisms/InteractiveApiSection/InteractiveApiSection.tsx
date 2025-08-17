@@ -8,8 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Badge } from '../../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
 import { ScrollReveal } from '../../atoms/ScrollReveal';
+import { InteractiveApiSectionProps } from './InteractiveApiSection.interface';
 
-export function InteractiveApiSection() {
+export function InteractiveApiSection({
+  className,
+  style,
+  'data-testid': dataTestId,
+  ...props
+}: InteractiveApiSectionProps = {}) {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
@@ -338,16 +344,24 @@ echo "Settlement ID: " . $settlement->id;`
 
   const copyToClipboard = async (text: string, id: string) => {
     try {
-      await navigator.clipboard.writeText(text);
-      setCopiedCode(id);
-      setTimeout(() => setCopiedCode(null), 2000);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        setCopiedCode(id);
+        const timeoutId = setTimeout(() => setCopiedCode(null), 2000);
+        return () => clearTimeout(timeoutId);
+      }
     } catch (err) {
       console.error('Failed to copy text: ', err);
     }
   };
 
   return (
-    <section className="py-16 sm:py-20 lg:py-24 bg-background">
+    <section 
+      className={`py-16 sm:py-20 lg:py-24 bg-background ${className || ''}`}
+      style={style}
+      data-testid={dataTestId}
+      {...props}
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-none lg:max-w-7xl mx-auto">
           {/* Header - Explicitly override spacing and typography */}

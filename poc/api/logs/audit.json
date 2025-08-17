@@ -3849,3 +3849,43 @@
     "ip_address": "::1"
   }
 }
+{
+  "timestamp": "2025-08-04T13:48:36.744Z",
+  "audit_type": "jwt_verification_failed",
+  "message": "JWT verification failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "invalid signature"
+  }
+}
+{
+  "timestamp": "2025-08-04T13:48:37.861Z",
+  "audit_type": "jwt_verification_failed",
+  "message": "JWT verification failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "invalid signature"
+  }
+}
+{
+  "timestamp": "2025-08-05T19:09:35.596Z",
+  "audit_type": "jwt_verification_failed",
+  "message": "JWT verification failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "invalid signature"
+  }
+}
+{
+  "timestamp": "2025-08-05T19:09:38.083Z",
+  "audit_type": "jwt_verification_failed",
+  "message": "JWT verification failed",
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "error": "invalid signature"
+  }
+}

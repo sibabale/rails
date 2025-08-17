@@ -2,7 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(yarn start)",
-      "Bash(npx tsc:*)", 
+      "Bash(npx tsc:*)",
       "Bash(grep:*)",
       "Bash(yarn add:*)",
       "Bash(npm run test:run:*)",
@@ -14,7 +14,9 @@
       "Bash(npm run dev:*)",
       "Bash(node:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npm test:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   },

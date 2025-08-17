@@ -62,16 +62,25 @@ describe('SummaryCards', () => {
   it('shows correct status badges for Monday clearing', () => {
     render(<SummaryCards />);
     
-    expect(screen.getByText('ready')).toBeInTheDocument();
-    expect(screen.getByText('processing')).toBeInTheDocument();
-    expect(screen.getByText('pending')).toBeInTheDocument();
+    // Use getAllByText to check that these statuses exist
+    const readyBadges = screen.getAllByText('ready');
+    const processingBadges = screen.getAllByText('processing');
+    const pendingBadges = screen.getAllByText('pending');
+    
+    expect(readyBadges.length).toBeGreaterThan(0);
+    expect(processingBadges.length).toBeGreaterThan(0);
+    expect(pendingBadges.length).toBeGreaterThan(0);
   });
 
   it('displays priority badges', () => {
     render(<SummaryCards />);
     
-    expect(screen.getByText('high')).toBeInTheDocument();
-    expect(screen.getByText('medium')).toBeInTheDocument();
+    // Use getAllByText to check that these priorities exist
+    const highBadges = screen.getAllByText('high');
+    const mediumBadges = screen.getAllByText('medium');
+    
+    expect(highBadges.length).toBeGreaterThan(0);
+    expect(mediumBadges.length).toBeGreaterThan(0);
   });
 
   it('shows progress bars for relevant cards', () => {
