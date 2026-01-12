@@ -7,7 +7,7 @@ import { Badge } from '../../ui/badge';
 import { DataTable } from '../../organisms/DataTable';
 import { Footer } from '../../organisms/Footer';
 import { useNavigate } from 'react-router-dom';
-import { triggerSettlement, getPendingTransactions, getDashboardMetrics } from '../../../lib/api';
+import { triggerSettlement, getPendingTransactions, getDashboardMetrics, getTransactions } from '../../../lib/api';
 import { useAppSelector } from '../../../lib/hooks';
 import { selectBankProfile } from '../../../lib/selectors';
 import type { BankDashboardPageProps, BankCard } from './BankDashboardPage.interface';
@@ -22,6 +22,7 @@ export function BankDashboardPage({
   const bankProfile = useAppSelector(selectBankProfile);
   const [pendingCount, setPendingCount] = useState(0);
   const [metrics, setMetrics] = useState<any>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [settlementLoading, setSettlementLoading] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
@@ -51,18 +52,30 @@ export function BankDashboardPage({
 
   const loadDashboardData = async () => {
     try {
-      const [pendingData, metricsData] = await Promise.all([
+      const [pendingData, transactionsData] = await Promise.all([
         getPendingTransactions().catch(() => ({ pending: [], count: 0, timestamp: new Date().toISOString() })),
-        getDashboardMetrics().catch(() => ({ activeTransactions: 0 }))
+        getTransactions({ userId: bankProfile?.adminEmail || '', limit: 50 }).catch(() => ({ transactions: [] }))
       ]);
       
       setPendingCount(pendingData.count);
-      setMetrics(metricsData);
+      setTransactions(transactionsData.transactions || []);
+      
+      // Calculate processing fee from pending transactions
+      const pendingTransactions = transactionsData.transactions.filter(t => t.status === 'pending');
+      const totalPendingAmount = pendingTransactions.reduce((sum, t) => sum + t.amount, 0);
+      const processingFee = totalPendingAmount * 0.01;
+      
+      setMetrics({ 
+        activeTransactions: pendingTransactions.length,
+        totalPendingAmount,
+        processingFee
+      });
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
       // Set fallback values
       setPendingCount(0);
-      setMetrics({ activeTransactions: 0 });
+      setTransactions([]);
+      setMetrics({ activeTransactions: 0, totalPendingAmount: 0, processingFee: 0 });
     }
   };
 
@@ -108,7 +121,7 @@ export function BankDashboardPage({
     {
       title: "Processing Fee (1%)",
       description: "Fee for weekend settlement",
-      value: metrics ? `R${(metrics.activeTransactions * 100 * 0.01).toFixed(2)}` : "R0",
+      value: `R${transactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + (t.amount * 0.01), 0).toFixed(2)}`,
       subValue: "calculated on settlement",
       icon: <DollarSign className="h-4 w-4" />,
       color: "text-green-600",

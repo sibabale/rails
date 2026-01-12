@@ -4509,3 +4509,455 @@
     "ip_address": "::1"
   }
 }
+{
+  "timestamp": "2025-08-24 19:01:23.789",
+  "level": "INFO",
+  "message": "Bank registration request received",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 66066,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "body": {
+      "bankName": "ZBank",
+      "bankCode": "ZBN001",
+      "contactEmail": "jojasibabale@gmail.com",
+      "contactPhone": "+27716947769",
+      "address": {
+        "street": "447 Nkululekweni Location",
+        "city": "Mount Fletcher",
+        "province": "Gauteng",
+        "postalCode": "4770",
+        "country": "South Africa"
+      },
+      "adminUser": {
+        "firstName": "Sibabale",
+        "lastName": "Joja",
+        "email": "jojasibabale@gmail.com",
+        "phone": "+27716947769",
+        "idNumber": "0123456789123",
+        "position": "CTO"
+      },
+      "businessDetails": {
+        "registrationNumber": "2020/232323/02",
+        "vatNumber": "1232356789",
+        "website": "https://www.zbank.com",
+        "establishedYear": 2025,
+        "bankType": "commercial",
+        "expectedVolume": "medium"
+      },
+      "compliance": {
+        "sarb_registered": false,
+        "sarb_license_number": "",
+        "fica_compliant": true,
+        "popi_compliant": true,
+        "accepts_terms": true
+      }
+    },
+    "bodyKeys": [
+      "bankName",
+      "bankCode",
+      "contactEmail",
+      "contactPhone",
+      "address",
+      "adminUser",
+      "businessDetails",
+      "compliance"
+    ],
+    "contentType": "application/json",
+    "bodyLength": 723,
+    "event_type": "registration_request"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:01:23.794",
+  "level": "INFO",
+  "message": "Validation result",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 66066,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": true,
+    "errorDetails": null,
+    "event_type": "validation_result"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:01:29.971",
+  "level": "INFO",
+  "message": "Bank application submitted",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 66066,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "event_type": "bank_application_submitted",
+    "bankId": "cmepxqoaz0000j8z6dckpt6ld",
+    "bankCode": "ZBN001",
+    "bankName": "ZBank",
+    "adminEmail": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:01:31.309",
+  "level": "INFO",
+  "message": "Bank application received email sent",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 66066,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "event_type": "email_sent_application_received",
+    "bankId": "cmepxqoaz0000j8z6dckpt6ld",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:02:26.212",
+  "level": "WARN",
+  "message": "Failed login attempt recorded",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 66066,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "event_type": "failed_login_attempt",
+    "identifier": "jojasibabale@gmail.com",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+    "failedAttempts": 1,
+    "isLocked": false
+  }
+}
+{
+  "timestamp": "2025-08-24 19:02:26.213",
+  "level": "WARN",
+  "message": "Bank authentication failed",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 66066,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "event_type": "bank_auth_failed",
+    "email": "jojasibabale@gmail.com",
+    "bankCode": "ZBN001",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+    "error": "Invalid credentials"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:15:18.356",
+  "level": "WARN",
+  "message": "Bank login validation failed",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 69086,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "ip_address": "::1",
+    "event_type": "login_validation_failed",
+    "errors": [
+      {
+        "field": "authToken",
+        "message": "\"authToken\" with value \"Request ID: 2eb59af1-df63-4a74-b3d2-34557c84d56c ConnectError: [aborted] read ECONNRESET     at yel.$endAiConnectTransportReportError (vscode-file://vscode-app/Applications/Cursor.app/Contents/Resources/app/out/vs/workbench/workbench.desktop.main.js:4918:251962)     at tcr._doInvokeHandler (vscode-file://vscode-app/Applications/Cursor.app/Contents/Resources/app/out/vs/workbench/workbench.desktop.main.js:493:20860)     at tcr._invokeHandler (vscode-file://vscode-app/Applications/Cursor.app/Contents/Resources/app/out/vs/workbench/workbench.desktop.main.js:493:20602)     at tcr._receiveRequest (vscode-file://vscode-app/Applications/Cursor.app/Contents/Resources/app/out/vs/workbench/workbench.desktop.main.js:493:19367)     at tcr._receiveOneMessage (vscode-file://vscode-app/Applications/Cursor.app/Contents/Resources/app/out/vs/workbench/workbench.desktop.main.js:493:18189)     at TSt.value (vscode-file://vscode-app/Applications/Cursor.app/Contents/Resources/app/out/vs/workbench/workbench.desktop.main.js:493:16283)     at ve._deliver (vscode-file://vscode-app/Applications/Cursor.app/Contents/Resources/app/out/vs/workbench/workbench.desktop.main.js:49:2962)     at ve.fire (vscode-file://vscode-app/Applications/Cursor.app/Contents/Resources/app/out/vs/workbench/workbench.desktop.main.js:49:3283)     at Mst.fire (vscode-file://vscode-app/Applications/Cursor.app/Contents/Resources/app/out/vs/workbench/workbench.desktop.main.js:4905:12154)     at d.onmessage (vscode-file://vscode-app/Applications/Cursor.app/Contents/Resources/app/out/vs/workbench/workbench.desktop.main.js:7030:18167)\" fails to match the required pattern: /^[A-Za-z0-9+/=_-]+$/"
+      }
+    ]
+  }
+}
+{
+  "timestamp": "2025-08-24 19:22:11.551",
+  "level": "INFO",
+  "message": "Bank registration request received",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 69086,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "body": {
+      "bankName": "ZBank",
+      "bankCode": "ZBN001",
+      "contactEmail": "jojasibabale@gmail.com",
+      "contactPhone": "+27716947769",
+      "address": {
+        "street": "447 Nkululekweni Location",
+        "city": "Mount Fletcher",
+        "province": "Eastern Cape",
+        "postalCode": "4770",
+        "country": "South Africa"
+      },
+      "adminUser": {
+        "firstName": "Sibabale",
+        "lastName": "Joja",
+        "email": "jojasibabale@gmail.com",
+        "phone": "+27716947769",
+        "idNumber": "0123456789123",
+        "position": "CTO"
+      },
+      "businessDetails": {
+        "registrationNumber": "2020/232323/02",
+        "vatNumber": "1232356789",
+        "website": "https://www.zbank.com",
+        "establishedYear": 2025,
+        "bankType": "commercial",
+        "expectedVolume": "medium"
+      },
+      "compliance": {
+        "sarb_registered": false,
+        "sarb_license_number": "",
+        "fica_compliant": true,
+        "popi_compliant": true,
+        "accepts_terms": true
+      }
+    },
+    "bodyKeys": [
+      "bankName",
+      "bankCode",
+      "contactEmail",
+      "contactPhone",
+      "address",
+      "adminUser",
+      "businessDetails",
+      "compliance"
+    ],
+    "contentType": "application/json",
+    "bodyLength": 728,
+    "event_type": "registration_request"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:22:11.552",
+  "level": "INFO",
+  "message": "Validation result",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 69086,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": true,
+    "errorDetails": null,
+    "event_type": "validation_result"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:22:16.936",
+  "level": "INFO",
+  "message": "Bank application submitted",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 69086,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "event_type": "bank_application_submitted",
+    "bankId": "cmepyheic0000j8b200cygk1t",
+    "bankCode": "ZBN001",
+    "bankName": "ZBank",
+    "adminEmail": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:22:18.178",
+  "level": "INFO",
+  "message": "Bank application received email sent",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 69086,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "event_type": "email_sent_application_received",
+    "bankId": "cmepyheic0000j8b200cygk1t",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:27:15.997",
+  "level": "INFO",
+  "message": "Bank registration request received",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 69086,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "body": {
+      "bankName": "ZBank",
+      "bankCode": "ZBN001",
+      "contactEmail": "jojasibabale@gmail.com",
+      "contactPhone": "+27716947769",
+      "address": {
+        "street": "447 Nkululekweni Location",
+        "city": "Mount Fletcher",
+        "province": "Eastern Cape",
+        "postalCode": "4770",
+        "country": "South Africa"
+      },
+      "adminUser": {
+        "firstName": "Sibabale",
+        "lastName": "Joja",
+        "email": "jojasibabale@gmail.com",
+        "phone": "+27716947769",
+        "idNumber": "0123456789123",
+        "position": "CTO"
+      },
+      "businessDetails": {
+        "registrationNumber": "2020/232323/02",
+        "vatNumber": "1232356789",
+        "website": "https://www.zbank.com",
+        "establishedYear": 2025,
+        "bankType": "commercial",
+        "expectedVolume": "medium"
+      },
+      "compliance": {
+        "sarb_registered": false,
+        "sarb_license_number": "",
+        "fica_compliant": true,
+        "popi_compliant": true,
+        "accepts_terms": true
+      }
+    },
+    "bodyKeys": [
+      "bankName",
+      "bankCode",
+      "contactEmail",
+      "contactPhone",
+      "address",
+      "adminUser",
+      "businessDetails",
+      "compliance"
+    ],
+    "contentType": "application/json",
+    "bodyLength": 728,
+    "event_type": "registration_request"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:27:15.998",
+  "level": "INFO",
+  "message": "Validation result",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 69086,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "hasError": false,
+    "hasValue": true,
+    "errorDetails": null,
+    "event_type": "validation_result"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:27:21.260",
+  "level": "INFO",
+  "message": "Bank application submitted",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 69086,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "event_type": "bank_application_submitted",
+    "bankId": "cmepynxb50001j8b2yqbo4w19",
+    "bankCode": "ZBN001",
+    "bankName": "ZBank",
+    "adminEmail": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:27:22.647",
+  "level": "INFO",
+  "message": "Bank application received email sent",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 69086,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "event_type": "email_sent_application_received",
+    "bankId": "cmepynxb50001j8b2yqbo4w19",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:27:55.359",
+  "level": "WARN",
+  "message": "Login attempts reset after successful login",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 69086,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "event_type": "login_attempts_reset",
+    "identifier": "jojasibabale@gmail.com"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:27:56.997",
+  "level": "INFO",
+  "message": "Bank authentication successful",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 69086,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "event_type": "bank_auth_success",
+    "bankId": "cmepynxb50001j8b2yqbo4w19",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ipAddress": "::1"
+  }
+}
+{
+  "timestamp": "2025-08-24 19:27:56.998",
+  "level": "INFO",
+  "message": "Bank login successful",
+  "service": "rails-api",
+  "environment": "development",
+  "node_id": "001",
+  "pid": 69086,
+  "metadata": {
+    "service": "rails-api",
+    "version": "1.0.0",
+    "event_type": "bank_login_success",
+    "bankId": "cmepynxb50001j8b2yqbo4w19",
+    "bankCode": "ZBN001",
+    "adminEmail": "jojasibabale@gmail.com",
+    "ip_address": "::1"
+  }
+}

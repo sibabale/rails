@@ -158,7 +158,7 @@ export interface ApiError {
 
 // Configuration
 const getBaseUrl = (): string => {
-  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 };
 
 const getDefaultHeaders = (): HeadersInit => ({
@@ -270,11 +270,11 @@ export const getTransactions = (params: {
   const searchParams = new URLSearchParams({
     userId: params.userId,
   });
-  if (params.limit !== undefined) searchParams.set('limit', params.limit.toString());
-  if (params.offset !== undefined) searchParams.set('offset', params.offset.toString());
+  if (params.limit !== undefined) searchParams.set('pageSize', params.limit.toString());
+  if (params.offset !== undefined) searchParams.set('page', Math.floor(params.offset / (params.limit || 5) + 1).toString());
 
   return makeRequest<{ transactions: TransactionRecord[]; pagination: any }>(
-    `/api/transactions?${searchParams}`
+    `/api/transaction/transactions?${searchParams}`
   );
 };
 

@@ -115,9 +115,8 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Generate and hash API key for secure storage
-    const plainApiKey = `rails_${uuidv4().replace(/-/g, '')}`;
-    const hashedApiKey = securityConfig.hashData(plainApiKey);
+    // Generate secure API key using auth service
+    const apiKeyData = authService.generateApiKey(value.bankCode);
 
     // Register the bank (API key is hashed for security)
     const result = await prisma.bank.create({
@@ -131,8 +130,8 @@ router.post('/register', async (req, res) => {
         adminLastName: value.adminUser.lastName,
         adminEmail: value.adminUser.email,
         adminPosition: value.adminUser.position,
-        primaryApiKey: hashedApiKey, // Store hashed API key
-        apiKeyExpiresAt: null,
+        primaryApiKey: apiKeyData.hashedKey, // Store hashed API key
+        apiKeyExpiresAt: apiKeyData.expiresAt,
         businessType: value.businessDetails?.type,
         businessRegNo: value.businessDetails?.registrationNumber,
         taxId: value.businessDetails?.taxId,
@@ -186,7 +185,7 @@ router.post('/register', async (req, res) => {
       bankId: result.id,
       bankCode: result.bankCode,
       status: result.status,
-      apiKey: plainApiKey, // Return the plain API key for the user to save
+      apiKey: apiKeyData.apiKey, // Return the plain API key for the user to save
       nextSteps: [
         'We will review your application within 5-7 business days',
         'Save your API key securely - it will be needed for authentication',

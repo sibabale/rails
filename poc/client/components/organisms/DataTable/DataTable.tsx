@@ -140,9 +140,9 @@ export function DataTable({ showAllBanks = false }: DataTableProps) {
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch = 
       transaction.txn_ref.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (transaction.description && transaction.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = statusFilter === 'all' || transaction.status === statusFilter;
-    const matchesBank = bankFilter === 'all' || transaction.sender_bank === bankFilter;
+    const matchesBank = bankFilter === 'all' || transaction.bank === bankFilter;
     return matchesSearch && matchesStatus && matchesBank;
   });
 
@@ -178,7 +178,9 @@ export function DataTable({ showAllBanks = false }: DataTableProps) {
     }
   };
 
-  const getBankAbbreviation = (bank: string) => {
+  const getBankAbbreviation = (bank: string | undefined | null) => {
+    if (!bank) return 'N/A';
+    
     switch (bank) {
       case 'First National Bank':
         return 'FNB';
@@ -188,6 +190,8 @@ export function DataTable({ showAllBanks = false }: DataTableProps) {
         return 'SB';
       case 'Nedbank':
         return 'NB';
+      case 'ZBank':
+        return 'ZB';
       default:
         return bank.substring(0, 3).toUpperCase();
     }
@@ -312,10 +316,10 @@ export function DataTable({ showAllBanks = false }: DataTableProps) {
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                          <span className="text-xs font-medium">{getBankAbbreviation(transaction.sender_bank)}</span>
+                          <span className="text-xs font-medium">{getBankAbbreviation(transaction.bank)}</span>
                         </div>
-                        <span className="hidden sm:inline">{transaction.sender_bank}</span>
-                        <span className="sm:hidden">{getBankAbbreviation(transaction.sender_bank)}</span>
+                        <span className="hidden sm:inline">{transaction.bank}</span>
+                        <span className="sm:hidden">{getBankAbbreviation(transaction.bank)}</span>
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">
@@ -349,14 +353,18 @@ export function DataTable({ showAllBanks = false }: DataTableProps) {
                             <Eye className="mr-2 h-4 w-4" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <RefreshCw className="mr-2 h-4 w-4" />
-                            Retry Transaction
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Cancel Transaction
-                          </DropdownMenuItem>
+                          {transaction.status !== 'completed' && (
+                            <>
+                              <DropdownMenuItem>
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                Retry Transaction
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-red-600">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Cancel Transaction
+                              </DropdownMenuItem>
+                            </>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

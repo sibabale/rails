@@ -1,0 +1,51 @@
+# Speakeasy Configuration for Rails SDK
+# This file configures how Speakeasy generates the TypeScript SDK
+
+sdk:
+  # SDK name and version
+  name: rails-typescript
+  version: 1.0.0
+  
+  # Language: typescript
+  language: typescript
+  
+  # OpenAPI spec location (relative to this file)
+  # Update this path to point to your OpenAPI spec
+  spec: ../../poc/api/openapi.yaml
+  
+  # Output directory
+  output: ./src
+  
+  # TypeScript configuration
+  typescript:
+    # Package name for npm
+    packageName: "@rails/sdk"
+    
+    # Package version
+    packageVersion: "1.0.0"
+    
+    # Generate both CommonJS and ES modules
+    moduleFormat: ["commonjs", "esm"]
+    
+    # Include TypeScript declarations
+    includeDeclarations: true
+    
+    # Target TypeScript version
+    target: "ES2020"
+    
+    # Module resolution
+    moduleResolution: "node"
+    
+    # Strict mode
+    strict: true
+
+# Generation settings
+generation:
+  # Auto-generate on spec changes
+  autoGenerate: true
+  
+  # Publish to GitHub on generation
+  publishToGitHub: true
+  
+  # Branch for SDK updates
+  branch: "main"

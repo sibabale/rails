@@ -64,6 +64,10 @@ export function BankLoginForm() {
 
     if (!formData.authToken) {
       newErrors.authToken = 'API key/Auth token is required';
+    } else if (formData.authToken.includes('Request ID:') || formData.authToken.includes('ConnectError:') || formData.authToken.includes('vscode-file://')) {
+      newErrors.authToken = 'Please enter a valid API key, not an error message';
+    } else if (!/^[A-Za-z0-9+/=_-]+$/.test(formData.authToken)) {
+      newErrors.authToken = 'API key contains invalid characters';
     }
 
     setErrors(newErrors);
@@ -81,6 +85,13 @@ export function BankLoginForm() {
     dispatch(clearErrors());
 
     try {
+      console.log('Submitting login form with data:', {
+        email: formData.email,
+        bankCode: formData.bankCode,
+        authTokenLength: formData.authToken.length,
+        authTokenPreview: formData.authToken.substring(0, 20) + '...'
+      });
+      
       const result = await dispatch(loginBank(formData)).unwrap();
       
       // Store tokens securely using token manager
@@ -218,6 +229,9 @@ export function BankLoginForm() {
               {errors.authToken && (
                 <p className="text-sm text-red-500">{errors.authToken}</p>
               )}
+              <p className="text-xs text-gray-500 mt-1">
+                API keys should look like: bank_ZBN001_ABC123DEF456...
+              </p>
             </div>
 
             {error && (
@@ -257,8 +271,9 @@ export function BankLoginForm() {
         <h4 className="font-semibold text-gray-700 mb-2">Need Help?</h4>
         <div className="space-y-1 text-sm text-gray-600">
           <p>• Use the admin email from your registration</p>
-          <p>• Enter your 6-character bank code (e.g., FNB001)</p>
-          <p>• Use the API key received after registration</p>
+          <p>• Enter your 6-character bank code (e.g., ZBN001)</p>
+          <p>• Use the API key received after registration (format: bank_ZBN001_...)</p>
+          <p>• Copy the API key exactly as shown in your registration confirmation</p>
           <p>• Contact support if you've lost your credentials</p>
         </div>
       </div>
