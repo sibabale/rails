@@ -4,3 +4,9 @@
 [submodule "poc/documentation"]
 	path = poc/documentation
 	url = git@github.com:sibabale/documentation
+[submodule "mvp/rails-ts-sdk"]
+	path = mvp/rails-ts-sdk
+	url = https://github.com/sibabale/rails-ts-sdk
+[submodule "mvp/rails-docs"]
+	path = mvp/rails-docs
+	url = git@github.com:sibabale/rails-docs.git
