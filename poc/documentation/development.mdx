@@ -1,0 +1,149 @@
+---
+title: "Development"
+description: "Set up a local development environment for Rails"
+---
+
+<Info>
+  **Prerequisites**:
+  - Node.js version 18 or higher
+  - npm, yarn, or pnpm
+  - Git
+  - A Rails API server instance (local or remote)
+</Info>
+
+This guide covers setting up your development environment to build with the Rails SDK.
+
+<Steps>
+  <Step title="Install Node.js dependencies">
+    First, ensure you have a compatible version of Node.js installed:
+
+    ```bash
+    node --version  # Should be 18 or higher
+    ```
+
+    Initialize a new project or navigate to your existing one:
+
+    ```bash
+    npm init -y
+    npm install @rails/sdk
+    ```
+  </Step>
+
+  <Step title="Configure your environment">
+    Create a `.env.local` file in your project root with your Rails API credentials:
+
+    ```bash
+    RAILS_API_URL=http://localhost:8000/api
+    RAILS_API_KEY=your_api_key_here
+    ```
+
+    <Warning>
+      Never commit `.env.local` to version control. Add it to your `.gitignore` file.
+    </Warning>
+  </Step>
+
+  <Step title="Initialize the SDK in your code">
+    Create a configuration file to initialize the Rails client:
+
+    ```typescript
+    // src/rails-client.ts
+    import { Rails } from "@rails/sdk";
+
+    export const rails = new Rails({
+      serverURL: process.env.RAILS_API_URL,
+      security: {
+        bearerAuth: process.env.RAILS_API_KEY,
+      },
+    });
+    ```
+  </Step>
+
+  <Step title="Start developing">
+    You can now start using the Rails SDK in your application:
+
+    ```typescript
+    import { rails } from "./rails-client";
+
+    async function main() {
+      const accounts = await rails.accounts.list();
+      console.log(accounts);
+    }
+
+    main();
+    ```
+  </Step>
+</Steps>
+
+## Local API server
+
+If you're running a local Rails API server for development, start it with:
+
+```bash
+cd /path/to/rails/api
+npm run dev
+```
+
+The server typically starts on `http://localhost:8000`. Update your `.env.local` file accordingly.
+
+## IDE extensions
+
+We recommend the following VSCode extensions for development:
+
+- [TypeScript Vue Plugin](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) - For better TypeScript support
+- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) - Code formatting
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) - Linting
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Connection refused error">
+    If you see `ECONNREFUSED`, ensure:
+    1. Your Rails API server is running
+    2. `RAILS_API_URL` points to the correct server address
+    3. The API key in `RAILS_API_KEY` is valid
+
+    Test connectivity with:
+    ```bash
+    curl $RAILS_API_URL/health
+    ```
+  </Accordion>
+
+  <Accordion title="Module not found error">
+    Ensure the SDK is properly installed:
+
+    ```bash
+    npm install @rails/sdk
+    npm ls @rails/sdk
+    ```
+
+    If issues persist, try clearing node_modules and reinstalling:
+    ```bash
+    rm -rf node_modules package-lock.json
+    npm install
+    ```
+  </Accordion>
+
+  <Accordion title="TypeScript errors">
+    Make sure your `tsconfig.json` is configured correctly:
+
+    ```json
+    {
+      "compilerOptions": {
+        "target": "ES2020",
+        "module": "ESNext",
+        "lib": ["ES2020"]
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+- Read the [SDK Installation](/guides/sdk-installation) guide for detailed setup
+- Check out [Core Methods](/guides/sdk-core-methods) to learn what you can do
+- Review [Examples](/guides/sdk-examples) for common patterns
+
+<Tip>
+Need help? Join our [community](https://community.rails.example.com) or check the [FAQ](/guides/sdk-error-handling#faq).
+</Tip>

@@ -1,0 +1,114 @@
+---
+title: "Quickstart"
+description: "Get started with the Rails Banking API and TypeScript SDK in minutes"
+---
+
+This quickstart guide will help you integrate Rails into your application. You'll learn how to set up authentication, make your first API call, and start using the SDK.
+
+<Steps>
+  <Step title="Install the SDK">
+    Install the Rails SDK using your preferred package manager:
+
+    <Tabs>
+      <Tab title="npm">
+        ```bash
+        npm install @rails/sdk
+        ```
+      </Tab>
+      <Tab title="pnpm">
+        ```bash
+        pnpm add @rails/sdk
+        ```
+      </Tab>
+      <Tab title="yarn">
+        ```bash
+        yarn add @rails/sdk
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Initialize the client">
+    Create a new Rails client instance with your API credentials:
+
+    ```typescript
+    import { Rails } from "@rails/sdk";
+
+    const rails = new Rails({
+      serverURL: process.env.RAILS_API_URL,
+      security: {
+        bearerAuth: process.env.RAILS_API_KEY,
+      },
+    });
+    ```
+
+    <Info>
+      Get your API credentials from the [Rails Dashboard](https://dashboard.rails.example.com)
+    </Info>
+  </Step>
+
+  <Step title="Make your first transaction">
+    Create a simple transaction to verify everything is working:
+
+    ```typescript
+    // Create a new transaction
+    const transaction = await rails.transactions.create({
+      fromAccount: "acct_1a2b3c4d",
+      toAccount: "acct_5e6f7g8h",
+      amount: 100,
+      currency: "USD",
+      description: "Test transaction",
+    });
+
+    console.log("Transaction created:", transaction.id);
+    ```
+  </Step>
+
+  <Step title="Handle responses and errors">
+    The SDK provides type-safe responses and comprehensive error handling:
+
+    ```typescript
+    try {
+      const result = await rails.transactions.create({
+        fromAccount: "acct_1a2b3c4d",
+        toAccount: "acct_5e6f7g8h",
+        amount: 100,
+        currency: "USD",
+      });
+
+      // Success - transaction created
+      console.log("Success:", result);
+    } catch (error) {
+      // Handle specific error types
+      if (error instanceof RailsSDKError) {
+        console.error("API Error:", error.message);
+      } else {
+        console.error("Unexpected error:", error);
+      }
+    }
+    ```
+
+    See [Error Handling](/guides/sdk-error-handling) for detailed error handling patterns.
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Core Methods" icon="function" href="/guides/sdk-core-methods">
+    Learn all available SDK operations and methods
+  </Card>
+  <Card title="API Reference" icon="terminal" href="/api-reference/introduction">
+    Complete REST API documentation
+  </Card>
+  <Card title="Error Handling" icon="shield" href="/guides/sdk-error-handling">
+    Robust error handling and retry strategies
+  </Card>
+  <Card title="Examples" icon="code" href="/guides/sdk-examples">
+    Real-world code examples and use cases
+  </Card>
+</CardGroup>
+
+<Tip>
+Stuck? Check the [troubleshooting section](/guides/sdk-error-handling#troubleshooting) or review our [examples](/guides/sdk-examples).
+</Tip>

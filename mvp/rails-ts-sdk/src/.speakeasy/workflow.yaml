@@ -1,0 +1,19 @@
+workflowVersion: 1.0.0
+speakeasyVersion: latest
+sources:
+    Rails PoC API:
+        inputs:
+            - location: ../../../poc/api/openapi.yaml
+        output: .speakeasy/out.openapi.yaml
+        registry:
+            location: registry.speakeasyapi.dev/cmos/rails/rails-po-c-api
+targets:
+    rails:
+        target: typescript
+        source: Rails PoC API
+        codeSamples:
+            registry:
+                location: registry.speakeasyapi.dev/cmos/rails/rails-po-c-api-typescript-code-samples
+            labelOverride:
+                fixedValue: Typescript (SDK)
+            blocking: false

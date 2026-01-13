@@ -17,25 +17,13 @@ This is a financial API proof-of-concept (POC) that will transition to an MVP. T
 rails/
 ├── poc/                    # Current POC implementation
 │   ├── api/               # Node.js/Express API
-│   │   ├── src/
-│   │   │   ├── ledger/    # Transaction and ledger logic
-│   │   │   ├── routes/    # API endpoints
-│   │   │   ├── metrics/   # Financial calculations
-│   │   │   ├── queue/     # Transaction processing queue
-│   │   │   └── utils/     # Utilities and helpers
-│   │   ├── prisma/        # Database schema and migrations
-│   │   └── tests/         # Test files
 │   ├── client/            # React frontend
-│   │   ├── components/    # Atomic Design components
-│   │   │   ├── atoms/     # Basic building blocks
-│   │   │   ├── molecules/ # Simple combinations
-│   │   │   ├── organisms/ # Complex components
-│   │   │   ├── pages/     # Page-level components
-│   │   │   └── templates/ # Layout templates
-│   │   ├── lib/          # API client and utilities
-│   │   └── styles/       # CSS and styling
 │   ├── documentation/     # MDX documentation site
 │   └── rails-typescript/  # Auto-generated TypeScript SDK
+├── mvp/                    # MVP implementation
+│   ├── rails-docs/        # MDX-based documentation site
+│   ├── rails-ts-sdk/      # Auto-generated TypeScript SDK
+│   └── web/               # Next.js/React frontend
 ├── .claude/              # Claude Code context
 ├── .cursor/              # Cursor rules
 └── CLAUDE.md            # Unified context file (this file)

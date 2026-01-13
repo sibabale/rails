@@ -1,0 +1,279 @@
+openapi: 3.0.3
+info:
+  title: Rails PoC API
+  version: 1.0.0
+  description: OpenAPI 3.0 specification for the Rails PoC API
+servers:
+  - url: http://localhost:8000/api
+paths:
+  /webhook:
+    post:
+      summary: Receive a transaction webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+      responses:
+        '200':
+          description: Transaction received
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  txn_ref:
+                    type: string
+        '400':
+          description: Bad request (invalid payload)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /ledger/pending:
+    get:
+      summary: Get pending transactions
+      responses:
+        '200':
+          description: List of pending transactions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pending:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /ledger/settle:
+    post:
+      summary: Settle pending transactions
+      responses:
+        '200':
+          description: Settlement complete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  settled:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /transactions:
+    get:
+      summary: Get transactions with filters and summary
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Transactions and summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      pageSize:
+                        type: integer
+                      totalPages:
+                        type: integer
+        '400':
+          description: Bad request (invalid query)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /simulator/start:
+    post:
+      summary: Start transaction simulation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                count:
+                  type: integer
+                  default: 10
+                interval:
+                  type: integer
+                  default: 1000
+      responses:
+        '200':
+          description: Simulation started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Bad request (invalid simulation parameters)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /dashboard/metrics:
+    get:
+      summary: Get dashboard metrics
+      responses:
+        '200':
+          description: Dashboard metrics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  activeBanks:
+                    type: integer
+                  totalRevenue:
+                    type: number
+                  completionRate:
+                    type: number
+                  revenueOverview:
+                    type: array
+                    items:
+                      type: number
+                  transactionLogs:
+                    type: array
+                    items:
+                      type: object
+                  activeBanksList:
+                    type: array
+                    items:
+                      type: object
+                  bankDistributions:
+                    type: array
+                    items:
+                      type: object
+                  activeTransactions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+                  settlementOverview:
+                    type: object
+                  mondayClearingPreparation:
+                    type: object
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Transaction:
+      type: object
+      properties:
+        txn_ref:
+          type: string
+        sender_account:
+          type: string
+        receiver_account:
+          type: string
+        sender_bank:
+          type: string
+        receiver_bank:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+        status:
+          type: string
+        settled:
+          type: boolean
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string 

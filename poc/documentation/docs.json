@@ -1,0 +1,143 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "styling": {
+    "codeblocks": {
+      "theme": {
+        "light": "github-light",
+        "dark": "github-dark"
+      }
+    },
+    "colors": {
+      "hover": "#f0f0f0"
+    }
+  },
+  "name": "Rails Banking Infrastructure API",
+  "description": "Official documentation for Rails - A modern banking infrastructure API with TypeScript SDK support",
+  "colors": {
+    "primary": "#ffffff",
+    "light": "#f8fafc",
+    "dark": "#0f172a"
+  },
+  "favicon": "/favicon.svg",
+  "banner": {
+    "content": "🚀 Rails Banking Infrastructure API - Production Ready",
+    "dismissible": true
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": [
+              "index",
+              "quickstart",
+              "development"
+            ]
+          },
+          {
+            "group": "SDK Guide",
+            "pages": [
+              "guides/sdk-installation",
+              "guides/sdk-core-methods",
+              "guides/sdk-error-handling",
+              "guides/sdk-examples"
+            ]
+          },
+          {
+            "group": "Essentials",
+            "pages": [
+              "essentials/settings",
+              "essentials/navigation",
+              "essentials/images",
+              "essentials/reusable-snippets"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "REST API",
+            "openapi": "api-reference/openapi.yaml"
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/sibabale",
+          "icon": "github"
+        },
+        {
+          "anchor": "SDK Repository",
+          "href": "https://github.com/sibabale/rails-typescript",
+          "icon": "code"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/sibabale"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "SDK Docs",
+      "href": "https://github.com/sibabale/rails-typescript"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/sibabale"
+    },
+    "links": [
+      {
+        "header": "Product",
+        "items": [
+          {
+            "label": "API Reference",
+            "href": "/api-reference/introduction"
+          },
+          {
+            "label": "TypeScript SDK",
+            "href": "https://github.com/sibabale/rails-typescript"
+          },
+          {
+            "label": "Changelog",
+            "href": "https://github.com/sibabale/rails/releases"
+          }
+        ]
+      },
+      {
+        "header": "Resources",
+        "items": [
+          {
+            "label": "GitHub Repository",
+            "href": "https://github.com/sibabale/rails"
+          },
+          {
+            "label": "Support",
+            "href": "mailto:support@rails.local"
+          },
+          {
+            "label": "Issues",
+            "href": "https://github.com/sibabale/rails/issues"
+          }
+        ]
+      }
+    ]
+  }
+}
