@@ -1,49 +1,41 @@
 {
-  "name": "@rails/sdk",
-  "version": "1.0.0",
-  "description": "TypeScript SDK for Rails Banking Infrastructure API",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "module": "dist/index.esm.js",
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "name": "cmos",
+  "version": "0.0.1",
+  "author": "Speakeasy",
+  "type": "module",
+  "tshy": {
+    "sourceDialects": [
+      "cmos/source"
+    ],
+    "exports": {
+      ".": "./src/index.ts",
+      "./package.json": "./package.json",
+      "./types": "./src/types/index.ts",
+      "./models/errors": "./src/models/errors/index.ts",
+      "./models": "./src/models/index.ts",
+      "./models/operations": "./src/models/operations/index.ts",
+      "./*.js": "./src/*.ts",
+      "./*": "./src/*.ts"
+    }
+  },
+  "sideEffects": false,
   "scripts": {
-    "build": "tsc && tsc --project tsconfig.esm.json",
-    "dev": "tsc --watch",
-    "test": "jest",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint --cache --max-warnings=0 src",
+    "build": "tshy",
     "prepublishOnly": "npm run build"
   },
-  "keywords": [
-    "rails",
-    "banking",
-    "api",
-    "sdk",
-    "typescript",
-    "financial",
-    "transactions"
-  ],
-  "author": "Rails",
-  "license": "UNLICENSED",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/rails/rails-typescript.git"
+  "peerDependencies": {
+    
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "eslint": "^8.0.0",
-    "jest": "^29.0.0",
-    "typescript": "^5.0.0"
+    "@eslint/js": "^9.19.0",
+    "eslint": "^9.19.0",
+    "globals": "^15.14.0",
+    "tshy": "^2.0.0",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.26.0"
   },
-  "dependencies": {},
-  "peerDependencies": {
-    "typescript": ">=4.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+  "dependencies": {
+    "zod": "^3.25.65 || ^4.0.0"
   }
 }
