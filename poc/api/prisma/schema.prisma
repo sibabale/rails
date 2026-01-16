@@ -1,11 +1,27 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+}
+
+model Account {
+  id            String   @id @default(cuid())
+  accountNumber String   @unique @map("account_number")
+  bankId        String   @map("bank_id")
+  bank          Bank     @relation(fields: [bankId], references: [id])
+  type          String   @default("SAVINGS")
+  balance       Float    @default(0)
+  currency      String   @default("ZAR")
+  status        String   @default("active")
+  ownerEmail    String   @map("owner_email")
+  ownerName     String   @map("owner_name")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("accounts")
 }
 
 model Transaction {
@@ -60,6 +76,7 @@ model Bank {
   mfaSecret         String?        @map("mfa_secret")
   loginAttempts     LoginAttempt?
   refreshTokens     RefreshToken[]
+  Account           Account[]
 
   @@map("banks")
 }

@@ -4,7 +4,11 @@ const { PrismaClient } = require('@prisma/client');
 const securityConfig = require('../config/security');
 const logger = require('../utils/logger');
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasource: {
+    url: process.env.DATABASE_URL
+  }
+});
 
 class AuthService {
   constructor() {

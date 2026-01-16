@@ -10,6 +10,7 @@ const simulatorRouter = require('./simulator');
 const dashboardRouter = require('./dashboard');
 const storageRouter = require('./storage');
 const banksRouter = require('./banks');
+const accountsRouter = require('./accounts');
 const testRouter = require('./test');
 
 // Root API endpoint
@@ -29,6 +30,7 @@ router.use('/simulator', simulatorRouter);
 router.use('/dashboard', dashboardRouter);
 router.use('/storage', storageRouter);
 router.use('/banks', banksRouter);
+router.use('/accounts', accountsRouter);
 router.use('/test', testRouter);
 
 module.exports = router; 
