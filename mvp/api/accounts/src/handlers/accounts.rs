@@ -72,15 +72,17 @@ pub async fn deposit(
     Path(id): Path<Uuid>,
     Json(request): Json<crate::handlers::accounts::DepositRequest>,
 ) -> Result<(StatusCode, Json<serde_json::Value>), AppError> {
-    if request.amount <= rust_decimal::Decimal::ZERO {
+    let amount = sqlx::types::BigDecimal::parse_bytes(request.amount.as_bytes(), 10)
+        .ok_or_else(|| AppError::Validation("Invalid amount format".to_string()))?;
+    let zero = sqlx::types::BigDecimal::from(0);
+    if amount <= zero {
         return Err(AppError::Validation("Amount must be greater than zero".to_string()));
     }
 
     let (account, transaction) = AccountService::deposit(
         &pool,
         id,
-        request.amount,
-        request.description,
+        amount,
     ).await?;
 
     Ok((
@@ -97,15 +99,17 @@ pub async fn withdraw(
     Path(id): Path<Uuid>,
     Json(request): Json<crate::handlers::accounts::WithdrawRequest>,
 ) -> Result<(StatusCode, Json<serde_json::Value>), AppError> {
-    if request.amount <= rust_decimal::Decimal::ZERO {
+    let amount = sqlx::types::BigDecimal::parse_bytes(request.amount.as_bytes(), 10)
+        .ok_or_else(|| AppError::Validation("Invalid amount format".to_string()))?;
+    let zero = sqlx::types::BigDecimal::from(0);
+    if amount <= zero {
         return Err(AppError::Validation("Amount must be greater than zero".to_string()));
     }
 
     let (account, transaction) = AccountService::withdraw(
         &pool,
         id,
-        request.amount,
-        request.description,
+        amount,
     ).await?;
 
     Ok((
@@ -122,7 +126,10 @@ pub async fn transfer(
     Path(from_id): Path<Uuid>,
     Json(request): Json<crate::handlers::accounts::TransferRequest>,
 ) -> Result<(StatusCode, Json<serde_json::Value>), AppError> {
-    if request.amount <= rust_decimal::Decimal::ZERO {
+    let amount = sqlx::types::BigDecimal::parse_bytes(request.amount.as_bytes(), 10)
+        .ok_or_else(|| AppError::Validation("Invalid amount format".to_string()))?;
+    let zero = sqlx::types::BigDecimal::from(0);
+    if amount <= zero {
         return Err(AppError::Validation("Amount must be greater than zero".to_string()));
     }
 
@@ -130,7 +137,7 @@ pub async fn transfer(
         &pool,
         from_id,
         request.to_account_id,
-        request.amount,
+        amount,
         request.description,
     ).await?;
 
@@ -146,19 +153,19 @@ pub async fn transfer(
 
 #[derive(Deserialize)]
 pub struct DepositRequest {
-    pub amount: rust_decimal::Decimal,
+    pub amount: String,
     pub description: Option<String>,
 }
 
 #[derive(Deserialize)]
 pub struct WithdrawRequest {
-    pub amount: rust_decimal::Decimal,
+    pub amount: String,
     pub description: Option<String>,
 }
 
 #[derive(Deserialize)]
 pub struct TransferRequest {
     pub to_account_id: Uuid,
-    pub amount: rust_decimal::Decimal,
+    pub amount: String,
     pub description: Option<String>,
 }

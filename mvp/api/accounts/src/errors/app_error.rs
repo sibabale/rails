@@ -32,6 +32,9 @@ pub enum AppError {
     #[error("Invalid transaction type")]
     InvalidTransactionType,
 
+    #[error("Not implemented: {0}")]
+    NotImplemented(String),
+
     #[error("Internal server error: {0}")]
     Internal(String),
 }
@@ -50,6 +53,7 @@ impl IntoResponse for AppError {
             AppError::AccountNotActive => (StatusCode::BAD_REQUEST, self.to_string()),
             AppError::InvalidAccountType => (StatusCode::BAD_REQUEST, self.to_string()),
             AppError::InvalidTransactionType => (StatusCode::BAD_REQUEST, self.to_string()),
+            AppError::NotImplemented(_) => (StatusCode::NOT_IMPLEMENTED, self.to_string()),
             AppError::Internal(ref e) => {
                 tracing::error!("Internal error: {}", e);
                 (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())

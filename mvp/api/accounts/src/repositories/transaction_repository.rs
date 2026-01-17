@@ -1,6 +1,7 @@
 use crate::errors::AppError;
 use crate::models::{Transaction, TransactionStatus, TransactionType};
 use sqlx::{PgPool, Row};
+use std::str::FromStr;
 use uuid::Uuid;
 
 pub struct TransactionRepository;
@@ -10,9 +11,9 @@ impl TransactionRepository {
         executor: impl sqlx::Executor<'_, Database = sqlx::Postgres>,
         account_id: Uuid,
         transaction_type: TransactionType,
-        amount: rust_decimal::Decimal,
+        amount: String,
         currency: &str,
-        balance_after: rust_decimal::Decimal,
+        balance_after: String,
         recipient_account_id: Option<Uuid>,
         external_recipient_id: Option<&str>,
         reference_id: Option<Uuid>,
@@ -40,9 +41,9 @@ impl TransactionRepository {
         )
         .bind(account_id)
         .bind(transaction_type_str)
-        .bind(amount.to_string())
+        .bind(&amount)
         .bind(currency)
-        .bind(balance_after.to_string())
+        .bind(&balance_after)
         .bind(recipient_account_id)
         .bind(external_recipient_id)
         .bind(reference_id)
@@ -132,7 +133,7 @@ impl TransactionRepository {
         Ok(Self::row_to_transaction(&row)?)
     }
 
-    fn row_to_transaction(row: &sqlx::postgres::PgRow) -> Result<Transaction, AppError> {
+    pub fn row_to_transaction(row: &sqlx::postgres::PgRow) -> Result<Transaction, AppError> {
         let transaction_type_str: String = row.get("transaction_type");
         let transaction_type = match transaction_type_str.as_str() {
             "deposit" => TransactionType::Deposit,
@@ -154,14 +155,12 @@ impl TransactionRepository {
 
         // Convert Decimal fields from PostgreSQL numeric type via String
         let amount_str: String = row.get("amount");
-        let amount = rust_decimal::Decimal::from_str_exact(&amount_str).map_err(|e| {
-            AppError::Internal(format!("Failed to parse amount: {}", e))
-        })?;
+        let amount = rust_decimal::Decimal::from_str(&amount_str)
+            .map_err(|_| AppError::Internal("Failed to parse amount".to_string()))?;
 
         let balance_after_str: String = row.get("balance_after");
-        let balance_after = rust_decimal::Decimal::from_str_exact(&balance_after_str).map_err(|e| {
-            AppError::Internal(format!("Failed to parse balance_after: {}", e))
-        })?;
+        let balance_after = rust_decimal::Decimal::from_str(&balance_after_str)
+            .map_err(|_| AppError::Internal("Failed to parse balance_after".to_string()))?;
 
         Ok(Transaction {
             id: row.get("id"),

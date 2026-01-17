@@ -58,8 +58,9 @@ pub async fn run(pool: PgPool, nats_url: String, stream: String) -> anyhow::Resu
         handle_organizational_change_events(pool_clone, js_clone, org_change_consumer).await
     });
 
-    // Wait for both tasks
-    tokio::try_join!(user_created_task, org_change_task)??;
+    let (user_created_res, org_change_res) = tokio::join!(user_created_task, org_change_task);
+    user_created_res??;
+    org_change_res??;
 
     Ok(())
 }
@@ -156,7 +157,9 @@ async fn process_user_created_event(
             "Skipping account creation for user {} with role {}",
             event.user_id, user_role
         );
-        message.ack().await?;
+        if let Err(e) = message.ack().await {
+            error!("Failed to ack message: {}", e);
+        }
         return Ok(());
     }
 
@@ -169,8 +172,6 @@ async fn process_user_created_event(
         .transpose()?;
 
     // Create default checking account for customer
-    let account_service = AccountService::new(pool.clone());
-
     let create_request = CreateAccountRequest {
         account_type: AccountType::Checking,
         organization_id,
@@ -178,6 +179,8 @@ async fn process_user_created_event(
         user_id,
         currency: "USD".to_string(),
     };
+
+    let account_service = AccountService;
 
     match account_service
         .create_account_with_hierarchy(create_request, admin_user_id, user_role.to_string())
@@ -195,11 +198,13 @@ async fn process_user_created_event(
         Err(e) => {
             error!("Failed to create account for user {}: {}", user_id, e);
             // Don't ack the message, it will be retried
-            return Err(e.into());
+            return Err(anyhow::anyhow!("Failed to create account: {}", e));
         }
     }
 
-    message.ack().await?;
+    if let Err(e) = message.ack().await {
+        error!("Failed to ack message: {}", e);
+    }
     Ok(())
 }
 
@@ -219,7 +224,7 @@ async fn process_organizational_change_event(
     let event: OrganizationalChangeEvent = serde_json::from_str(data)?;
     let user_id = Uuid::parse_str(&event.user_id)?;
 
-    let account_service = AccountService::new(pool.clone());
+    let account_service = AccountService;
 
     // Handle role changes that affect account permissions
     if event.old_role != event.new_role {
@@ -272,7 +277,9 @@ async fn process_organizational_change_event(
     // Publish organizational change processed event
     publish_organizational_change_processed_event(js, &event).await?;
 
-    message.ack().await?;
+    if let Err(e) = message.ack().await {
+        error!("Failed to ack message: {}", e);
+    }
     Ok(())
 }
 

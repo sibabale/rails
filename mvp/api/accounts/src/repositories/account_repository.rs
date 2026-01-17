@@ -47,7 +47,7 @@ impl AccountRepository {
         environment: &str,
         user_id: Uuid,
         admin_user_id: Option<Uuid>,
-        user_role: &str,
+        user_role: Option<String>,
         currency: &str,
     ) -> Result<Account, sqlx::Error> {
         let account_type_str: &str = match account_type {
@@ -60,7 +60,7 @@ impl AccountRepository {
             r#"
             INSERT INTO accounts (account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            RETURNING id, account_number, account_type as "account_type: _", organization_id, environment, user_id, admin_user_id, user_role, balance, currency, status as "status: _", created_at, updated_at
+            RETURNING id, account_number, account_type as "account_type: _", organization_id, environment, user_id, admin_user_id, user_role, balance::text, currency, status as "status: _", created_at, updated_at
             "#,
             account_number,
             account_type_str,
@@ -136,7 +136,7 @@ impl AccountRepository {
     pub async fn update_balance(
         executor: impl sqlx::Executor<'_, Database = sqlx::Postgres>,
         id: Uuid,
-        new_balance: rust_decimal::Decimal,
+        new_balance: String,
     ) -> Result<Account, AppError> {
         let row = sqlx::query(
             r#"
@@ -147,7 +147,7 @@ impl AccountRepository {
             "#,
         )
         .bind(id)
-        .bind(new_balance.to_string())
+        .bind(new_balance)
         .fetch_one(executor)
         .await?;
 
@@ -224,8 +224,8 @@ impl AccountRepository {
 
         // Convert Decimal from PostgreSQL numeric type (stored as string)
         let balance_str: String = row.get("balance");
-        let balance = rust_decimal::Decimal::from_str_exact(&balance_str)
-            .map_err(|e| AppError::Internal(format!("Failed to parse balance: {}", e)))?;
+        let balance = sqlx::types::BigDecimal::parse_bytes(balance_str.as_bytes(), 10)
+            .ok_or_else(|| AppError::Internal("Failed to parse balance".to_string()))?;
 
         Ok(Account {
             id: row.get("id"),
@@ -234,9 +234,11 @@ impl AccountRepository {
             organization_id: row.get("organization_id"),
             environment: row.get("environment"),
             user_id: row.get("user_id"),
-            balance,
-            currency: row.get("currency"),
-            status,
+            admin_user_id: row.try_get("admin_user_id").ok(),
+            user_role: row.try_get("user_role").ok(),
+            balance: Some(balance_str),
+            currency: Some(row.get("currency")),
+            status: Some(status),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
         })

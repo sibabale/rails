@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use rust_decimal::Decimal;
+use sqlx::types::BigDecimal;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
@@ -13,19 +13,19 @@ pub struct Account {
     pub account_type: AccountType,
     #[serde(rename = "organization_id")]
     pub organization_id: Option<Uuid>,
-    pub environment: String,
+    pub environment: Option<String>,
     #[serde(rename = "user_id")]
     pub user_id: Uuid,
     #[serde(rename = "admin_user_id")]
     pub admin_user_id: Option<Uuid>,
     pub user_role: Option<String>,
-    pub balance: Decimal,
-    pub currency: String,
-    pub status: AccountStatus,
+    pub balance: Option<String>,
+    pub currency: Option<String>,
+    pub status: Option<AccountStatus>,
     #[serde(rename = "created_at")]
-    pub created_at: DateTime<Utc>,
+    pub created_at: Option<DateTime<Utc>>,
     #[serde(rename = "updated_at")]
-    pub updated_at: DateTime<Utc>,
+    pub updated_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
@@ -85,13 +85,13 @@ pub struct AccountResponse {
     #[serde(rename = "admin_user_id")]
     pub admin_user_id: Option<Uuid>,
     pub user_role: Option<String>,
-    pub balance: Decimal,
+    pub balance: String,
     pub currency: String,
     pub status: AccountStatus,
     #[serde(rename = "created_at")]
-    pub created_at: DateTime<Utc>,
+    pub created_at: Option<DateTime<Utc>>,
     #[serde(rename = "updated_at")]
-    pub updated_at: DateTime<Utc>,
+    pub updated_at: Option<DateTime<Utc>>,
 }
 
 impl From<Account> for AccountResponse {
@@ -101,13 +101,13 @@ impl From<Account> for AccountResponse {
             account_number: account.account_number,
             account_type: account.account_type,
             organization_id: account.organization_id,
-            environment: account.environment,
-            user_id: account.user_id,
-            admin_user_id: account.admin_user_id,
-            user_role: account.user_role,
-            balance: account.balance,
-            currency: account.currency,
-            status: account.status,
+                environment: account.environment.clone().unwrap_or_default(),
+                user_id: account.user_id,
+                admin_user_id: account.admin_user_id,
+                user_role: account.user_role,
+                balance: account.balance.clone().unwrap_or_default(),
+                currency: account.currency.clone().unwrap_or_else(|| "USD".to_string()),
+                status: account.status.unwrap_or(AccountStatus::Active),
             created_at: account.created_at,
             updated_at: account.updated_at,
         }

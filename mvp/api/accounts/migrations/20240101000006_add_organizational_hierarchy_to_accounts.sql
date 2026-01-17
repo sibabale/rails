@@ -19,15 +19,15 @@ CHECK (
 );
 
 -- Create indexes for performance
-CREATE INDEX CONCURRENTLY idx_accounts_admin_user ON accounts(admin_user_id)
+CREATE INDEX idx_accounts_admin_user ON accounts(admin_user_id)
 WHERE admin_user_id IS NOT NULL;
 
-CREATE INDEX CONCURRENTLY idx_accounts_user_role ON accounts(user_role);
+CREATE INDEX idx_accounts_user_role ON accounts(user_role);
 
-CREATE INDEX CONCURRENTLY idx_accounts_org_env_admin ON accounts(organization_id, environment, admin_user_id)
+CREATE INDEX idx_accounts_org_env_admin ON accounts(organization_id, environment, admin_user_id)
 WHERE user_role = 'CUSTOMER';
 
-CREATE INDEX CONCURRENTLY idx_accounts_hierarchy ON accounts(user_id, admin_user_id, user_role);
+CREATE INDEX idx_accounts_hierarchy ON accounts(user_id, admin_user_id, user_role);
 
 -- Update existing accounts to set appropriate roles
 -- All existing accounts will be treated as customer accounts initially
@@ -71,7 +71,7 @@ CREATE TRIGGER trg_validate_account_hierarchy
 ALTER TABLE accounts
 ADD COLUMN organizational_metadata JSONB DEFAULT '{}';
 
-CREATE INDEX CONCURRENTLY idx_accounts_org_metadata_gin ON accounts
+CREATE INDEX idx_accounts_org_metadata_gin ON accounts
 USING GIN (organizational_metadata);
 
 -- Create view for organizational account analytics

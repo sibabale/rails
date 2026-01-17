@@ -87,8 +87,8 @@ impl AccountsService for AccountsGrpcService {
 
         Ok(Response::new(GetAccountBalanceResponse {
             account_id: account.id.to_string(),
-            balance: account.balance.to_string(),
-            currency: account.currency,
+            balance: account.balance.clone().unwrap_or_default(),
+            currency: account.currency.clone().unwrap_or_else(|| "USD".to_string()),
         }))
     }
 }
