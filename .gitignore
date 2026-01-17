@@ -50,3 +50,4 @@ coverage/
 # Rust
 target/
 **/*.rs.bk
+jwt_token.txt

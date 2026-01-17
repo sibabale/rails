@@ -45,6 +45,13 @@ public class User {
     @JdbcTypeCode(SqlTypes.JSON)
     private String metadata;
 
+    @Column(name = "admin_user_id")
+    private UUID adminUserId;
+
+    @Column(name = "organizational_context")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private String organizationalContext;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -137,5 +144,21 @@ public class User {
 
     public void setDeactivatedAt(Instant deactivatedAt) {
         this.deactivatedAt = deactivatedAt;
+    }
+
+    public UUID getAdminUserId() {
+        return adminUserId;
+    }
+
+    public void setAdminUserId(UUID adminUserId) {
+        this.adminUserId = adminUserId;
+    }
+
+    public String getOrganizationalContext() {
+        return organizationalContext;
+    }
+
+    public void setOrganizationalContext(String organizationalContext) {
+        this.organizationalContext = organizationalContext;
     }
 }

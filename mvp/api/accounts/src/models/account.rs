@@ -16,6 +16,9 @@ pub struct Account {
     pub environment: String,
     #[serde(rename = "user_id")]
     pub user_id: Uuid,
+    #[serde(rename = "admin_user_id")]
+    pub admin_user_id: Option<Uuid>,
+    pub user_role: Option<String>,
     pub balance: Decimal,
     pub currency: String,
     pub status: AccountStatus,
@@ -79,6 +82,9 @@ pub struct AccountResponse {
     pub environment: String,
     #[serde(rename = "user_id")]
     pub user_id: Uuid,
+    #[serde(rename = "admin_user_id")]
+    pub admin_user_id: Option<Uuid>,
+    pub user_role: Option<String>,
     pub balance: Decimal,
     pub currency: String,
     pub status: AccountStatus,
@@ -97,6 +103,8 @@ impl From<Account> for AccountResponse {
             organization_id: account.organization_id,
             environment: account.environment,
             user_id: account.user_id,
+            admin_user_id: account.admin_user_id,
+            user_role: account.user_role,
             balance: account.balance,
             currency: account.currency,
             status: account.status,

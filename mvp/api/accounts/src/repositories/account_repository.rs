@@ -39,6 +39,44 @@ impl AccountRepository {
         Ok(Self::row_to_account(&row)?)
     }
 
+    pub async fn create_with_hierarchy(
+        executor: impl sqlx::Executor<'_, Database = sqlx::Postgres>,
+        account_number: &str,
+        account_type: AccountType,
+        organization_id: Option<Uuid>,
+        environment: &str,
+        user_id: Uuid,
+        admin_user_id: Option<Uuid>,
+        user_role: &str,
+        currency: &str,
+    ) -> Result<Account, sqlx::Error> {
+        let account_type_str: &str = match account_type {
+            AccountType::Checking => "checking",
+            AccountType::Saving => "saving",
+        };
+
+        let account = sqlx::query_as!(
+            Account,
+            r#"
+            INSERT INTO accounts (account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING id, account_number, account_type as "account_type: _", organization_id, environment, user_id, admin_user_id, user_role, balance, currency, status as "status: _", created_at, updated_at
+            "#,
+            account_number,
+            account_type_str,
+            organization_id,
+            environment,
+            user_id,
+            admin_user_id,
+            user_role,
+            currency
+        )
+        .fetch_one(executor)
+        .await?;
+
+        Ok(account)
+    }
+
     pub async fn find_by_id(pool: &PgPool, id: Uuid) -> Result<Account, AppError> {
         let row = sqlx::query(
             r#"
@@ -149,9 +187,19 @@ impl AccountRepository {
     ) -> Result<Vec<Account>, AppError> {
         let mut created_accounts = Vec::new();
 
-        for (account_number, account_type, organization_id, environment, user_id, currency) in accounts {
-            let account = Self::create(pool, &account_number, account_type, organization_id, &environment, user_id, &currency)
-                .await?;
+        for (account_number, account_type, organization_id, environment, user_id, currency) in
+            accounts
+        {
+            let account = Self::create(
+                pool,
+                &account_number,
+                account_type,
+                organization_id,
+                &environment,
+                user_id,
+                &currency,
+            )
+            .await?;
             created_accounts.push(account);
         }
 
