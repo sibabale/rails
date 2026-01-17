@@ -1,3 +1,3 @@
 pub mod account_number;
 
-pub use account_number::{generate_account_number, validate_account_number};
+pub use account_number::generate_account_number;

@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: rails
+      preConditions:
+        onFail: MARK_RAN
+        onError: HALT
+        not:
+          tableExists:
+            tableName: organizations
+      changes:
+        - sqlFile:
+            path: db/migration/V1__init.sql
+            relativeToChangelogFile: false
+            splitStatements: true
+            stripComments: false

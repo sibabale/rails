@@ -10,6 +10,8 @@ impl AccountRepository {
         pool: &PgPool,
         account_number: &str,
         account_type: AccountType,
+        organization_id: Option<Uuid>,
+        environment: &str,
         user_id: Uuid,
         currency: &str,
     ) -> Result<Account, AppError> {
@@ -20,13 +22,15 @@ impl AccountRepository {
 
         let row = sqlx::query(
             r#"
-            INSERT INTO accounts (account_number, account_type, user_id, currency)
-            VALUES ($1, $2, $3, $4)
-            RETURNING id, account_number, account_type, user_id, balance::text, currency, status, created_at, updated_at
+            INSERT INTO accounts (account_number, account_type, organization_id, environment, user_id, currency)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id, account_number, account_type, organization_id, environment, user_id, balance::text, currency, status, created_at, updated_at
             "#,
         )
         .bind(account_number)
         .bind(account_type_str)
+        .bind(organization_id)
+        .bind(environment)
         .bind(user_id)
         .bind(currency)
         .fetch_one(pool)
@@ -38,7 +42,7 @@ impl AccountRepository {
     pub async fn find_by_id(pool: &PgPool, id: Uuid) -> Result<Account, AppError> {
         let row = sqlx::query(
             r#"
-            SELECT id, account_number, account_type, user_id, balance::text, currency, status, created_at, updated_at
+            SELECT id, account_number, account_type, organization_id, environment, user_id, balance::text, currency, status, created_at, updated_at
             FROM accounts
             WHERE id = $1
             "#,
@@ -57,7 +61,7 @@ impl AccountRepository {
     ) -> Result<Account, AppError> {
         let row = sqlx::query(
             r#"
-            SELECT id, account_number, account_type, user_id, balance::text, currency, status, created_at, updated_at
+            SELECT id, account_number, account_type, organization_id, environment, user_id, balance::text, currency, status, created_at, updated_at
             FROM accounts
             WHERE account_number = $1
             "#,
@@ -73,7 +77,7 @@ impl AccountRepository {
     pub async fn find_by_user_id(pool: &PgPool, user_id: Uuid) -> Result<Vec<Account>, AppError> {
         let rows = sqlx::query(
             r#"
-            SELECT id, account_number, account_type, user_id, balance::text, currency, status, created_at, updated_at
+            SELECT id, account_number, account_type, organization_id, environment, user_id, balance::text, currency, status, created_at, updated_at
             FROM accounts
             WHERE user_id = $1
             ORDER BY created_at DESC
@@ -101,7 +105,7 @@ impl AccountRepository {
             UPDATE accounts
             SET balance = $2::numeric, updated_at = NOW()
             WHERE id = $1
-            RETURNING id, account_number, account_type, user_id, balance::text, currency, status, created_at, updated_at
+            RETURNING id, account_number, account_type, organization_id, environment, user_id, balance::text, currency, status, created_at, updated_at
             "#,
         )
         .bind(id)
@@ -128,7 +132,7 @@ impl AccountRepository {
             UPDATE accounts
             SET status = $2, updated_at = NOW()
             WHERE id = $1
-            RETURNING id, account_number, account_type, user_id, balance::text, currency, status, created_at, updated_at
+            RETURNING id, account_number, account_type, organization_id, environment, user_id, balance::text, currency, status, created_at, updated_at
             "#,
         )
         .bind(id)
@@ -141,12 +145,12 @@ impl AccountRepository {
 
     pub async fn batch_create(
         pool: &PgPool,
-        accounts: Vec<(String, AccountType, Uuid, String)>,
+        accounts: Vec<(String, AccountType, Option<Uuid>, String, Uuid, String)>,
     ) -> Result<Vec<Account>, AppError> {
         let mut created_accounts = Vec::new();
 
-        for (account_number, account_type, user_id, currency) in accounts {
-            let account = Self::create(pool, &account_number, account_type, user_id, &currency)
+        for (account_number, account_type, organization_id, environment, user_id, currency) in accounts {
+            let account = Self::create(pool, &account_number, account_type, organization_id, &environment, user_id, &currency)
                 .await?;
             created_accounts.push(account);
         }
@@ -179,6 +183,8 @@ impl AccountRepository {
             id: row.get("id"),
             account_number: row.get("account_number"),
             account_type,
+            organization_id: row.get("organization_id"),
+            environment: row.get("environment"),
             user_id: row.get("user_id"),
             balance,
             currency: row.get("currency"),

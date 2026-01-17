@@ -11,6 +11,9 @@ pub struct Account {
     pub account_number: String,
     #[serde(rename = "account_type")]
     pub account_type: AccountType,
+    #[serde(rename = "organization_id")]
+    pub organization_id: Option<Uuid>,
+    pub environment: String,
     #[serde(rename = "user_id")]
     pub user_id: Uuid,
     pub balance: Decimal,
@@ -42,6 +45,10 @@ pub enum AccountStatus {
 pub struct CreateAccountRequest {
     // account_number is auto-generated, not provided by user
     pub account_type: AccountType,
+    #[serde(default)]
+    pub organization_id: Option<Uuid>,
+    #[serde(default = "default_environment")]
+    pub environment: Option<String>,
     pub user_id: Uuid,
     #[serde(default = "default_currency")]
     pub currency: String,
@@ -49,6 +56,10 @@ pub struct CreateAccountRequest {
 
 fn default_currency() -> String {
     "USD".to_string()
+}
+
+fn default_environment() -> Option<String> {
+    Some("production".to_string())
 }
 
 #[derive(Debug, Deserialize)]
@@ -63,6 +74,9 @@ pub struct AccountResponse {
     pub account_number: String,
     #[serde(rename = "account_type")]
     pub account_type: AccountType,
+    #[serde(rename = "organization_id")]
+    pub organization_id: Option<Uuid>,
+    pub environment: String,
     #[serde(rename = "user_id")]
     pub user_id: Uuid,
     pub balance: Decimal,
@@ -80,6 +94,8 @@ impl From<Account> for AccountResponse {
             id: account.id,
             account_number: account.account_number,
             account_type: account.account_type,
+            organization_id: account.organization_id,
+            environment: account.environment,
             user_id: account.user_id,
             balance: account.balance,
             currency: account.currency,

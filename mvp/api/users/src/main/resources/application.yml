@@ -1,0 +1,65 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: users-service
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/users_db?user=postgres&password=postgres}
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+  flyway:
+    enabled: false
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:default}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+rails:
+  security:
+    jwt:
+      issuer: ${JWT_ISSUER:rails-users}
+      public-key-pem: ${JWT_PUBLIC_KEY_PEM:}
+      private-key-pem: ${JWT_PRIVATE_KEY_PEM:}
+      access-token-ttl-seconds: ${JWT_ACCESS_TTL_SECONDS:900}
+      refresh-token-ttl-seconds: ${JWT_REFRESH_TTL_SECONDS:2592000}
+  nats:
+    enabled: ${NATS_ENABLED:false}
+    url: ${NATS_URL:nats://localhost:4222}
+    stream: ${NATS_STREAM:rails_events}
+    subjects:
+      userCreated: ${NATS_SUBJECT_USER_CREATED:users.user.created}
+      accountCreated: ${NATS_SUBJECT_ACCOUNT_CREATED:accounts.account.created}
+  accounts:
+    grpc:
+      host: ${ACCOUNTS_GRPC_HOST:localhost}
+      port: ${ACCOUNTS_GRPC_PORT:9090}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://ep-restless-wildflower-acl41u3o-pooler.sa-east-1.aws.neon.tech/neondb?user=neondb_owner&password=npg_E9Fwn5vWqUoe&sslmode=require&channelBinding=require}
+
+rails:
+  nats:
+    enabled: false

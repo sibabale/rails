@@ -4,6 +4,9 @@ use serde::Deserialize;
 pub struct Settings {
     pub database_url: String,
     pub port: u16,
+    pub grpc_port: u16,
+    pub nats_url: String,
+    pub nats_stream: String,
     #[allow(dead_code)]
     pub host: String,
     pub log_level: String,
@@ -21,6 +24,17 @@ impl Settings {
             .parse()
             .unwrap_or(8080);
 
+        let grpc_port = std::env::var("GRPC_PORT")
+            .unwrap_or_else(|_| "9090".to_string())
+            .parse()
+            .unwrap_or(9090);
+
+        let nats_url = std::env::var("NATS_URL")
+            .unwrap_or_else(|_| "nats://localhost:4222".to_string());
+
+        let nats_stream = std::env::var("NATS_STREAM")
+            .unwrap_or_else(|_| "rails_events".to_string());
+
         let host = std::env::var("HOST")
             .unwrap_or_else(|_| "0.0.0.0".to_string());
 
@@ -30,6 +44,9 @@ impl Settings {
         Ok(Settings {
             database_url,
             port,
+            grpc_port,
+            nats_url,
+            nats_stream,
             host,
             log_level,
         })

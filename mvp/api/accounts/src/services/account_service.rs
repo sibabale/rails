@@ -21,6 +21,11 @@ impl AccountService {
             pool,
             &account_number,
             request.account_type,
+            request.organization_id,
+            request
+                .environment
+                .as_deref()
+                .unwrap_or("production"),
             request.user_id,
             &request.currency,
         )
