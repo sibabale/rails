@@ -1,4 +1,11 @@
-# Railway deployment config for Users microservice
-[service]
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[[services]]
 name = "users-service"
-start = "cargo run --release"
+internalPort = 8080

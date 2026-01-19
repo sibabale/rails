@@ -2,6 +2,7 @@ use axum::{Json, extract::State};
 use uuid::Uuid;
 use crate::{error::AppError};
 use crate::routes::AppState;
+use crate::auth::AuthContext;
 use serde::{Deserialize, Serialize};
 use argon2::{Argon2, PasswordHasher};
 use argon2::password_hash::{SaltString, rand_core::OsRng};
@@ -9,7 +10,6 @@ use sqlx::Row;
 
 #[derive(Deserialize)]
 pub struct CreateUserRequest {
-    pub environment_id: Uuid,
     pub first_name: String,
     pub last_name: String,
     pub email: String,
@@ -24,6 +24,7 @@ pub struct CreateUserResponse {
 
 pub async fn create_user(
     State(state): State<AppState>,
+    ctx: AuthContext,
     Json(payload): Json<CreateUserRequest>
 ) -> Result<Json<CreateUserResponse>, AppError> {
     let user_id = Uuid::new_v4();
@@ -34,9 +35,12 @@ pub async fn create_user(
         .map_err(|_| AppError::Internal)?
         .to_string();
 
+    let environment_id = ctx.environment_id;
+    let _request_user_id = ctx.user_id;
+
     // Find business_id for the environment
     let rec = sqlx::query("SELECT business_id FROM environments WHERE id = $1")
-        .bind(&payload.environment_id)
+        .bind(&environment_id)
         .fetch_one(&state.db)
         .await
         .map_err(|_| AppError::BadRequest("Invalid environment_id".to_string()))?;
@@ -47,7 +51,7 @@ pub async fn create_user(
     )
     .bind(&user_id)
     .bind(&business_id)
-    .bind(&payload.environment_id)
+    .bind(&environment_id)
     .bind(&payload.first_name)
     .bind(&payload.last_name)
     .bind(&payload.email)
@@ -69,7 +73,7 @@ pub async fn create_user(
         "event": "users.user.created",
         "user_id": user_id,
         "business_id": business_id,
-        "environment_id": payload.environment_id,
+        "environment_id": environment_id,
         "email": payload.email,
         "created_at": now,
     });
