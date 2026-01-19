@@ -11,36 +11,44 @@ use sqlx::Row;
 pub struct LoginRequest {
     pub email: String,
     pub password: String,
-    pub environment_id: Uuid
+    pub environment_id: Option<Uuid>,
 }
 
 #[derive(Serialize)]
 pub struct LoginResponse {
     pub access_token: String,
     pub refresh_token: String,
-    pub expires_in: u64
+    pub expires_in: u64,
+    pub selected_environment_id: Uuid,
+    pub environments: Vec<EnvironmentInfo>,
+}
+
+#[derive(Serialize)]
+pub struct EnvironmentInfo {
+    pub id: Uuid,
+    pub r#type: String,
 }
 
 #[derive(Deserialize)]
 pub struct RefreshTokenRequest {
-    pub refresh_token: String
+    pub refresh_token: String,
 }
 
 #[derive(Serialize)]
 pub struct RefreshTokenResponse {
     pub access_token: String,
     pub refresh_token: String,
-    pub expires_in: u64
+    pub expires_in: u64,
 }
 
 #[derive(Deserialize)]
 pub struct RevokeTokenRequest {
-    pub refresh_token: String
+    pub refresh_token: String,
 }
 
 #[derive(Serialize)]
 pub struct RevokeTokenResponse {
-    pub status: String
+    pub status: String,
 }
 
 use jsonwebtoken::{encode, EncodingKey, Header};
@@ -53,29 +61,85 @@ pub async fn login(
     State(state): State<AppState>,
     Json(payload): Json<LoginRequest>
 ) -> Result<Json<LoginResponse>, AppError> {
-    // 1. Find user by email and environment
-    let rec = sqlx::query(
-        "SELECT id, password_hash, status FROM users WHERE email = $1 AND environment_id = $2"
+    let user_rows = sqlx::query(
+        "SELECT id, password_hash, status, environment_id FROM users WHERE email = $1"
     )
     .bind(&payload.email)
-    .bind(&payload.environment_id)
-    .fetch_optional(&state.db)
+    .fetch_all(&state.db)
     .await
     .map_err(|_| AppError::Internal)?;
-    let rec = rec.ok_or_else(|| AppError::Unauthorized)?;
-    let user_id: Uuid = rec.get("id");
-    let password_hash: String = rec.get("password_hash");
-    let status: String = rec.get("status");
-    
-    if status != "active" {
+
+    if user_rows.is_empty() {
         return Err(AppError::Unauthorized);
     }
+
+    let mut password_hash: Option<String> = None;
+    for row in &user_rows {
+        let status: String = row.get("status");
+        if status == "active" {
+            password_hash = Some(row.get("password_hash"));
+            break;
+        }
+    }
+    let password_hash = password_hash.ok_or_else(|| AppError::Unauthorized)?;
 
     // 2. Verify password
     let parsed_hash = PasswordHash::new(&password_hash).map_err(|_| AppError::Internal)?;
     if argon2::Argon2::default().verify_password(payload.password.as_bytes(), &parsed_hash).is_err() {
         return Err(AppError::Unauthorized);
     }
+
+    let environments = sqlx::query(
+        "SELECT DISTINCT e.id, e.type FROM environments e JOIN users u ON u.environment_id = e.id WHERE u.email = $1 AND u.status = 'active' AND e.status = 'active'"
+    )
+    .bind(&payload.email)
+    .fetch_all(&state.db)
+    .await
+    .map_err(|_| AppError::Internal)?;
+
+    if environments.is_empty() {
+        return Err(AppError::Unauthorized);
+    }
+
+    let mut available_envs: Vec<EnvironmentInfo> = environments
+        .iter()
+        .map(|row| EnvironmentInfo {
+            id: row.get("id"),
+            r#type: row.get("type"),
+        })
+        .collect();
+
+    available_envs.sort_by(|a, b| a.r#type.cmp(&b.r#type));
+
+    let requested_env_id = payload.environment_id;
+    let sandbox_env_id = available_envs
+        .iter()
+        .find(|e| e.r#type == "sandbox")
+        .map(|e| e.id);
+
+    let selected_environment_id = if let Some(env_id) = requested_env_id {
+        if available_envs.iter().any(|e| e.id == env_id) {
+            env_id
+        } else if let Some(sandbox_id) = sandbox_env_id {
+            sandbox_id
+        } else {
+            available_envs[0].id
+        }
+    } else if let Some(sandbox_id) = sandbox_env_id {
+        sandbox_id
+    } else {
+        available_envs[0].id
+    };
+
+    let user_id = user_rows
+        .iter()
+        .find(|row| {
+            let env_id: Uuid = row.get("environment_id");
+            let status: String = row.get("status");
+            status == "active" && env_id == selected_environment_id
+        })
+        .map(|row| row.get::<Uuid, _>("id"))
+        .ok_or_else(|| AppError::Unauthorized)?;
 
     // 3. Generate JWT access token
     let jwt_id = Uuid::new_v4().to_string();
@@ -86,7 +150,7 @@ pub async fn login(
         "jti": jwt_id,
         "exp": exp.timestamp(),
         "iat": now.timestamp(),
-        "env": payload.environment_id.to_string(),
+        "env": selected_environment_id.to_string(),
     });
     let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "dev_secret".to_string());
     let access_token = encode(&Header::default(), &claims, &EncodingKey::from_secret(secret.as_bytes()))
@@ -106,7 +170,7 @@ pub async fn login(
     )
     .bind(&refresh_id)
     .bind(&user_id)
-    .bind(&payload.environment_id)
+    .bind(&selected_environment_id)
     .bind(&refresh_token)
     .bind(&jwt_id)
     .bind(&now)
@@ -119,6 +183,8 @@ pub async fn login(
         access_token,
         refresh_token,
         expires_in: 900,
+        selected_environment_id,
+        environments: available_envs,
     }))
 }
 
