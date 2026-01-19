@@ -1,0 +1,4 @@
+# Railway deployment config for Users microservice
+[service]
+name = "users-service"
+start = "cargo run --release"

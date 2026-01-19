@@ -1,0 +1,222 @@
+use axum::{Json, extract::State};
+use argon2::password_hash::rand_core::OsRng;
+use base64::engine::general_purpose::STANDARD as BASE64_ENGINE;
+use base64::engine::Engine;
+use crate::{error::AppError};
+use crate::routes::AppState;
+use serde::{Deserialize, Serialize};
+use sqlx::Row;
+
+#[derive(Deserialize)]
+pub struct LoginRequest {
+    pub email: String,
+    pub password: String,
+    pub environment_id: Uuid
+}
+
+#[derive(Serialize)]
+pub struct LoginResponse {
+    pub access_token: String,
+    pub refresh_token: String,
+    pub expires_in: u64
+}
+
+#[derive(Deserialize)]
+pub struct RefreshTokenRequest {
+    pub refresh_token: String
+}
+
+#[derive(Serialize)]
+pub struct RefreshTokenResponse {
+    pub access_token: String,
+    pub refresh_token: String,
+    pub expires_in: u64
+}
+
+#[derive(Deserialize)]
+pub struct RevokeTokenRequest {
+    pub refresh_token: String
+}
+
+#[derive(Serialize)]
+pub struct RevokeTokenResponse {
+    pub status: String
+}
+
+use jsonwebtoken::{encode, EncodingKey, Header};
+use argon2::password_hash::{PasswordHash, PasswordVerifier, rand_core::RngCore};
+use chrono::{Utc, Duration};
+use uuid::Uuid;
+use serde_json::json;
+
+pub async fn login(
+    State(state): State<AppState>,
+    Json(payload): Json<LoginRequest>
+) -> Result<Json<LoginResponse>, AppError> {
+    // 1. Find user by email and environment
+    let rec = sqlx::query(
+        "SELECT id, password_hash, status FROM users WHERE email = $1 AND environment_id = $2"
+    )
+    .bind(&payload.email)
+    .bind(&payload.environment_id)
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|_| AppError::Internal)?;
+    let rec = rec.ok_or_else(|| AppError::Unauthorized)?;
+    let user_id: Uuid = rec.get("id");
+    let password_hash: String = rec.get("password_hash");
+    let status: String = rec.get("status");
+    
+    if status != "active" {
+        return Err(AppError::Unauthorized);
+    }
+
+    // 2. Verify password
+    let parsed_hash = PasswordHash::new(&password_hash).map_err(|_| AppError::Internal)?;
+    if argon2::Argon2::default().verify_password(payload.password.as_bytes(), &parsed_hash).is_err() {
+        return Err(AppError::Unauthorized);
+    }
+
+    // 3. Generate JWT access token
+    let jwt_id = Uuid::new_v4().to_string();
+    let now = Utc::now();
+    let exp = now + Duration::minutes(15);
+    let claims = json!({
+        "sub": user_id.to_string(),
+        "jti": jwt_id,
+        "exp": exp.timestamp(),
+        "iat": now.timestamp(),
+        "env": payload.environment_id.to_string(),
+    });
+    let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "dev_secret".to_string());
+    let access_token = encode(&Header::default(), &claims, &EncodingKey::from_secret(secret.as_bytes()))
+        .map_err(|_| AppError::Internal)?;
+
+    // 4. Generate refresh token
+    let mut refresh_bytes = [0u8; 32];
+    let mut rng = OsRng;
+    RngCore::fill_bytes(&mut rng, &mut refresh_bytes);
+    let refresh_token = BASE64_ENGINE.encode(refresh_bytes);
+    let refresh_id = Uuid::new_v4();
+    let refresh_exp = now + Duration::days(30);
+
+    // 5. Store session
+    sqlx::query(
+        "INSERT INTO user_sessions (id, user_id, environment_id, refresh_token, jwt_id, status, created_at, expires_at) VALUES ($1, $2, $3, $4, $5, 'active', $6, $7)"
+    )
+    .bind(&refresh_id)
+    .bind(&user_id)
+    .bind(&payload.environment_id)
+    .bind(&refresh_token)
+    .bind(&jwt_id)
+    .bind(&now)
+    .bind(&refresh_exp)
+    .execute(&state.db)
+    .await
+    .map_err(|_| AppError::Internal)?;
+
+    Ok(Json(LoginResponse {
+        access_token,
+        refresh_token,
+        expires_in: 900,
+    }))
+}
+
+pub async fn refresh_token(
+    State(state): State<AppState>,
+    Json(payload): Json<RefreshTokenRequest>
+) -> Result<Json<RefreshTokenResponse>, AppError> {
+    // 1. Find session by refresh token
+    let rec = sqlx::query(
+        "SELECT id, user_id, environment_id, jwt_id, status, expires_at FROM user_sessions WHERE refresh_token = $1"
+    )
+    .bind(&payload.refresh_token)
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|_| AppError::Internal)?;
+    let rec = rec.ok_or_else(|| AppError::Unauthorized)?;
+    let session_id: Uuid = rec.get("id");
+    let user_id: Uuid = rec.get("user_id");
+    let environment_id: Uuid = rec.get("environment_id");
+    let status: String = rec.get("status");
+    let expires_at: chrono::DateTime<Utc> = rec.get("expires_at");
+    
+    if status != "active" || expires_at < Utc::now() {
+        return Err(AppError::Unauthorized);
+    }
+
+    // 2. Issue new JWT
+    let jwt_id = Uuid::new_v4().to_string();
+    let now = Utc::now();
+    let exp = now + Duration::minutes(15);
+    let claims = json!({
+        "sub": user_id.to_string(),
+        "jti": jwt_id,
+        "exp": exp.timestamp(),
+        "iat": now.timestamp(),
+        "env": environment_id.to_string(),
+    });
+    let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "dev_secret".to_string());
+    let access_token = encode(&Header::default(), &claims, &EncodingKey::from_secret(secret.as_bytes()))
+        .map_err(|_| AppError::Internal)?;
+
+    // 3. Issue new refresh token and update session
+    let mut refresh_bytes = [0u8; 32];
+    let mut rng = OsRng;
+    RngCore::fill_bytes(&mut rng, &mut refresh_bytes);
+    let new_refresh_token = BASE64_ENGINE.encode(refresh_bytes);
+    let new_refresh_id = Uuid::new_v4();
+    let refresh_exp = now + Duration::days(30);
+
+    // Revoke old session and insert new
+    let mut tx = state.db.begin().await.map_err(|_| AppError::Internal)?;
+    sqlx::query(
+        "UPDATE user_sessions SET status = 'revoked', revoked_at = $1 WHERE id = $2"
+    )
+    .bind(&now)
+    .bind(&session_id)
+    .execute(&mut *tx)
+    .await
+    .map_err(|_| AppError::Internal)?;
+    sqlx::query(
+        "INSERT INTO user_sessions (id, user_id, environment_id, refresh_token, jwt_id, status, created_at, expires_at) VALUES ($1, $2, $3, $4, $5, 'active', $6, $7)"
+    )
+    .bind(&new_refresh_id)
+    .bind(&user_id)
+    .bind(&environment_id)
+    .bind(&new_refresh_token)
+    .bind(&jwt_id)
+    .bind(&now)
+    .bind(&refresh_exp)
+    .execute(&mut *tx)
+    .await
+    .map_err(|_| AppError::Internal)?;
+    tx.commit().await.map_err(|_| AppError::Internal)?;
+
+    Ok(Json(RefreshTokenResponse {
+        access_token,
+        refresh_token: new_refresh_token,
+        expires_in: 900,
+    }))
+}
+
+pub async fn revoke_token(
+    State(state): State<AppState>,
+    Json(payload): Json<RevokeTokenRequest>
+) -> Result<Json<RevokeTokenResponse>, AppError> {
+    let now = Utc::now();
+    let result = sqlx::query(
+        "UPDATE user_sessions SET status = 'revoked', revoked_at = $1 WHERE refresh_token = $2 AND status = 'active'"
+    )
+    .bind(&now)
+    .bind(&payload.refresh_token)
+    .execute(&state.db)
+    .await
+    .map_err(|_| AppError::Internal)?;
+    if result.rows_affected() == 0 {
+        return Err(AppError::BadRequest("Token not found or already revoked".to_string()));
+    }
+    Ok(Json(RevokeTokenResponse {
+        status: "revoked".to_string(),
+    }))
+}

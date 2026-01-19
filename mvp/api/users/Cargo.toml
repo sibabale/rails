@@ -1,0 +1,27 @@
+[package]
+name = "users_service"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.7"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "uuid", "chrono", "tls-rustls"] }
+uuid = { version = "1", features = ["serde", "v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+jsonwebtoken = "9.2"
+argon2 = { version = "0.5", features = ["password-hash"] }
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+async-nats = "0.32"
+tonic = { version = "0.11", features = ["transport"] }
+prost = "0.12"
+dotenvy = "0.15.7"
+anyhow = "1.0.100"
+base64 = "0.22.1"
+rand = "0.9.2"
+config = "0.15.19"
+bytes = "1.11.0"

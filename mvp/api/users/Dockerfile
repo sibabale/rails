@@ -1,12 +1,12 @@
-FROM maven:3.9.9-eclipse-temurin-21 AS build
+# syntax=docker/dockerfile:1
+FROM rust:1.76 as builder
 WORKDIR /app
-COPY pom.xml .
-RUN mvn -q -e -DskipTests dependency:go-offline
-COPY src ./src
-RUN mvn -q -e -DskipTests package
+COPY . .
+RUN cargo build --release
 
-FROM eclipse-temurin:21-jre
+FROM debian:bullseye-slim
 WORKDIR /app
-COPY --from=build /app/target/users-service-0.1.0.jar /app/app.jar
+COPY --from=builder /app/target/release/users_service /usr/local/bin/users_service
+COPY .env .
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+CMD ["/usr/local/bin/users_service"]
