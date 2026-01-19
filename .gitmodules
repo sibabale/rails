@@ -10,3 +10,6 @@
 [submodule "mvp/rails-docs"]
 	path = mvp/rails-docs
 	url = git@github.com:sibabale/rails-docs.git
+[submodule "mvp/rails-client-server"]
+	path = mvp/rails-client-server
+	url = git@github.com:sibabale/rails-client-server.git
