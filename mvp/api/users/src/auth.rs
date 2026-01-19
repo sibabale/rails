@@ -20,6 +20,7 @@ pub struct AuthContext {
 struct JwtClaims {
     sub: String,
     exp: i64,
+    env: Option<String>,
 }
 
 #[async_trait]
@@ -37,14 +38,6 @@ impl FromRequestParts<AppState> for AuthContext {
             .strip_prefix("Bearer ")
             .ok_or(AppError::Unauthorized)?;
 
-        let env_header = parts
-            .headers
-            .get(ENVIRONMENT_ID_HEADER)
-            .and_then(|v| v.to_str().ok())
-            .ok_or(AppError::BadRequest(format!("Missing {} header", ENVIRONMENT_ID_HEADER)))?;
-        let environment_id = Uuid::parse_str(env_header)
-            .map_err(|_| AppError::BadRequest(format!("Invalid {} header", ENVIRONMENT_ID_HEADER)))?;
-
         let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "dev_secret".to_string());
         let decoded = decode::<JwtClaims>(
             token,
@@ -54,6 +47,22 @@ impl FromRequestParts<AppState> for AuthContext {
         .map_err(|_| AppError::Unauthorized)?;
 
         let user_id = Uuid::parse_str(&decoded.claims.sub).map_err(|_| AppError::Unauthorized)?;
+
+        let environment_id = if let Some(env_header) = parts
+            .headers
+            .get(ENVIRONMENT_ID_HEADER)
+            .and_then(|v| v.to_str().ok())
+        {
+            Uuid::parse_str(env_header)
+                .map_err(|_| AppError::BadRequest(format!("Invalid {} header", ENVIRONMENT_ID_HEADER)))?
+        } else if let Some(env_claim) = decoded.claims.env.as_deref() {
+            Uuid::parse_str(env_claim).map_err(|_| AppError::Unauthorized)?
+        } else {
+            return Err(AppError::BadRequest(format!(
+                "Missing {} header",
+                ENVIRONMENT_ID_HEADER
+            )));
+        };
 
         let rec = sqlx::query(
             "SELECT 1 FROM users WHERE id = $1 AND environment_id = $2 AND status = 'active'"

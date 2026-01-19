@@ -70,3 +70,7 @@ High-level approach:
 - The `users` service does not configure CORS middleware.
 - This may block browser calls in some cases, but it is not a security boundary.
 - The TypeScript SDK is currently usable in browser-like environments unless we add explicit guards.
+
+- 1. cannot have 2 login sessions
+- 2. api token (must be viewed once, masked, only copiable and all this tate management must be secured and done in the backend)
+- 3. 

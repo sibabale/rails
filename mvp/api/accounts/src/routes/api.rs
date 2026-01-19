@@ -1,4 +1,7 @@
 use axum::{
+    http::Request,
+    middleware::{from_fn, Next},
+    response::Response,
     routing::{get, post},
     Router,
 };
@@ -10,10 +13,13 @@ use crate::handlers::{
     health::health_check,
 };
 
+use crate::errors::AppError;
+
 pub fn create_router(pool: PgPool) -> Router {
     Router::<PgPool>::new()
         .route("/health", get(health_check))
         .nest("/api/v1", create_api_routes())
+        .layer(from_fn(correlation_id_middleware))
         .with_state(pool)
 }
 
@@ -26,4 +32,38 @@ fn create_api_routes() -> Router<PgPool> {
         .route("/accounts/:id/transfer", post(transfer))
         .route("/accounts/:account_id/transactions", get(list_account_transactions))
         .route("/transactions/:id", get(get_transaction))
+}
+
+async fn correlation_id_middleware<B>(req: Request<B>, next: Next<B>) -> Result<Response, AppError> {
+    let path = req.uri().path().to_string();
+    let method = req.method().to_string();
+
+    if !path.starts_with("/api/") {
+        return Ok(next.run(req).await);
+    }
+
+    let correlation_id = req
+        .headers()
+        .get("x-correlation-id")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.to_string())
+        .ok_or_else(|| AppError::Validation("x-correlation-id header is required".to_string()))?;
+
+    let start = std::time::Instant::now();
+    tracing::info!(correlation_id = %correlation_id, %method, %path, "start");
+
+    let res = next.run(req).await;
+    let status = res.status().as_u16();
+    let duration_ms = start.elapsed().as_millis();
+    let outcome = if status >= 400 { "failed" } else { "success" };
+
+    if status >= 500 {
+        tracing::error!(correlation_id = %correlation_id, %method, %path, status = status, duration_ms = duration_ms as u64, outcome = outcome, "finish");
+    } else if status >= 400 {
+        tracing::warn!(correlation_id = %correlation_id, %method, %path, status = status, duration_ms = duration_ms as u64, outcome = outcome, "finish");
+    } else {
+        tracing::info!(correlation_id = %correlation_id, %method, %path, status = status, duration_ms = duration_ms as u64, outcome = outcome, "finish");
+    }
+
+    Ok(res)
 }

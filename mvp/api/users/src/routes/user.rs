@@ -22,6 +22,105 @@ pub struct CreateUserResponse {
     pub status: String
 }
 
+#[derive(Serialize)]
+pub struct MeUser {
+    pub id: Uuid,
+    pub business_id: Uuid,
+    pub environment_id: Uuid,
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub role: String,
+    pub status: String,
+}
+
+#[derive(Serialize)]
+pub struct MeBusiness {
+    pub id: Uuid,
+    pub name: String,
+    pub website: Option<String>,
+    pub status: String,
+}
+
+#[derive(Serialize)]
+pub struct MeEnvironment {
+    pub id: Uuid,
+    pub business_id: Uuid,
+    pub r#type: String,
+    pub status: String,
+}
+
+#[derive(Serialize)]
+pub struct MeResponse {
+    pub user: MeUser,
+    pub business: MeBusiness,
+    pub environment: MeEnvironment,
+}
+
+pub async fn me(
+    State(state): State<AppState>,
+    ctx: AuthContext,
+) -> Result<Json<MeResponse>, AppError> {
+    let user_row = sqlx::query(
+        "SELECT id, business_id, environment_id, first_name, last_name, email, role, status FROM users WHERE id = $1 AND environment_id = $2 AND status = 'active'"
+    )
+    .bind(&ctx.user_id)
+    .bind(&ctx.environment_id)
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|_| AppError::Internal)?
+    .ok_or(AppError::Forbidden)?;
+
+    let user = MeUser {
+        id: user_row.get("id"),
+        business_id: user_row.get("business_id"),
+        environment_id: user_row.get("environment_id"),
+        first_name: user_row.get("first_name"),
+        last_name: user_row.get("last_name"),
+        email: user_row.get("email"),
+        role: user_row.get("role"),
+        status: user_row.get("status"),
+    };
+
+    let env_row = sqlx::query(
+        "SELECT id, business_id, type, status FROM environments WHERE id = $1 AND status = 'active'"
+    )
+    .bind(&ctx.environment_id)
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|_| AppError::Internal)?
+    .ok_or(AppError::BadRequest("Invalid environment_id".to_string()))?;
+
+    let environment = MeEnvironment {
+        id: env_row.get("id"),
+        business_id: env_row.get("business_id"),
+        r#type: env_row.get("type"),
+        status: env_row.get("status"),
+    };
+
+    let business_row = sqlx::query(
+        "SELECT id, name, website, status FROM businesses WHERE id = $1 AND status = 'active'"
+    )
+    .bind(&user.business_id)
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|_| AppError::Internal)?
+    .ok_or(AppError::BadRequest("Invalid business_id".to_string()))?;
+
+    let business = MeBusiness {
+        id: business_row.get("id"),
+        name: business_row.get("name"),
+        website: business_row.get("website"),
+        status: business_row.get("status"),
+    };
+
+    Ok(Json(MeResponse {
+        user,
+        business,
+        environment,
+    }))
+}
+
 pub async fn create_user(
     State(state): State<AppState>,
     ctx: AuthContext,

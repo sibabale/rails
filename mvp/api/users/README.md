@@ -60,6 +60,13 @@ export DATABASE_URL="postgresql://localhost:5432/users"
 export NATS_URL="nats://localhost:4222"
 export SERVER_ADDR="0.0.0.0:8080"
 export RUST_LOG="info"
+
+# Service-to-service protection (recommended)
+# Only required for the sensitive endpoints:
+# - POST /api/v1/auth/login
+# - POST /api/v1/business/register
+# Comma-separated list of allowed internal tokens.
+export INTERNAL_SERVICE_TOKEN_ALLOWLIST="replace_me"
 ```
 
 ### 4. Build and Run
@@ -84,6 +91,34 @@ Once running, the service will be available at `http://localhost:8080`:
 - `POST /api/v1/auth/login` - Login and get tokens
 - `POST /api/v1/auth/refresh` - Refresh access token
 - `POST /api/v1/auth/revoke` - Revoke refresh token
+
+## Request Requirements
+
+### Correlation ID
+
+All `/api/...` requests must include:
+
+- `x-correlation-id: <string>`
+
+This is used for request tracking and will be included in logs.
+
+### Sensitive endpoint protection (recommended)
+
+The following endpoints are considered sensitive and can be restricted to trusted internal callers:
+
+- `POST /api/v1/auth/login`
+- `POST /api/v1/business/register`
+
+If `INTERNAL_SERVICE_TOKEN_ALLOWLIST` is set, these endpoints require:
+
+- `x-internal-service-token: <token>`
+
+If the token is missing or not allowlisted, the service responds with `403` and a generic message.
+
+This is designed for the intended production flow:
+
+- Marketing/Client app (Next.js) -> `rails-client-server`
+- `rails-client-server` -> `users-service` (adds internal token + correlation id)
 
 ## Troubleshooting
 
@@ -127,6 +162,8 @@ lsof -i :8080
 
 # Test endpoint
 curl http://localhost:8080/api/v1/business/register \
+  -H "x-correlation-id: local-test-1" \
+  -H "x-internal-service-token: replace_me" \
   -H "Content-Type: application/json" \
   -d '{"name":"Test Business","admin_email":"admin@test.com","admin_password":"password123"}'
 ```

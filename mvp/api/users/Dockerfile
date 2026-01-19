@@ -2,6 +2,14 @@ FROM rust:1.92-slim-bookworm AS builder
 
 WORKDIR /app
 
+# Install build dependencies (for crates using OpenSSL and tonic-build/protoc)
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    protobuf-compiler \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy manifests first for dependency caching
 COPY Cargo.toml Cargo.lock ./
 
@@ -9,7 +17,7 @@ COPY Cargo.toml Cargo.lock ./
 RUN mkdir -p src && echo "fn main() {}" > src/main.rs
 
 # Build dependencies only
-RUN cargo build --release 2>/dev/null || true
+RUN cargo build --release
 
 # Remove dummy source
 RUN rm -rf src
