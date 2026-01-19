@@ -1,94 +1,207 @@
--- Add organizational hierarchy support to accounts table
--- Migration: 20240101000006_add_organizational_hierarchy_to_accounts.sql
+-- V2__organizational_hierarchy.sql
+-- Organizational hierarchy migration with ACID principles and row-level security
 
--- Add admin_user_id column to link customer accounts to their admin
-ALTER TABLE accounts
-ADD COLUMN admin_user_id UUID,
-ADD COLUMN user_role VARCHAR(20) DEFAULT 'CUSTOMER';
+-- Add admin_user_id column to establish customer-admin relationships
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS admin_user_id UUID REFERENCES users(id);
 
--- Add foreign key constraint (self-referencing to users table would be ideal, but we're in accounts service)
--- We'll rely on application-level validation for referential integrity
+-- Add constraints to ensure proper admin-customer relationships
 
--- Add constraint to ensure customer accounts have an admin_user_id
-ALTER TABLE accounts
-ADD CONSTRAINT chk_customer_has_admin
-CHECK (
-    (user_role = 'ADMIN' AND admin_user_id IS NULL) OR
-    (user_role = 'CUSTOMER' AND admin_user_id IS NOT NULL) OR
-    (user_role = 'SERVICE')
-);
+-- Admin users should not have an admin
+ALTER TABLE users
+ADD CONSTRAINT IF NOT EXISTS chk_admin_no_admin_user
+CHECK (role <> 'ADMIN' OR admin_user_id IS NULL);
 
--- Create indexes for performance
-CREATE INDEX idx_accounts_admin_user ON accounts(admin_user_id)
+-- Customer users must have an admin
+ALTER TABLE users
+ADD CONSTRAINT IF NOT EXISTS chk_customer_has_admin
+CHECK (role <> 'CUSTOMER' OR admin_user_id IS NOT NULL);
+
+-- Create indexes for performance optimization
+CREATE INDEX IF NOT EXISTS idx_users_admin_customer ON users(admin_user_id)
 WHERE admin_user_id IS NOT NULL;
 
-CREATE INDEX idx_accounts_user_role ON accounts(user_role);
+CREATE INDEX IF NOT EXISTS idx_users_org_role ON users(organization_id, role);
 
-CREATE INDEX idx_accounts_org_env_admin ON accounts(organization_id, environment, admin_user_id)
-WHERE user_role = 'CUSTOMER';
+CREATE INDEX IF NOT EXISTS idx_users_org_env_admin ON users(organization_id, environment, admin_user_id)
+WHERE role = 'CUSTOMER';
 
-CREATE INDEX idx_accounts_hierarchy ON accounts(user_id, admin_user_id, user_role);
+-- Add organizational context column for better multi-tenancy
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS organizational_context JSONB DEFAULT '{}';
 
--- Update existing accounts to set appropriate roles
--- All existing accounts will be treated as customer accounts initially
-UPDATE accounts
-SET user_role = 'CUSTOMER'
-WHERE user_role IS NULL;
+-- Create index on organizational context for efficient queries
+CREATE INDEX IF NOT EXISTS idx_users_org_context_gin ON users
+USING GIN (organizational_context);
 
--- Add comment explaining the hierarchy
-COMMENT ON COLUMN accounts.admin_user_id IS 'UUID of the admin user who manages this customer account. NULL for admin and service accounts.';
-COMMENT ON COLUMN accounts.user_role IS 'Role of the account owner: ADMIN, CUSTOMER, or SERVICE. Determines account permissions and hierarchy.';
+-- Enable Row Level Security for multi-tenant data isolation
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
--- Create function to validate organizational hierarchy constraints
-CREATE OR REPLACE FUNCTION validate_account_hierarchy()
+-- Create RLS policy for admins to see their own organization and customers
+DROP POLICY IF EXISTS admin_access ON users;
+CREATE POLICY admin_access ON users
+    FOR ALL
+    USING (
+        (role = 'ADMIN' AND id::text = current_user) OR
+        (role = 'CUSTOMER' AND admin_user_id::text = current_user) OR
+        (role = 'SERVICE' AND id::text = current_user)
+    );
+
+-- Create function to get current authenticated user ID (placeholder for JWT integration)
+CREATE OR REPLACE FUNCTION auth_user_id()
+RETURNS UUID AS $$
+BEGIN
+    -- This will be replaced with actual JWT token parsing in application layer
+    -- For now, return current_setting if available
+    RETURN COALESCE(
+        NULLIF(current_setting('app.current_user_id', TRUE), ''),
+        '00000000-0000-0000-0000-000000000000'
+    )::UUID;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create audit trigger for organizational changes
+CREATE OR REPLACE FUNCTION audit_organizational_changes()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Ensure admin_user_id is consistent with user_role
-    IF NEW.user_role = 'CUSTOMER' AND NEW.admin_user_id IS NULL THEN
-        RAISE EXCEPTION 'Customer accounts must have an admin_user_id';
-    END IF;
-
-    IF NEW.user_role = 'ADMIN' AND NEW.admin_user_id IS NOT NULL THEN
-        RAISE EXCEPTION 'Admin accounts cannot have an admin_user_id';
-    END IF;
-
-    -- Prevent self-referencing admin relationships
-    IF NEW.user_id = NEW.admin_user_id THEN
-        RAISE EXCEPTION 'Account cannot be its own admin';
+    -- Log organizational relationship changes
+    IF TG_OP = 'UPDATE' AND (
+        OLD.admin_user_id IS DISTINCT FROM NEW.admin_user_id OR
+        OLD.role IS DISTINCT FROM NEW.role OR
+        OLD.organization_id IS DISTINCT FROM NEW.organization_id
+    ) THEN
+        INSERT INTO outbox_events (
+            id,
+            organization_id,
+            environment,
+            event_type,
+            subject,
+            payload,
+            created_at
+        ) VALUES (
+            gen_random_uuid(),
+            NEW.organization_id,
+            NEW.environment,
+            'USER_ORGANIZATIONAL_CHANGE',
+            'users.organizational.changed',
+            jsonb_build_object(
+                'user_id', NEW.id,
+                'old_admin_id', OLD.admin_user_id,
+                'new_admin_id', NEW.admin_user_id,
+                'old_role', OLD.role,
+                'new_role', NEW.role,
+                'organization_id', NEW.organization_id,
+                'environment', NEW.environment,
+                'changed_at', NOW()
+            ),
+            NOW()
+        );
     END IF;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Create trigger for hierarchy validation
-CREATE TRIGGER trg_validate_account_hierarchy
-    BEFORE INSERT OR UPDATE ON accounts
+-- Create trigger for organizational changes audit
+DROP TRIGGER IF EXISTS trg_audit_organizational_changes ON users;
+CREATE TRIGGER trg_audit_organizational_changes
+    AFTER UPDATE ON users
     FOR EACH ROW
-    EXECUTE FUNCTION validate_account_hierarchy();
+    EXECUTE FUNCTION audit_organizational_changes();
 
--- Add organizational context tracking
-ALTER TABLE accounts
-ADD COLUMN organizational_metadata JSONB DEFAULT '{}';
+-- Create function to validate organizational hierarchy integrity
+CREATE OR REPLACE FUNCTION validate_organizational_hierarchy()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Ensure admin users belong to the same organization as their customers
+    IF NEW.role = 'CUSTOMER' AND NEW.admin_user_id IS NOT NULL THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM users
+            WHERE id = NEW.admin_user_id
+            AND role = 'ADMIN'
+            AND organization_id = NEW.organization_id
+            AND environment = NEW.environment
+        ) THEN
+            RAISE EXCEPTION 'Customer admin must belong to same organization and environment';
+        END IF;
+    END IF;
 
-CREATE INDEX idx_accounts_org_metadata_gin ON accounts
-USING GIN (organizational_metadata);
+    -- Prevent circular admin relationships
+    IF NEW.admin_user_id IS NOT NULL THEN
+        IF EXISTS (
+            WITH RECURSIVE admin_hierarchy AS (
+                SELECT id, admin_user_id, 1 as level
+                FROM users
+                WHERE id = NEW.admin_user_id
 
--- Create view for organizational account analytics
-CREATE OR REPLACE VIEW account_organizational_analytics AS
+                UNION ALL
+
+                SELECT u.id, u.admin_user_id, ah.level + 1
+                FROM users u
+                INNER JOIN admin_hierarchy ah ON u.id = ah.admin_user_id
+                WHERE ah.level < 10 -- Prevent infinite recursion
+            )
+            SELECT 1 FROM admin_hierarchy WHERE id = NEW.id
+        ) THEN
+            RAISE EXCEPTION 'Circular admin relationship detected';
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create constraint trigger for organizational hierarchy validation
+DROP TRIGGER IF EXISTS trg_validate_organizational_hierarchy ON users;
+CREATE CONSTRAINT TRIGGER trg_validate_organizational_hierarchy
+    AFTER INSERT OR UPDATE ON users
+    DEFERRABLE INITIALLY DEFERRED
+    FOR EACH ROW
+    EXECUTE FUNCTION validate_organizational_hierarchy();
+
+-- Add organizational metadata to existing admin users
+UPDATE users
+SET organizational_context = jsonb_build_object(
+    'is_primary_admin', true,
+    'customer_count', 0,
+    'created_via', 'migration',
+    'hierarchy_level', 0
+)
+WHERE role = 'ADMIN';
+
+-- Update organizational context for service users
+UPDATE users
+SET organizational_context = jsonb_build_object(
+    'service_type', 'system',
+    'access_level', 'service',
+    'created_via', 'migration'
+)
+WHERE role = 'SERVICE';
+
+-- Create materialized view for organizational analytics
+CREATE MATERIALIZED VIEW IF NOT EXISTS user_organizational_analytics AS
 SELECT
     organization_id,
     environment,
-    user_role,
-    COUNT(*) as account_count,
-    COUNT(DISTINCT user_id) as unique_users,
-    COUNT(DISTINCT admin_user_id) as unique_admins,
-    SUM(balance) as total_balance,
-    AVG(balance) as average_balance,
-    MIN(created_at) as earliest_account,
-    MAX(created_at) as latest_account
-FROM accounts
-WHERE status = 'active'
-GROUP BY organization_id, environment, user_role;
+    COUNT(*) FILTER (WHERE role = 'ADMIN') as admin_count,
+    COUNT(*) FILTER (WHERE role = 'CUSTOMER') as customer_count,
+    COUNT(*) FILTER (WHERE role = 'SERVICE') as service_count,
+    COUNT(*) FILTER (WHERE role = 'CUSTOMER' AND admin_user_id IS NOT NULL) as customers_with_admin,
+    COUNT(*) FILTER (WHERE role = 'CUSTOMER' AND admin_user_id IS NULL) as orphaned_customers,
+    MAX(created_at) as last_user_created,
+    MIN(created_at) as first_user_created
+FROM users
+WHERE deactivated_at IS NULL
+GROUP BY organization_id, environment;
 
-COMMENT ON VIEW account_organizational_analytics IS 'Organizational analytics for account hierarchy and balances';
+-- Create index on materialized view
+CREATE UNIQUE INDEX IF NOT EXISTS idx_user_org_analytics_pk ON user_organizational_analytics(organization_id, environment);
+
+-- Set up refresh schedule comment (to be implemented in application)
+COMMENT ON MATERIALIZED VIEW user_organizational_analytics IS
+'Organizational analytics view - refresh every 15 minutes via scheduled job';
+
+-- Grant appropriate permissions for application user
+GRANT SELECT, INSERT, UPDATE ON users TO PUBLIC;
+GRANT SELECT ON user_organizational_analytics TO PUBLIC;
+GRANT USAGE ON SCHEMA public TO PUBLIC;
