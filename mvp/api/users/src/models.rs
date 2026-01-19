@@ -38,6 +38,8 @@ pub struct User {
     pub id: Uuid,
     pub business_id: Uuid,
     pub environment_id: Uuid,
+    pub first_name: String,
+    pub last_name: String,
     pub email: String,
     pub password_hash: String,
     pub role: String,

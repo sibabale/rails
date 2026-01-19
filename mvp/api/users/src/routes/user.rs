@@ -10,6 +10,8 @@ use sqlx::Row;
 #[derive(Deserialize)]
 pub struct CreateUserRequest {
     pub environment_id: Uuid,
+    pub first_name: String,
+    pub last_name: String,
     pub email: String,
     pub password: String
 }
@@ -41,11 +43,13 @@ pub async fn create_user(
     let business_id: Uuid = rec.get("business_id");
 
     sqlx::query(
-        "INSERT INTO users (id, business_id, environment_id, email, password_hash, role, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, 'user', 'active', $6, $6)"
+        "INSERT INTO users (id, business_id, environment_id, first_name, last_name, email, password_hash, role, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, 'user', 'active', $8, $8)"
     )
     .bind(&user_id)
     .bind(&business_id)
     .bind(&payload.environment_id)
+    .bind(&payload.first_name)
+    .bind(&payload.last_name)
     .bind(&payload.email)
     .bind(&password_hash)
     .bind(&now)

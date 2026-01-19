@@ -11,6 +11,8 @@ use argon2::password_hash::{SaltString, rand_core::OsRng};
 pub struct RegisterBusinessRequest {
     pub name: String,
     pub website: Option<String>,
+    pub admin_first_name: String,
+    pub admin_last_name: String,
     pub admin_email: String,
     pub admin_password: String
 }
@@ -71,13 +73,15 @@ pub async fn register_business(
         .hash_password(payload.admin_password.as_bytes(), &salt)
         .map_err(|_| AppError::Internal)?
         .to_string();
-    // Only create admin in production for now (MVP, can be extended)
+    // Create the default admin in sandbox
     sqlx::query(
-        "INSERT INTO users (id, business_id, environment_id, email, password_hash, role, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, 'admin', 'active', $6, $6)"
+        "INSERT INTO users (id, business_id, environment_id, first_name, last_name, email, password_hash, role, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, 'admin', 'active', $8, $8)"
     )
     .bind(&admin_user_id)
     .bind(&business_id)
-    .bind(&prod_env_id)
+    .bind(&sandbox_env_id)
+    .bind(&payload.admin_first_name)
+    .bind(&payload.admin_last_name)
     .bind(&payload.admin_email)
     .bind(&password_hash)
     .bind(&now)
