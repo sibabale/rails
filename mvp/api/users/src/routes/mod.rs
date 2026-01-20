@@ -31,6 +31,9 @@ pub fn register_routes(db: Db, nats: NatsClient, grpc: GrpcClients) -> Router {
 
     let protected = Router::new()
         .route("/api/v1/users", post(user::create_user))
+        .route("/api/v1/api-keys", post(apikey::create_api_key))
+        .route("/api/v1/api-keys", get(apikey::list_api_keys))
+        .route("/api/v1/api-keys/:api_key_id/revoke", post(apikey::revoke_api_key))
         .route("/api/v1/me", get(user::me));
 
     public

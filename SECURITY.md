@@ -71,6 +71,7 @@ High-level approach:
 - This may block browser calls in some cases, but it is not a security boundary.
 - The TypeScript SDK is currently usable in browser-like environments unless we add explicit guards.
 
-- 1. cannot have 2 login sessions
-- 2. api token (must be viewed once, masked, only copiable and all this tate management must be secured and done in the backend)
-- 3. 
+- Users service supports Business API keys for server-to-server calls.
+- API keys are generated as cryptographically random secrets and are only returned once on creation.
+- The database stores only a hash of API keys (not plaintext), and revoked keys are retained and blocked.
+-  1. cannot have 2 login sessions

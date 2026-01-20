@@ -4,15 +4,22 @@ use axum::http::request::Parts;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::Deserialize;
 use uuid::Uuid;
+use chrono::Utc;
+use hmac::{Hmac, Mac};
+use sha2::Sha256;
+use sqlx::Row;
 
 use crate::error::AppError;
 use crate::routes::AppState;
 
 pub const ENVIRONMENT_ID_HEADER: &str = "X-Environment-Id";
+pub const API_KEY_HEADER: &str = "X-API-Key";
 
 #[derive(Clone, Debug)]
 pub struct AuthContext {
-    pub user_id: Uuid,
+    pub user_id: Option<Uuid>,
+    pub api_key_id: Option<Uuid>,
+    pub business_id: Uuid,
     pub environment_id: Uuid,
 }
 
@@ -28,6 +35,71 @@ impl FromRequestParts<AppState> for AuthContext {
     type Rejection = AppError;
 
     async fn from_request_parts(parts: &mut Parts, state: &AppState) -> Result<Self, Self::Rejection> {
+        let environment_id = parts
+            .headers
+            .get(ENVIRONMENT_ID_HEADER)
+            .and_then(|v| v.to_str().ok())
+            .ok_or_else(|| AppError::BadRequest(format!("Missing {} header", ENVIRONMENT_ID_HEADER)))
+            .and_then(|raw| {
+                Uuid::parse_str(raw)
+                    .map_err(|_| AppError::BadRequest(format!("Invalid {} header", ENVIRONMENT_ID_HEADER)))
+            })?;
+
+        if let Some(api_key_plain) = parts
+            .headers
+            .get(API_KEY_HEADER)
+            .and_then(|v| v.to_str().ok())
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+        {
+            let now = Utc::now();
+            let key_hash = hash_api_key(&api_key_plain)?;
+
+            let rec = sqlx::query(
+                "SELECT k.id, k.business_id, k.revoked_at, k.status FROM api_keys k WHERE k.key_hash = $1"
+            )
+            .bind(&key_hash)
+            .fetch_optional(&state.db)
+            .await
+            .map_err(|_| AppError::Internal)?
+            .ok_or(AppError::Unauthorized)?;
+
+            let api_key_id: Uuid = rec.try_get("id").map_err(|_| AppError::Internal)?;
+            let business_id: Uuid = rec.try_get("business_id").map_err(|_| AppError::Internal)?;
+            let status: String = rec.try_get("status").map_err(|_| AppError::Internal)?;
+            let revoked_at: Option<chrono::DateTime<Utc>> = rec.try_get("revoked_at").map_err(|_| AppError::Internal)?;
+
+            if status != "active" || revoked_at.is_some() {
+                return Err(AppError::Unauthorized);
+            }
+
+            let env_ok = sqlx::query(
+                "SELECT 1 FROM environments WHERE id = $1 AND business_id = $2 AND status = 'active'"
+            )
+            .bind(&environment_id)
+            .bind(&business_id)
+            .fetch_optional(&state.db)
+            .await
+            .map_err(|_| AppError::Internal)?;
+
+            if env_ok.is_none() {
+                return Err(AppError::Forbidden);
+            }
+
+            let _ = sqlx::query("UPDATE api_keys SET last_used_at = $1 WHERE id = $2")
+                .bind(&now)
+                .bind(&api_key_id)
+                .execute(&state.db)
+                .await;
+
+            return Ok(Self {
+                user_id: None,
+                api_key_id: Some(api_key_id),
+                business_id,
+                environment_id,
+            });
+        }
+
         let auth_header = parts
             .headers
             .get(axum::http::header::AUTHORIZATION)
@@ -48,38 +120,42 @@ impl FromRequestParts<AppState> for AuthContext {
 
         let user_id = Uuid::parse_str(&decoded.claims.sub).map_err(|_| AppError::Unauthorized)?;
 
-        let environment_id = if let Some(env_header) = parts
-            .headers
-            .get(ENVIRONMENT_ID_HEADER)
-            .and_then(|v| v.to_str().ok())
-        {
-            Uuid::parse_str(env_header)
-                .map_err(|_| AppError::BadRequest(format!("Invalid {} header", ENVIRONMENT_ID_HEADER)))?
-        } else if let Some(env_claim) = decoded.claims.env.as_deref() {
-            Uuid::parse_str(env_claim).map_err(|_| AppError::Unauthorized)?
-        } else {
-            return Err(AppError::BadRequest(format!(
-                "Missing {} header",
-                ENVIRONMENT_ID_HEADER
-            )));
-        };
-
         let rec = sqlx::query(
-            "SELECT 1 FROM users WHERE id = $1 AND environment_id = $2 AND status = 'active'"
+            "SELECT business_id FROM users WHERE id = $1 AND environment_id = $2 AND status = 'active'"
         )
         .bind(&user_id)
         .bind(&environment_id)
         .fetch_optional(&state.db)
         .await
-        .map_err(|_| AppError::Internal)?;
+        .map_err(|_| AppError::Internal)?
+        .ok_or(AppError::Forbidden)?;
 
-        if rec.is_none() {
-            return Err(AppError::Forbidden);
-        }
+        let business_id: Uuid = rec.try_get("business_id").map_err(|_| AppError::Internal)?;
 
         Ok(Self {
-            user_id,
+            user_id: Some(user_id),
+            api_key_id: None,
+            business_id,
             environment_id,
         })
     }
+}
+
+pub(crate) fn hash_api_key(api_key_plain: &str) -> Result<String, AppError> {
+    let secret = std::env::var("API_KEY_HASH_SECRET")
+        .unwrap_or_else(|_| "dev_api_key_hash_secret".to_string());
+    let mut mac = Hmac::<Sha256>::new_from_slice(secret.as_bytes()).map_err(|_| AppError::Internal)?;
+    mac.update(api_key_plain.as_bytes());
+    let out = mac.finalize().into_bytes();
+    Ok(hex_encode(&out))
+}
+
+fn hex_encode(bytes: &[u8]) -> String {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut s = String::with_capacity(bytes.len() * 2);
+    for &b in bytes {
+        s.push(HEX[(b >> 4) as usize] as char);
+        s.push(HEX[(b & 0x0f) as usize] as char);
+    }
+    s
 }

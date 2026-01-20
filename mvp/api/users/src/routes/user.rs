@@ -61,10 +61,11 @@ pub async fn me(
     State(state): State<AppState>,
     ctx: AuthContext,
 ) -> Result<Json<MeResponse>, AppError> {
+    let user_id = ctx.user_id.ok_or(AppError::Forbidden)?;
     let user_row = sqlx::query(
         "SELECT id, business_id, environment_id, first_name, last_name, email, role, status FROM users WHERE id = $1 AND environment_id = $2 AND status = 'active'"
     )
-    .bind(&ctx.user_id)
+    .bind(&user_id)
     .bind(&ctx.environment_id)
     .fetch_optional(&state.db)
     .await
@@ -135,18 +136,31 @@ pub async fn create_user(
         .to_string();
 
     let environment_id = ctx.environment_id;
-    let _request_user_id = ctx.user_id;
+    let business_id = ctx.business_id;
 
-    // Find business_id for the environment
-    let rec = sqlx::query("SELECT business_id FROM environments WHERE id = $1")
+    if ctx.api_key_id.is_none() {
+        let request_user_id = ctx.user_id.ok_or(AppError::Forbidden)?;
+        let role_row = sqlx::query(
+            "SELECT role FROM users WHERE id = $1 AND environment_id = $2 AND status = 'active'"
+        )
+        .bind(&request_user_id)
         .bind(&environment_id)
-        .fetch_one(&state.db)
+        .fetch_optional(&state.db)
         .await
-        .map_err(|_| AppError::BadRequest("Invalid environment_id".to_string()))?;
-    let business_id: Uuid = rec.get("business_id");
+        .map_err(|_| AppError::Internal)?
+        .ok_or(AppError::Forbidden)?;
+
+        let role: String = role_row.get("role");
+        if role != "admin" {
+            return Err(AppError::Forbidden);
+        }
+    }
+
+    let created_by_user_id = ctx.user_id;
+    let created_by_api_key_id = ctx.api_key_id;
 
     sqlx::query(
-        "INSERT INTO users (id, business_id, environment_id, first_name, last_name, email, password_hash, role, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, 'user', 'active', $8, $8)"
+        "INSERT INTO users (id, business_id, environment_id, first_name, last_name, email, password_hash, role, status, created_at, updated_at, created_by_user_id, created_by_api_key_id) VALUES ($1, $2, $3, $4, $5, $6, $7, 'user', 'active', $8, $8, $9, $10)"
     )
     .bind(&user_id)
     .bind(&business_id)
@@ -156,6 +170,8 @@ pub async fn create_user(
     .bind(&payload.email)
     .bind(&password_hash)
     .bind(&now)
+    .bind(&created_by_user_id)
+    .bind(&created_by_api_key_id)
     .execute(&state.db)
     .await
     .map_err(|e| {

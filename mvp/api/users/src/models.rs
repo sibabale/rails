@@ -25,12 +25,14 @@ pub struct Environment {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ApiKey {
     pub id: Uuid,
-    pub environment_id: Uuid,
-    pub key: String,
+    pub business_id: Uuid,
+    pub environment_id: Option<Uuid>,
+    pub key_hash: String,
     pub status: String,
     pub last_used_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
     pub revoked_at: Option<DateTime<Utc>>,
+    pub created_by_user_id: Option<Uuid>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -46,6 +48,8 @@ pub struct User {
     pub status: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    pub created_by_user_id: Option<Uuid>,
+    pub created_by_api_key_id: Option<Uuid>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

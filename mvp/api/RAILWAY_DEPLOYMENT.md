@@ -55,6 +55,20 @@ railway whoami
 
 ---
 
+### Users Service Environment Variables (relevant to API keys)
+
+In Railway Dashboard, go to **users-service** → **Variables** and set:
+
+- `API_KEY_HASH_SECRET`
+  - Secret used to hash API keys on the server.
+  - Required for production.
+
+Optional hardening:
+
+- `INTERNAL_SERVICE_TOKEN_ALLOWLIST`
+  - Comma-separated list of internal caller tokens.
+  - Enforces `x-internal-service-token` on the sensitive endpoints.
+
 ## Deployment Steps
 
 ### Step 1: Create Railway Project
@@ -285,6 +299,7 @@ railway logs --service users-service
 # Use one of the public endpoints as a smoke test instead.
 curl -X POST https://users-service-xxxx.railway.app/api/v1/business/register \
   -H "Content-Type: application/json" \
+  -H "x-correlation-id: smoke-test-1" \
   -d '{"name":"Test Business","admin_email":"admin@test.com","admin_password":"password123"}'
 ```
 
@@ -300,6 +315,9 @@ curl -X POST https://users-service-xxxx.railway.app/api/v1/business/register \
 # Create user
 curl -X POST https://users-service-xxxx.railway.app/api/v1/users \
   -H "Content-Type: application/json" \
+  -H "x-correlation-id: e2e-test-1" \
+  -H "x-environment-id: <env_uuid>" \
+  -H "x-api-key: <api_key>" \
   -d '{
     "email": "test@example.com",
     "firstName": "Test",

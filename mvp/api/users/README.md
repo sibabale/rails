@@ -61,6 +61,9 @@ export NATS_URL="nats://localhost:4222"
 export SERVER_ADDR="0.0.0.0:8080"
 export RUST_LOG="info"
 
+# API key hashing secret (required in production)
+export API_KEY_HASH_SECRET="replace_me"
+
 # Service-to-service protection (recommended)
 # Only required for the sensitive endpoints:
 # - POST /api/v1/auth/login
@@ -91,6 +94,9 @@ Once running, the service will be available at `http://localhost:8080`:
 - `POST /api/v1/auth/login` - Login and get tokens
 - `POST /api/v1/auth/refresh` - Refresh access token
 - `POST /api/v1/auth/revoke` - Revoke refresh token
+- `POST /api/v1/api-keys` - Create a new API key (admin JWT only)
+- `GET /api/v1/api-keys` - List API keys for the business (admin JWT only)
+- `POST /api/v1/api-keys/:api_key_id/revoke` - Revoke an API key (admin JWT only)
 
 ## Request Requirements
 
@@ -101,6 +107,55 @@ All `/api/...` requests must include:
 - `x-correlation-id: <string>`
 
 This is used for request tracking and will be included in logs.
+
+### Environment ID
+
+Most authenticated endpoints require:
+
+- `x-environment-id: <uuid>`
+
+This is used to select the active environment (e.g. `sandbox` vs `production`).
+
+### Authentication
+
+Protected endpoints support either:
+
+- `authorization: Bearer <jwt>` (dashboard/admin usage)
+- `x-api-key: <api_key>` (SDK/server-to-server usage)
+
+Notes:
+
+- API keys are **business-owned** and treated as **admin-level** for the MVP.
+- API keys are verified by hashing the provided key and matching it against the stored hash.
+
+### API key creation and one-time reveal
+
+API keys are not created by default.
+
+- `POST /api/v1/api-keys` creates a new API key and returns the plaintext key **exactly once**.
+- The plaintext key is **not stored** in the database.
+- If the key is lost, create a new key and revoke the old one.
+
+Revocation:
+
+- Revoked keys are not deleted.
+- Revocation is implemented using `status='revoked'` and `revoked_at`.
+- Revoked keys are blocked from future calls.
+
+### Local API key flow test
+
+There is a minimal script at the repo root that exercises the full flow:
+
+- Business register
+- Admin login
+- API key creation (one-time reveal)
+- Create user using `x-api-key`
+
+Run:
+
+```bash
+bash test-api-key-flow.sh
+```
 
 ### Sensitive endpoint protection (recommended)
 
