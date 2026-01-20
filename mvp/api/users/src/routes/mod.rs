@@ -13,6 +13,7 @@ use crate::db::Db;
 use crate::nats::NatsClient;
 use crate::grpc::GrpcClients;
 use crate::error::AppError;
+use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -85,17 +86,35 @@ async fn correlation_id_middleware(req: Request<Body>, next: Next) -> Result<Res
         return Ok(next.run(req).await);
     }
 
-    let correlation_id = req
+    let existing = req
         .headers()
         .get("x-correlation-id")
         .and_then(|v| v.to_str().ok())
-        .map(|s| s.to_string())
-        .ok_or_else(|| AppError::BadRequest("x-correlation-id header is required".to_string()))?;
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty());
+
+    let correlation_id = existing.unwrap_or_else(|| Uuid::new_v4().to_string());
+
+    let mut req = req;
+    if existing.is_none() {
+        req.headers_mut().insert(
+            "x-correlation-id",
+            correlation_id
+                .parse()
+                .map_err(|_| AppError::Internal)?,
+        );
+    }
 
     let start = std::time::Instant::now();
     tracing::info!(correlation_id = %correlation_id, %method, %path, "start");
 
-    let res = next.run(req).await;
+    let mut res = next.run(req).await;
+    res.headers_mut().insert(
+        "x-correlation-id",
+        correlation_id
+            .parse()
+            .map_err(|_| AppError::Internal)?,
+    );
     let status = res.status().as_u16();
     let duration_ms = start.elapsed().as_millis();
     let outcome = if status >= 400 { "failed" } else { "success" };

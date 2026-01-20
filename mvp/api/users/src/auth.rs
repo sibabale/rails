@@ -14,6 +14,7 @@ use crate::routes::AppState;
 
 pub const ENVIRONMENT_ID_HEADER: &str = "X-Environment-Id";
 pub const API_KEY_HEADER: &str = "X-API-Key";
+pub const ENVIRONMENT_HEADER: &str = "X-Environment";
 
 #[derive(Clone, Debug)]
 pub struct AuthContext {
@@ -35,15 +36,24 @@ impl FromRequestParts<AppState> for AuthContext {
     type Rejection = AppError;
 
     async fn from_request_parts(parts: &mut Parts, state: &AppState) -> Result<Self, Self::Rejection> {
-        let environment_id = parts
+        let environment_id_from_uuid_header: Option<Uuid> = parts
             .headers
             .get(ENVIRONMENT_ID_HEADER)
             .and_then(|v| v.to_str().ok())
-            .ok_or_else(|| AppError::BadRequest(format!("Missing {} header", ENVIRONMENT_ID_HEADER)))
-            .and_then(|raw| {
-                Uuid::parse_str(raw)
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty())
+            .map(|raw| {
+                Uuid::parse_str(&raw)
                     .map_err(|_| AppError::BadRequest(format!("Invalid {} header", ENVIRONMENT_ID_HEADER)))
-            })?;
+            })
+            .transpose()?;
+
+        let environment_from_string_header: Option<String> = parts
+            .headers
+            .get(ENVIRONMENT_HEADER)
+            .and_then(|v| v.to_str().ok())
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty());
 
         if let Some(api_key_plain) = parts
             .headers
@@ -73,6 +83,32 @@ impl FromRequestParts<AppState> for AuthContext {
                 return Err(AppError::Unauthorized);
             }
 
+            let environment_id = if let Some(env_id) = environment_id_from_uuid_header {
+                env_id
+            } else {
+                let env = environment_from_string_header
+                    .ok_or_else(|| AppError::BadRequest(format!("Missing {} header", ENVIRONMENT_HEADER)))?;
+
+                if env != "sandbox" && env != "production" {
+                    return Err(AppError::BadRequest(format!(
+                        "Invalid {} header: must be 'sandbox' or 'production'",
+                        ENVIRONMENT_HEADER
+                    )));
+                }
+
+                let env_rec = sqlx::query(
+                    "SELECT id FROM environments WHERE business_id = $1 AND type = $2 AND status = 'active'"
+                )
+                .bind(&business_id)
+                .bind(&env)
+                .fetch_optional(&state.db)
+                .await
+                .map_err(|_| AppError::Internal)?
+                .ok_or_else(|| AppError::Forbidden)?;
+
+                env_rec.try_get("id").map_err(|_| AppError::Internal)?
+            };
+
             let env_ok = sqlx::query(
                 "SELECT 1 FROM environments WHERE id = $1 AND business_id = $2 AND status = 'active'"
             )
@@ -99,6 +135,9 @@ impl FromRequestParts<AppState> for AuthContext {
                 environment_id,
             });
         }
+
+        let environment_id = environment_id_from_uuid_header
+            .ok_or_else(|| AppError::BadRequest(format!("Missing {} header", ENVIRONMENT_ID_HEADER)))?;
 
         let auth_header = parts
             .headers
