@@ -1,0 +1,138 @@
+# yaml-language-server: $schema=https://app.stainless.com/config.schema.json
+
+# The main edition for the config, see the [docs] for more information.
+#
+# [docs]: https://www.stainless.com/docs/reference/editions
+edition: 2025-10-10
+
+organization:
+  # Name of your organization or company, used to determine the name of the client
+  # and headings.
+  name: rails
+  # Link to your API documentation.
+  docs: ''
+  # Contact email for bug reports, questions, and support requests.
+  contact: ''
+
+# `targets` define the output targets and their customization options, such as
+# whether to emit the Node SDK and what its package name should be.
+targets:
+  typescript:
+    # The edition for this target, see the [docs] for more information.
+    #
+    # [docs]: https://www.stainless.com/docs/reference/editions
+    edition: typescript.2025-10-10
+    package_name: rails
+    production_repo: null
+    publish:
+      npm: false
+  python:
+    edition: python.2025-11-20
+    package_name: rails
+    production_repo: null
+    publish:
+      pypi: false
+  go:
+    edition: go.2025-10-08
+    package_name: rails
+    production_repo: null
+    options:
+      enable_v2: true
+  java:
+    edition: java.2025-10-08
+    reverse_domain: com.rails.api
+    production_repo: null
+    publish:
+      maven: false
+  kotlin:
+    edition: kotlin.2025-10-08
+    reverse_domain: com.rails.api
+    production_repo: null
+    publish:
+      maven: false
+  ruby:
+    edition: ruby.2025-10-08
+    gem_name: rails
+    production_repo: null
+    publish:
+      rubygems: false
+  cli:
+    edition: cli.2025-10-08
+    binary_name: rails
+    production_repo: null
+  csharp:
+    edition: csharp.2025-10-08
+    package_name: rails
+    production_repo: null
+    publish:
+      nuget: false
+  php:
+    edition: php.2025-10-08
+    package_name: rails
+    production_repo: null
+    composer_package_name: org-placeholder/rails
+
+# `environments` are a map of the name of the environment (e.g. "sandbox",
+# "production") to the corresponding url to use.
+environments:
+  production: https://api.rails.com
+
+# `resources` define the structure and organization for your API, such as how
+# methods and models are grouped together and accessed. See the [configuration
+# guide] for more information.
+#
+# [configuration guide]: https://www.stainless.com/docs/guides/configure#resources
+resources:
+  users:
+    methods:
+      create: post /api/v1/users
+
+  accounts:
+    methods:
+      create: post /api/v1/accounts
+      list: get /api/v1/accounts
+      retrieve: get /api/v1/accounts/{id}
+      update_status: patch /api/v1/accounts/{id}
+      close: delete /api/v1/accounts/{id}
+      deposit: post /api/v1/accounts/{id}/deposit
+      withdraw: post /api/v1/accounts/{id}/withdraw
+      transfer: post /api/v1/accounts/{id}/transfer
+
+  transactions:
+    methods:
+      list_by_account: get /api/v1/accounts/{account_id}/transactions
+      retrieve: get /api/v1/transactions/{id}
+
+settings:
+  # All generated integration tests that hit the prism mock http server are marked
+  # as skipped. Removing this setting or setting it to false enables tests, but
+  # doing so may result in test failures due to bugs in the test server.
+  #
+  # [prism mock http server]: https://stoplight.io/open-source/prism
+  disable_mock_tests: true
+  license: Apache-2.0
+
+# `client_settings` define settings for the API client, such as extra constructor
+# arguments (used for authentication), retry behavior, idempotency, etc.
+client_settings:
+  opts:
+    api_key:
+      type: string
+      nullable: false
+      auth:
+        security_scheme: apiKeyAuth
+      read_env: RAILS_API_KEY
+
+# `readme` is used to configure the code snippets that will be rendered in the
+# README.md of various SDKs. In particular, you can change the `headline`
+# snippet's endpoint and the arguments to call it with.
+readme:
+  example_requests:
+    default:
+      type: request
+      endpoint: post /api/v1/users
+      params: {}
+    headline:
+      type: request
+      endpoint: post /api/v1/users
+      params: {}

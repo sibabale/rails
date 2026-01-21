@@ -1,0 +1,34 @@
+{
+  "project": "rails",
+  "openapi_spec": "openapi-rails.json",
+  "stainless_config": "stainless.yml",
+  "targets": {
+    "cli": {
+      "output_path": "../sdks/rails-cli"
+    },
+    "csharp": {
+      "output_path": "../sdks/rails-csharp"
+    },
+    "go": {
+      "output_path": "../sdks/rails-go"
+    },
+    "java": {
+      "output_path": "../sdks/rails-java"
+    },
+    "kotlin": {
+      "output_path": "../sdks/rails-kotlin"
+    },
+    "php": {
+      "output_path": "../sdks/rails-php"
+    },
+    "python": {
+      "output_path": "../sdks/rails-python"
+    },
+    "ruby": {
+      "output_path": "../sdks/rails-ruby"
+    },
+    "typescript": {
+      "output_path": "../sdks/rails-typescript"
+    }
+  }
+}
