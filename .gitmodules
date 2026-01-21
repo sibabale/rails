@@ -13,3 +13,6 @@
 [submodule "mvp/rails-client-server"]
 	path = mvp/rails-client-server
 	url = git@github.com:sibabale/rails-client-server.git
+[submodule "mvp/rails-web"]
+	path = mvp/rails-web
+	url = git@github.com:sibabale/rails-web.git
