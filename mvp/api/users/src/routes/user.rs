@@ -159,6 +159,18 @@ pub async fn create_user(
     let created_by_user_id = ctx.user_id;
     let created_by_api_key_id = ctx.api_key_id;
 
+    let env_row = sqlx::query(
+        "SELECT type FROM environments WHERE id = $1 AND business_id = $2 AND status = 'active'",
+    )
+    .bind(&environment_id)
+    .bind(&business_id)
+    .fetch_optional(&state.db)
+    .await
+    .map_err(|_| AppError::Internal)?
+    .ok_or(AppError::Forbidden)?;
+
+    let environment_type: String = env_row.get("type");
+
     sqlx::query(
         "INSERT INTO users (id, business_id, environment_id, first_name, last_name, email, password_hash, role, status, created_at, updated_at, created_by_user_id, created_by_api_key_id) VALUES ($1, $2, $3, $4, $5, $6, $7, 'user', 'active', $8, $8, $9, $10)"
     )
@@ -186,13 +198,16 @@ pub async fn create_user(
     // Publish NATS event
     let event = serde_json::json!({
         "event": "users.user.created",
+        "organization_id": business_id,
+        "environment": environment_type.clone(),
         "user_id": user_id,
         "business_id": business_id,
         "environment_id": environment_id,
         "email": payload.email,
         "created_at": now,
     });
-    let subject = std::env::var("NATS_SUBJECT_USER_CREATED").unwrap_or_else(|_| "users.user.created".to_string());
+    let subject = std::env::var("NATS_SUBJECT_USER_CREATED")
+        .unwrap_or_else(|_| format!("users.user.created.{}.{}", business_id, environment_type));
     let _ = state.nats.publish(subject, serde_json::to_vec(&event).unwrap().into()).await;
 
     Ok(Json(CreateUserResponse {
