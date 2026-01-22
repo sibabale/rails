@@ -8,14 +8,32 @@ ADD COLUMN IF NOT EXISTS admin_user_id UUID REFERENCES users(id);
 -- Add constraints to ensure proper admin-customer relationships
 
 -- Admin users should not have an admin
-ALTER TABLE users
-ADD CONSTRAINT IF NOT EXISTS chk_admin_no_admin_user
-CHECK (role <> 'ADMIN' OR admin_user_id IS NULL);
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'chk_admin_no_admin_user'
+    ) THEN
+        ALTER TABLE users
+        ADD CONSTRAINT chk_admin_no_admin_user
+        CHECK (role <> 'ADMIN' OR admin_user_id IS NULL);
+    END IF;
+END $$;
 
 -- Customer users must have an admin
-ALTER TABLE users
-ADD CONSTRAINT IF NOT EXISTS chk_customer_has_admin
-CHECK (role <> 'CUSTOMER' OR admin_user_id IS NOT NULL);
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'chk_customer_has_admin'
+    ) THEN
+        ALTER TABLE users
+        ADD CONSTRAINT chk_customer_has_admin
+        CHECK (role <> 'CUSTOMER' OR admin_user_id IS NOT NULL);
+    END IF;
+END $$;
 
 -- Create indexes for performance optimization
 CREATE INDEX IF NOT EXISTS idx_users_admin_customer ON users(admin_user_id)

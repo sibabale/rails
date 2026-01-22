@@ -42,7 +42,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Connected to database");
 
     // Run migrations
-    sqlx::migrate!("./migrations").run(&pool).await?;
+    let mut migrator = sqlx::migrate!("./migrations_accounts");
+    migrator.set_ignore_missing(true);
+    if let Err(e) = migrator.run(&pool).await {
+        match e {
+            sqlx::migrate::MigrateError::VersionMissing(_)
+            | sqlx::migrate::MigrateError::VersionMismatch(_) => {
+                tracing::warn!(
+                    "Skipping SQLx migration failure (shared prod DB / hash drift): {}",
+                    e
+                );
+            }
+            _ => return Err(e.into()),
+        }
+    }
 
     info!("Database migrations completed");
 

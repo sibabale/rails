@@ -33,6 +33,7 @@ RUN rm -rf src
 # Copy actual source code
 COPY src ./src
 COPY migrations ./migrations
+COPY migrations_accounts ./migrations_accounts
 
 # Build the application
 RUN touch src/main.rs && cargo build --release
@@ -53,6 +54,7 @@ COPY --from=builder /app/target/release/accounts-api /app/accounts-api
 
 # Copy migrations for runtime
 COPY --from=builder /app/migrations /app/migrations
+COPY --from=builder /app/migrations_accounts /app/migrations_accounts
 
 # Expose HTTP and gRPC ports
 EXPOSE 8081 9090
