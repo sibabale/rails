@@ -3,7 +3,6 @@ use crate::errors::AppError;
 use crate::models::{Account, AccountStatus, CreateAccountRequest};
 use crate::repositories::{AccountRepository, TransactionRepository};
 use crate::utils::generate_account_number;
-use sqlx::types::BigDecimal;
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -134,48 +133,60 @@ impl AccountService {
     pub async fn deposit(
         pool: &PgPool,
         account_id: Uuid,
-        amount: sqlx::types::BigDecimal,
+        amount: i64,
     ) -> Result<(Account, crate::models::Transaction), AppError> {
-        let mut account = AccountRepository::find_by_id(pool, account_id).await?;
+        let idempotency_key = Uuid::new_v4().to_string();
+        Self::deposit_with_idempotency(pool, account_id, amount, &idempotency_key).await
+    }
+
+    pub async fn deposit_with_idempotency(
+        pool: &PgPool,
+        account_id: Uuid,
+        amount: i64,
+        idempotency_key: &str,
+    ) -> Result<(Account, crate::models::Transaction), AppError> {
+        if idempotency_key.trim().is_empty() {
+            return Err(AppError::Validation("Idempotency-Key header is required".to_string()));
+        }
+
+        let account = AccountRepository::find_by_id(pool, account_id).await?;
 
         if account.status != Some(AccountStatus::Active) {
             return Err(AppError::AccountNotActive);
         }
 
-        // Start transaction
+        let organization_id = account
+            .organization_id
+            .ok_or_else(|| AppError::Validation("organization_id is required".to_string()))?;
+
+        let currency = account
+            .currency
+            .clone()
+            .unwrap_or_else(|| "USD".to_string());
+
         let mut tx = pool.begin().await?;
 
-        // Update balance
-            // Parse balance to BigDecimal
-            let balance_str = account.balance.as_ref().ok_or_else(|| AppError::Internal("Account balance is None".to_string()))?;
-            let current_balance = sqlx::types::BigDecimal::parse_bytes(balance_str.as_bytes(), 10)
-                .ok_or_else(|| AppError::Internal("Failed to parse account balance".to_string()))?;
-            let new_balance = current_balance + amount.clone();
-            let new_balance_str = new_balance.to_string();
-
-        // Create transaction record
-        let transaction = TransactionRepository::create(
+        let transaction = TransactionRepository::create_or_get_by_idempotency(
             &mut *tx,
+            organization_id,
             account_id,
-            crate::models::TransactionType::Deposit,
-            amount.to_string(),
-            account.currency.as_deref().unwrap_or("USD"),
-            new_balance_str.clone(),
-            None,
-            None,
-            None,
-            None,
-        ).await?;
-
-        // Update transaction status to completed
-        let transaction = TransactionRepository::update_status(
-            &mut *tx,
-            transaction.id,
-            crate::models::TransactionStatus::Completed,
+            account_id,
+            amount,
+            &currency,
+            idempotency_key,
         )
         .await?;
 
         tx.commit().await?;
+
+        info!(
+            organization_id = %organization_id,
+            transaction_id = %transaction.id,
+            from_account_id = %transaction.from_account_id,
+            to_account_id = %transaction.to_account_id,
+            status = ?transaction.status,
+            "transaction_intent_created"
+        );
 
         Ok((account, transaction))
     }
@@ -183,53 +194,61 @@ impl AccountService {
     pub async fn withdraw(
         pool: &PgPool,
         account_id: Uuid,
-        amount: sqlx::types::BigDecimal,
+        amount: i64,
     ) -> Result<(Account, crate::models::Transaction), AppError> {
+        let idempotency_key = Uuid::new_v4().to_string();
+        Self::withdraw_with_idempotency(pool, account_id, amount, &idempotency_key).await
+    }
+
+    pub async fn withdraw_with_idempotency(
+        pool: &PgPool,
+        account_id: Uuid,
+        amount: i64,
+        idempotency_key: &str,
+    ) -> Result<(Account, crate::models::Transaction), AppError> {
+        if idempotency_key.trim().is_empty() {
+            return Err(AppError::Validation("Idempotency-Key header is required".to_string()));
+        }
+
         let account = AccountRepository::find_by_id(pool, account_id).await?;
 
         if account.status != Some(AccountStatus::Active) {
             return Err(AppError::AccountNotActive);
         }
 
-            // Parse balance to BigDecimal
-            let balance_str = account.balance.as_ref().ok_or_else(|| AppError::Internal("Account balance is None".to_string()))?;
-            let current_balance = sqlx::types::BigDecimal::parse_bytes(balance_str.as_bytes(), 10)
-                .ok_or_else(|| AppError::Internal("Failed to parse account balance".to_string()))?;
-            if current_balance < amount {
-                return Err(AppError::InsufficientFunds);
-            }
+        let organization_id = account
+            .organization_id
+            .ok_or_else(|| AppError::Validation("organization_id is required".to_string()))?;
 
-        // Start transaction
+        let currency = account
+            .currency
+            .clone()
+            .unwrap_or_else(|| "USD".to_string());
+
         let mut tx = pool.begin().await?;
+        let idempotency_key = Uuid::new_v4().to_string();
 
-        // Update balance
-            let new_balance = current_balance - amount.clone();
-            let new_balance_str = new_balance.to_string();
-            let account = AccountRepository::update_balance(&mut *tx, account_id, new_balance_str.clone()).await?;
-
-        // Create transaction record
-        let transaction = TransactionRepository::create(
+        let transaction = TransactionRepository::create_or_get_by_idempotency(
             &mut *tx,
+            organization_id,
             account_id,
-            crate::models::TransactionType::Withdrawal,
-            amount.to_string(),
-            account.currency.as_deref().unwrap_or("USD"),
-            new_balance_str.clone(),
-            None,
-            None,
-            None,
-            None,
-        ).await?;
-
-        // Update transaction status to completed
-        let transaction = TransactionRepository::update_status(
-            &mut *tx,
-            transaction.id,
-            crate::models::TransactionStatus::Completed,
+            account_id,
+            amount,
+            &currency,
+            &idempotency_key,
         )
         .await?;
 
         tx.commit().await?;
+
+        info!(
+            organization_id = %organization_id,
+            transaction_id = %transaction.id,
+            from_account_id = %transaction.from_account_id,
+            to_account_id = %transaction.to_account_id,
+            status = ?transaction.status,
+            "transaction_intent_created"
+        );
 
         Ok((account, transaction))
     }
@@ -238,9 +257,24 @@ impl AccountService {
         pool: &PgPool,
         from_account_id: Uuid,
         to_account_id: Uuid,
-        amount: sqlx::types::BigDecimal,
-        description: Option<String>,
+        amount: i64,
+        _description: Option<String>,
     ) -> Result<(Account, Account, crate::models::Transaction), AppError> {
+        let idempotency_key = Uuid::new_v4().to_string();
+        Self::transfer_with_idempotency(pool, from_account_id, to_account_id, amount, &idempotency_key).await
+    }
+
+    pub async fn transfer_with_idempotency(
+        pool: &PgPool,
+        from_account_id: Uuid,
+        to_account_id: Uuid,
+        amount: i64,
+        idempotency_key: &str,
+    ) -> Result<(Account, Account, crate::models::Transaction), AppError> {
+        if idempotency_key.trim().is_empty() {
+            return Err(AppError::Validation("Idempotency-Key header is required".to_string()));
+        }
+
         let from_account = AccountRepository::find_by_id(pool, from_account_id).await?;
 
         if from_account.status != Some(AccountStatus::Active) {
@@ -254,50 +288,57 @@ impl AccountService {
             return Err(AppError::AccountNotActive);
         }
 
-        let from_balance_str = from_account.balance.as_ref().ok_or_else(|| AppError::Internal("From account balance is None".to_string()))?;
-        let to_balance_str = to_account.balance.as_ref().ok_or_else(|| AppError::Internal("To account balance is None".to_string()))?;
-        let from_balance = sqlx::types::BigDecimal::parse_bytes(from_balance_str.as_bytes(), 10)
-            .ok_or_else(|| AppError::Internal("Failed to parse from_account balance".to_string()))?;
-        let to_balance = sqlx::types::BigDecimal::parse_bytes(to_balance_str.as_bytes(), 10)
-            .ok_or_else(|| AppError::Internal("Failed to parse to_account balance".to_string()))?;
-        if from_balance < amount {
-            return Err(AppError::InsufficientFunds);
+        let from_org = from_account
+            .organization_id
+            .ok_or_else(|| AppError::Validation("organization_id is required".to_string()))?;
+        let to_org = to_account
+            .organization_id
+            .ok_or_else(|| AppError::Validation("organization_id is required".to_string()))?;
+
+        if from_org != to_org {
+            return Err(AppError::Validation(
+                "accounts must belong to the same organization".to_string(),
+            ));
         }
 
-        // Start transaction
+        let from_currency = from_account
+            .currency
+            .clone()
+            .unwrap_or_else(|| "USD".to_string());
+        let to_currency = to_account
+            .currency
+            .clone()
+            .unwrap_or_else(|| "USD".to_string());
+
+        if from_currency != to_currency {
+            return Err(AppError::Validation(
+                "currency must match both accounts".to_string(),
+            ));
+        }
+
         let mut tx = pool.begin().await?;
 
-        // Update balance
-            let from_new_balance = from_balance - amount.clone();
-            let from_new_balance_str = from_new_balance.to_string();
-            let to_new_balance = to_balance + amount.clone();
-            let to_new_balance_str = to_new_balance.to_string();
-            let from_account = AccountRepository::update_balance(&mut *tx, from_account_id, from_new_balance_str.clone()).await?;
-            let to_account = AccountRepository::update_balance(&mut *tx, to_account_id, to_new_balance_str.clone()).await?;
-
-        // Create transaction record
-        let transaction = TransactionRepository::create(
+        let transaction = TransactionRepository::create_or_get_by_idempotency(
             &mut *tx,
+            from_org,
             from_account_id,
-            crate::models::TransactionType::Transfer,
-            amount.to_string(),
-            from_account.currency.as_deref().unwrap_or("USD"),
-            from_new_balance_str.clone(),
-            Some(to_account_id),
-            None,
-            None,
-            None,
-        ).await?;
-
-        // Update transaction status to completed
-        let transaction = TransactionRepository::update_status(
-            &mut *tx,
-            transaction.id,
-            crate::models::TransactionStatus::Completed,
+            to_account_id,
+            amount,
+            &from_currency,
+            idempotency_key,
         )
         .await?;
 
         tx.commit().await?;
+
+        info!(
+            organization_id = %from_org,
+            transaction_id = %transaction.id,
+            from_account_id = %transaction.from_account_id,
+            to_account_id = %transaction.to_account_id,
+            status = ?transaction.status,
+            "transaction_intent_created"
+        );
 
         Ok((from_account, to_account, transaction))
     }

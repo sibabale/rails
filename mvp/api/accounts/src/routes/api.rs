@@ -1,4 +1,5 @@
 use axum::{
+    body::Body,
     http::Request,
     middleware::{from_fn, Next},
     response::Response,
@@ -32,10 +33,11 @@ fn create_api_routes() -> Router<PgPool> {
         .route("/accounts/:id/withdraw", post(withdraw))
         .route("/accounts/:id/transfer", post(transfer))
         .route("/accounts/:account_id/transactions", get(list_account_transactions))
+        .route("/transactions", post(create_transaction))
         .route("/transactions/:id", get(get_transaction))
 }
 
-async fn correlation_id_middleware<B>(req: Request<B>, next: Next<B>) -> Result<Response, AppError> {
+async fn correlation_id_middleware(req: Request<Body>, next: Next) -> Result<Response, AppError> {
     let path = req.uri().path().to_string();
     let method = req.method().to_string();
 
@@ -50,7 +52,10 @@ async fn correlation_id_middleware<B>(req: Request<B>, next: Next<B>) -> Result<
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty());
 
-    let correlation_id = existing.unwrap_or_else(|| Uuid::new_v4().to_string());
+    let correlation_id = existing
+        .as_deref()
+        .map(ToString::to_string)
+        .unwrap_or_else(|| Uuid::new_v4().to_string());
 
     let mut req = req;
     if existing.is_none() {

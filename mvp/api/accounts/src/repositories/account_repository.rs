@@ -24,7 +24,7 @@ impl AccountRepository {
             r#"
             INSERT INTO accounts (account_number, account_type, organization_id, environment, user_id, currency)
             VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING id, account_number, account_type, organization_id, environment, user_id, balance::text, currency, status, created_at, updated_at
+            RETURNING id, account_number, account_type, organization_id, environment, user_id, currency, status, created_at, updated_at
             "#,
         )
         .bind(account_number)
@@ -55,32 +55,31 @@ impl AccountRepository {
             AccountType::Saving => "saving",
         };
 
-        let account = sqlx::query_as!(
-            Account,
+        let row = sqlx::query(
             r#"
             INSERT INTO accounts (account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            RETURNING id, account_number, account_type as "account_type: _", organization_id, environment, user_id, admin_user_id, user_role, balance::text, currency, status as "status: _", created_at, updated_at
+            RETURNING id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             "#,
-            account_number,
-            account_type_str,
-            organization_id,
-            environment,
-            user_id,
-            admin_user_id,
-            user_role,
-            currency
         )
+        .bind(account_number)
+        .bind(account_type_str)
+        .bind(organization_id)
+        .bind(environment)
+        .bind(user_id)
+        .bind(admin_user_id)
+        .bind(user_role)
+        .bind(currency)
         .fetch_one(executor)
         .await?;
 
-        Ok(account)
+        Ok(Self::row_to_account(&row).map_err(|e| sqlx::Error::Protocol(e.to_string().into()))?)
     }
 
     pub async fn find_by_id(pool: &PgPool, id: Uuid) -> Result<Account, AppError> {
         let row = sqlx::query(
             r#"
-            SELECT id, account_number, account_type, organization_id, environment, user_id, balance::text, currency, status, created_at, updated_at
+            SELECT id, account_number, account_type, organization_id, environment, user_id, currency, status, created_at, updated_at
             FROM accounts
             WHERE id = $1
             "#,
@@ -99,7 +98,7 @@ impl AccountRepository {
     ) -> Result<Account, AppError> {
         let row = sqlx::query(
             r#"
-            SELECT id, account_number, account_type, organization_id, environment, user_id, balance::text, currency, status, created_at, updated_at
+            SELECT id, account_number, account_type, organization_id, environment, user_id, currency, status, created_at, updated_at
             FROM accounts
             WHERE account_number = $1
             "#,
@@ -115,7 +114,7 @@ impl AccountRepository {
     pub async fn find_by_user_id(pool: &PgPool, user_id: Uuid) -> Result<Vec<Account>, AppError> {
         let rows = sqlx::query(
             r#"
-            SELECT id, account_number, account_type, organization_id, environment, user_id, balance::text, currency, status, created_at, updated_at
+            SELECT id, account_number, account_type, organization_id, environment, user_id, currency, status, created_at, updated_at
             FROM accounts
             WHERE user_id = $1
             ORDER BY created_at DESC
@@ -131,27 +130,6 @@ impl AccountRepository {
             .collect::<Result<Vec<_>, _>>()?;
 
         Ok(accounts)
-    }
-
-    pub async fn update_balance(
-        executor: impl sqlx::Executor<'_, Database = sqlx::Postgres>,
-        id: Uuid,
-        new_balance: String,
-    ) -> Result<Account, AppError> {
-        let row = sqlx::query(
-            r#"
-            UPDATE accounts
-            SET balance = $2::numeric, updated_at = NOW()
-            WHERE id = $1
-            RETURNING id, account_number, account_type, organization_id, environment, user_id, balance::text, currency, status, created_at, updated_at
-            "#,
-        )
-        .bind(id)
-        .bind(new_balance)
-        .fetch_one(executor)
-        .await?;
-
-        Ok(Self::row_to_account(&row)?)
     }
 
     pub async fn update_status(
@@ -170,7 +148,7 @@ impl AccountRepository {
             UPDATE accounts
             SET status = $2, updated_at = NOW()
             WHERE id = $1
-            RETURNING id, account_number, account_type, organization_id, environment, user_id, balance::text, currency, status, created_at, updated_at
+            RETURNING id, account_number, account_type, organization_id, environment, user_id, currency, status, created_at, updated_at
             "#,
         )
         .bind(id)
@@ -222,11 +200,6 @@ impl AccountRepository {
             _ => return Err(AppError::Internal("Invalid account status".to_string())),
         };
 
-        // Convert Decimal from PostgreSQL numeric type (stored as string)
-        let balance_str: String = row.get("balance");
-        let balance = sqlx::types::BigDecimal::parse_bytes(balance_str.as_bytes(), 10)
-            .ok_or_else(|| AppError::Internal("Failed to parse balance".to_string()))?;
-
         Ok(Account {
             id: row.get("id"),
             account_number: row.get("account_number"),
@@ -236,7 +209,6 @@ impl AccountRepository {
             user_id: row.get("user_id"),
             admin_user_id: row.try_get("admin_user_id").ok(),
             user_role: row.try_get("user_role").ok(),
-            balance: Some(balance_str),
             currency: Some(row.get("currency")),
             status: Some(status),
             created_at: row.get("created_at"),

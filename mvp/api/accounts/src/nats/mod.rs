@@ -136,7 +136,7 @@ async fn handle_organizational_change_events(
 }
 
 async fn process_user_created_event(
-    pool: &PgPool,
+    _pool: &PgPool,
     js: &async_nats::jetstream::Context,
     message: async_nats::jetstream::Message,
 ) -> anyhow::Result<()> {
@@ -209,7 +209,7 @@ async fn process_user_created_event(
 }
 
 async fn process_organizational_change_event(
-    pool: &PgPool,
+    _pool: &PgPool,
     js: &async_nats::jetstream::Context,
     message: async_nats::jetstream::Message,
 ) -> anyhow::Result<()> {
@@ -298,7 +298,6 @@ async fn publish_account_created_event(
         "user_id": account.user_id,
         "admin_user_id": account.admin_user_id,
         "user_role": account.user_role,
-        "balance": account.balance,
         "currency": account.currency,
         "status": account.status,
         "created_at": account.created_at,

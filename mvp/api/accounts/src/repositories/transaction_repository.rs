@@ -1,53 +1,41 @@
 use crate::errors::AppError;
-use crate::models::{Transaction, TransactionStatus, TransactionType};
+use crate::models::{Transaction, TransactionStatus};
+use chrono::{DateTime, Duration, Utc};
 use sqlx::{PgPool, Row};
-use std::str::FromStr;
 use uuid::Uuid;
 
 pub struct TransactionRepository;
 
 impl TransactionRepository {
-    pub async fn create(
+    pub async fn create_or_get_by_idempotency(
         executor: impl sqlx::Executor<'_, Database = sqlx::Postgres>,
-        account_id: Uuid,
-        transaction_type: TransactionType,
-        amount: String,
+        organization_id: Uuid,
+        from_account_id: Uuid,
+        to_account_id: Uuid,
+        amount: i64,
         currency: &str,
-        balance_after: String,
-        recipient_account_id: Option<Uuid>,
-        external_recipient_id: Option<&str>,
-        reference_id: Option<Uuid>,
-        description: Option<&str>,
+        idempotency_key: &str,
     ) -> Result<Transaction, AppError> {
-        let transaction_type_str: &str = match transaction_type {
-            TransactionType::Deposit => "deposit",
-            TransactionType::Withdrawal => "withdrawal",
-            TransactionType::Transfer => "transfer",
-            TransactionType::RecurringPayment => "recurring_payment",
-            TransactionType::SavingsWithdraw => "savings_withdraw",
-        };
-
         let row = sqlx::query(
             r#"
             INSERT INTO transactions (
-                account_id, transaction_type, amount, currency, balance_after,
-                recipient_account_id, external_recipient_id, reference_id, description, status
+                organization_id, from_account_id, to_account_id, amount, currency,
+                status, failure_reason, idempotency_key
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending')
-            RETURNING id, account_id, transaction_type, amount::text, currency, balance_after::text,
-                      recipient_account_id, external_recipient_id, reference_id, description,
-                      status, created_at, updated_at
+            VALUES ($1, $2, $3, $4, $5, 'pending', NULL, $6)
+            ON CONFLICT (organization_id, idempotency_key)
+            DO UPDATE SET
+                updated_at = transactions.updated_at
+            RETURNING id, organization_id, from_account_id, to_account_id, amount, currency,
+                      status, failure_reason, idempotency_key, created_at, updated_at
             "#,
         )
-        .bind(account_id)
-        .bind(transaction_type_str)
-        .bind(&amount)
+        .bind(organization_id)
+        .bind(from_account_id)
+        .bind(to_account_id)
+        .bind(amount)
         .bind(currency)
-        .bind(&balance_after)
-        .bind(recipient_account_id)
-        .bind(external_recipient_id)
-        .bind(reference_id)
-        .bind(description)
+        .bind(idempotency_key)
         .fetch_one(executor)
         .await?;
 
@@ -57,9 +45,8 @@ impl TransactionRepository {
     pub async fn find_by_id(pool: &PgPool, id: Uuid) -> Result<Transaction, AppError> {
         let row = sqlx::query(
             r#"
-            SELECT id, account_id, transaction_type, amount::text, currency, balance_after::text,
-                   recipient_account_id, external_recipient_id, reference_id, description,
-                   status, created_at, updated_at
+            SELECT id, organization_id, from_account_id, to_account_id, amount, currency,
+                   status, failure_reason, idempotency_key, created_at, updated_at
             FROM transactions
             WHERE id = $1
             "#,
@@ -81,11 +68,10 @@ impl TransactionRepository {
 
         let rows = sqlx::query(
             r#"
-            SELECT id, account_id, transaction_type, amount::text, currency, balance_after::text,
-                   recipient_account_id, external_recipient_id, reference_id, description,
-                   status, created_at, updated_at
+            SELECT id, organization_id, from_account_id, to_account_id, amount, currency,
+                   status, failure_reason, idempotency_key, created_at, updated_at
             FROM transactions
-            WHERE account_id = $1
+            WHERE from_account_id = $1 OR to_account_id = $1
             ORDER BY created_at DESC
             LIMIT $2
             "#,
@@ -103,30 +89,123 @@ impl TransactionRepository {
         Ok(transactions)
     }
 
+    pub async fn find_by_idempotency_key(
+        pool: &PgPool,
+        organization_id: Uuid,
+        idempotency_key: &str,
+    ) -> Result<Transaction, AppError> {
+        let row = sqlx::query(
+            r#"
+            SELECT id, organization_id, from_account_id, to_account_id, amount, currency,
+                   status, failure_reason, idempotency_key, created_at, updated_at
+            FROM transactions
+            WHERE organization_id = $1 AND idempotency_key = $2
+            "#,
+        )
+        .bind(organization_id)
+        .bind(idempotency_key)
+        .fetch_optional(pool)
+        .await?
+        .ok_or_else(|| {
+            AppError::NotFound(format!(
+                "Transaction with organization_id {} and idempotency_key {} not found",
+                organization_id, idempotency_key
+            ))
+        })?;
+
+        Ok(Self::row_to_transaction(&row)?)
+    }
+
+    pub async fn find_by_status(
+        pool: &PgPool,
+        organization_id: Uuid,
+        status: TransactionStatus,
+        limit: Option<i64>,
+    ) -> Result<Vec<Transaction>, AppError> {
+        let status_str: &str = match status {
+            TransactionStatus::Pending => "pending",
+            TransactionStatus::Posted => "posted",
+            TransactionStatus::Failed => "failed",
+        };
+
+        let limit = limit.unwrap_or(100);
+        let rows = sqlx::query(
+            r#"
+            SELECT id, organization_id, from_account_id, to_account_id, amount, currency,
+                   status, failure_reason, idempotency_key, created_at, updated_at
+            FROM transactions
+            WHERE organization_id = $1 AND status = $2
+            ORDER BY created_at ASC
+            LIMIT $3
+            "#,
+        )
+        .bind(organization_id)
+        .bind(status_str)
+        .bind(limit)
+        .fetch_all(pool)
+        .await?;
+
+        Ok(rows
+            .iter()
+            .map(|row| Self::row_to_transaction(row))
+            .collect::<Result<Vec<_>, _>>()?)
+    }
+
+    pub async fn find_pending_older_than(
+        pool: &PgPool,
+        organization_id: Uuid,
+        older_than: Duration,
+        limit: Option<i64>,
+    ) -> Result<Vec<Transaction>, AppError> {
+        let cutoff: DateTime<Utc> = Utc::now() - older_than;
+        let limit = limit.unwrap_or(100);
+
+        let rows = sqlx::query(
+            r#"
+            SELECT id, organization_id, from_account_id, to_account_id, amount, currency,
+                   status, failure_reason, idempotency_key, created_at, updated_at
+            FROM transactions
+            WHERE organization_id = $1 AND status = 'pending' AND created_at < $2
+            ORDER BY created_at ASC
+            LIMIT $3
+            "#,
+        )
+        .bind(organization_id)
+        .bind(cutoff)
+        .bind(limit)
+        .fetch_all(pool)
+        .await?;
+
+        Ok(rows
+            .iter()
+            .map(|row| Self::row_to_transaction(row))
+            .collect::<Result<Vec<_>, _>>()?)
+    }
+
     pub async fn update_status(
         executor: impl sqlx::Executor<'_, Database = sqlx::Postgres>,
         id: Uuid,
         status: TransactionStatus,
+        failure_reason: Option<&str>,
     ) -> Result<Transaction, AppError> {
         let status_str: &str = match status {
             TransactionStatus::Pending => "pending",
-            TransactionStatus::Completed => "completed",
+            TransactionStatus::Posted => "posted",
             TransactionStatus::Failed => "failed",
-            TransactionStatus::Cancelled => "cancelled",
         };
 
         let row = sqlx::query(
             r#"
             UPDATE transactions
-            SET status = $2, updated_at = NOW()
+            SET status = $2, failure_reason = $3, updated_at = NOW()
             WHERE id = $1
-            RETURNING id, account_id, transaction_type, amount::text, currency, balance_after::text,
-                      recipient_account_id, external_recipient_id, reference_id, description,
-                      status, created_at, updated_at
+            RETURNING id, organization_id, from_account_id, to_account_id, amount, currency,
+                      status, failure_reason, idempotency_key, created_at, updated_at
             "#,
         )
         .bind(id)
         .bind(status_str)
+        .bind(failure_reason)
         .fetch_one(executor)
         .await?;
 
@@ -134,46 +213,24 @@ impl TransactionRepository {
     }
 
     pub fn row_to_transaction(row: &sqlx::postgres::PgRow) -> Result<Transaction, AppError> {
-        let transaction_type_str: String = row.get("transaction_type");
-        let transaction_type = match transaction_type_str.as_str() {
-            "deposit" => TransactionType::Deposit,
-            "withdrawal" => TransactionType::Withdrawal,
-            "transfer" => TransactionType::Transfer,
-            "recurring_payment" => TransactionType::RecurringPayment,
-            "savings_withdraw" => TransactionType::SavingsWithdraw,
-            _ => return Err(AppError::InvalidTransactionType),
-        };
-
         let status_str: String = row.get("status");
         let status = match status_str.as_str() {
             "pending" => TransactionStatus::Pending,
-            "completed" => TransactionStatus::Completed,
+            "posted" => TransactionStatus::Posted,
             "failed" => TransactionStatus::Failed,
-            "cancelled" => TransactionStatus::Cancelled,
             _ => return Err(AppError::Internal("Invalid transaction status".to_string())),
         };
 
-        // Convert Decimal fields from PostgreSQL numeric type via String
-        let amount_str: String = row.get("amount");
-        let amount = rust_decimal::Decimal::from_str(&amount_str)
-            .map_err(|_| AppError::Internal("Failed to parse amount".to_string()))?;
-
-        let balance_after_str: String = row.get("balance_after");
-        let balance_after = rust_decimal::Decimal::from_str(&balance_after_str)
-            .map_err(|_| AppError::Internal("Failed to parse balance_after".to_string()))?;
-
         Ok(Transaction {
             id: row.get("id"),
-            account_id: row.get("account_id"),
-            transaction_type,
-            amount,
+            organization_id: row.get("organization_id"),
+            from_account_id: row.get("from_account_id"),
+            to_account_id: row.get("to_account_id"),
+            amount: row.get("amount"),
             currency: row.get("currency"),
-            balance_after,
-            recipient_account_id: row.get("recipient_account_id"),
-            external_recipient_id: row.get("external_recipient_id"),
-            reference_id: row.get("reference_id"),
-            description: row.get("description"),
             status,
+            failure_reason: row.get("failure_reason"),
+            idempotency_key: row.get("idempotency_key"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
         })

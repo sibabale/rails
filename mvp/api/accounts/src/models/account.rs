@@ -1,5 +1,4 @@
 use chrono::{DateTime, Utc};
-use sqlx::types::BigDecimal;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
@@ -19,7 +18,6 @@ pub struct Account {
     #[serde(rename = "admin_user_id")]
     pub admin_user_id: Option<Uuid>,
     pub user_role: Option<String>,
-    pub balance: Option<String>,
     pub currency: Option<String>,
     pub status: Option<AccountStatus>,
     #[serde(rename = "created_at")]
@@ -85,7 +83,6 @@ pub struct AccountResponse {
     #[serde(rename = "admin_user_id")]
     pub admin_user_id: Option<Uuid>,
     pub user_role: Option<String>,
-    pub balance: String,
     pub currency: String,
     pub status: AccountStatus,
     #[serde(rename = "created_at")]
@@ -105,7 +102,6 @@ impl From<Account> for AccountResponse {
                 user_id: account.user_id,
                 admin_user_id: account.admin_user_id,
                 user_role: account.user_role,
-                balance: account.balance.clone().unwrap_or_default(),
                 currency: account.currency.clone().unwrap_or_else(|| "USD".to_string()),
                 status: account.status.unwrap_or(AccountStatus::Active),
             created_at: account.created_at,

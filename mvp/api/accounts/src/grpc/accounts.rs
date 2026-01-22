@@ -77,19 +77,10 @@ impl AccountsService for AccountsGrpcService {
         &self,
         request: Request<GetAccountBalanceRequest>,
     ) -> Result<Response<GetAccountBalanceResponse>, Status> {
-        let req = request.into_inner();
-        let account_id = Uuid::from_str(&req.account_id)
-            .map_err(|_| Status::invalid_argument("account_id must be a UUID"))?;
-
-        let account = AccountService::get_account(&self.pool, account_id)
-            .await
-            .map_err(map_app_error)?;
-
-        Ok(Response::new(GetAccountBalanceResponse {
-            account_id: account.id.to_string(),
-            balance: account.balance.clone().unwrap_or_default(),
-            currency: account.currency.clone().unwrap_or_else(|| "USD".to_string()),
-        }))
+        let _req = request.into_inner();
+        Err(Status::unimplemented(
+            "GetAccountBalance is not supported by Accounts service",
+        ))
     }
 }
 

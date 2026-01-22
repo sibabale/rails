@@ -1,5 +1,6 @@
 use axum::{
     extract::{Path, Query, State},
+    http::HeaderMap,
     http::StatusCode,
     Json,
 };
@@ -70,19 +71,25 @@ pub async fn close_account(
 pub async fn deposit(
     State(pool): State<PgPool>,
     Path(id): Path<Uuid>,
+    headers: HeaderMap,
     Json(request): Json<crate::handlers::accounts::DepositRequest>,
 ) -> Result<(StatusCode, Json<serde_json::Value>), AppError> {
-    let amount = sqlx::types::BigDecimal::parse_bytes(request.amount.as_bytes(), 10)
-        .ok_or_else(|| AppError::Validation("Invalid amount format".to_string()))?;
-    let zero = sqlx::types::BigDecimal::from(0);
-    if amount <= zero {
+    let idempotency_key = headers
+        .get("Idempotency-Key")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .ok_or_else(|| AppError::Validation("Idempotency-Key header is required".to_string()))?;
+
+    if request.amount <= 0 {
         return Err(AppError::Validation("Amount must be greater than zero".to_string()));
     }
 
-    let (account, transaction) = AccountService::deposit(
+    let (account, transaction) = AccountService::deposit_with_idempotency(
         &pool,
         id,
-        amount,
+        request.amount,
+        &idempotency_key,
     ).await?;
 
     Ok((
@@ -97,19 +104,25 @@ pub async fn deposit(
 pub async fn withdraw(
     State(pool): State<PgPool>,
     Path(id): Path<Uuid>,
+    headers: HeaderMap,
     Json(request): Json<crate::handlers::accounts::WithdrawRequest>,
 ) -> Result<(StatusCode, Json<serde_json::Value>), AppError> {
-    let amount = sqlx::types::BigDecimal::parse_bytes(request.amount.as_bytes(), 10)
-        .ok_or_else(|| AppError::Validation("Invalid amount format".to_string()))?;
-    let zero = sqlx::types::BigDecimal::from(0);
-    if amount <= zero {
+    let idempotency_key = headers
+        .get("Idempotency-Key")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .ok_or_else(|| AppError::Validation("Idempotency-Key header is required".to_string()))?;
+
+    if request.amount <= 0 {
         return Err(AppError::Validation("Amount must be greater than zero".to_string()));
     }
 
-    let (account, transaction) = AccountService::withdraw(
+    let (account, transaction) = AccountService::withdraw_with_idempotency(
         &pool,
         id,
-        amount,
+        request.amount,
+        &idempotency_key,
     ).await?;
 
     Ok((
@@ -124,21 +137,26 @@ pub async fn withdraw(
 pub async fn transfer(
     State(pool): State<PgPool>,
     Path(from_id): Path<Uuid>,
+    headers: HeaderMap,
     Json(request): Json<crate::handlers::accounts::TransferRequest>,
 ) -> Result<(StatusCode, Json<serde_json::Value>), AppError> {
-    let amount = sqlx::types::BigDecimal::parse_bytes(request.amount.as_bytes(), 10)
-        .ok_or_else(|| AppError::Validation("Invalid amount format".to_string()))?;
-    let zero = sqlx::types::BigDecimal::from(0);
-    if amount <= zero {
+    let idempotency_key = headers
+        .get("Idempotency-Key")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .ok_or_else(|| AppError::Validation("Idempotency-Key header is required".to_string()))?;
+
+    if request.amount <= 0 {
         return Err(AppError::Validation("Amount must be greater than zero".to_string()));
     }
 
-    let (from_account, to_account, transaction) = AccountService::transfer(
+    let (from_account, to_account, transaction) = AccountService::transfer_with_idempotency(
         &pool,
         from_id,
         request.to_account_id,
-        amount,
-        request.description,
+        request.amount,
+        &idempotency_key,
     ).await?;
 
     Ok((
@@ -153,19 +171,19 @@ pub async fn transfer(
 
 #[derive(Deserialize)]
 pub struct DepositRequest {
-    pub amount: String,
+    pub amount: i64,
     pub description: Option<String>,
 }
 
 #[derive(Deserialize)]
 pub struct WithdrawRequest {
-    pub amount: String,
+    pub amount: i64,
     pub description: Option<String>,
 }
 
 #[derive(Deserialize)]
 pub struct TransferRequest {
     pub to_account_id: Uuid,
-    pub amount: String,
+    pub amount: i64,
     pub description: Option<String>,
 }

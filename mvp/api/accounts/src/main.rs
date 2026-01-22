@@ -2,6 +2,7 @@ mod config;
 mod errors;
 mod grpc;
 mod handlers;
+mod ledger;
 mod models;
 mod nats;
 mod repositories;
