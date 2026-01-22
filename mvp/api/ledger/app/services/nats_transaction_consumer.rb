@@ -66,24 +66,40 @@ class NatsTransactionConsumer
 
     return unless all_fields_present?(data)
 
-    # Post to ledger
-    LedgerPoster.post(
-      organization_id: organization_id,
-      environment: environment,
-      source_external_account_id: source_external_account_id,
-      destination_external_account_id: destination_external_account_id,
-      amount: amount,
-      currency: currency,
-      external_transaction_id: external_transaction_id,
-      idempotency_key: idempotency_key,
-      correlation_id: correlation_id
-    )
+    # Check if this is a deposit (same account for source and destination)
+    if source_external_account_id == destination_external_account_id
+      # This is a deposit - use proper control account flow
+      LedgerPoster.post_deposit(
+        organization_id: organization_id,
+        environment: environment,
+        destination_external_account_id: destination_external_account_id,
+        amount: amount,
+        currency: currency,
+        external_transaction_id: external_transaction_id,
+        idempotency_key: idempotency_key,
+        correlation_id: correlation_id
+      )
+    else
+      # This is a transfer - use regular posting
+      LedgerPoster.post(
+        organization_id: organization_id,
+        environment: environment,
+        source_external_account_id: source_external_account_id,
+        destination_external_account_id: destination_external_account_id,
+        amount: amount,
+        currency: currency,
+        external_transaction_id: external_transaction_id,
+        idempotency_key: idempotency_key,
+        correlation_id: correlation_id
+      )
+    end
 
     Rails.logger.info "Processed transaction via NATS", {
       organization_id: organization_id,
       environment: environment,
       external_transaction_id: external_transaction_id,
-      correlation_id: correlation_id
+      correlation_id: correlation_id,
+      transaction_type: source_external_account_id == destination_external_account_id ? 'deposit' : 'transfer'
     }
   end
 
