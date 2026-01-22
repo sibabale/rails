@@ -183,7 +183,7 @@ async fn process_user_created_event(
     let account_service = AccountService;
 
     match account_service
-        .create_account_with_hierarchy(create_request, admin_user_id, user_role.to_string())
+        .create_account(&pool, create_request)
         .await
     {
         Ok(account) => {

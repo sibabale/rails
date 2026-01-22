@@ -82,19 +82,7 @@ impl AccountService {
         Self::update_account_status(pool, id, AccountStatus::Closed).await
     }
 
-    pub async fn create_account_with_hierarchy(
-        &self,
-        _request: CreateAccountRequest,
-        _admin_user_id: Option<Uuid>,
-        _user_role: String,
-    ) -> Result<Account, AppError> {
-        // This is a placeholder - implement based on your hierarchy logic
-        let _account_number = generate_account_number(&PgPool::connect("").await.map_err(|_| AppError::Internal("Failed to get pool".to_string()))?, 12)
-            .await?;
-        
-        Err(AppError::NotImplemented("create_account_with_hierarchy - needs proper implementation".to_string()))
-    }
-
+    
     pub async fn update_account_permissions_for_admin(
         &self,
         user_id: Uuid,
