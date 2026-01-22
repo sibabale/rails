@@ -1,0 +1,35 @@
+  [1m[35m (921.9ms)[0m  [1m[35mCREATE DATABASE "neondb" ENCODING = 'unicode'[0m
+  [1m[35m (612.9ms)[0m  [1m[35mCREATE TABLE "schema_migrations" ("version" character varying NOT NULL PRIMARY KEY)[0m
+  [1m[35m (451.2ms)[0m  [1m[35mCREATE TABLE "ar_internal_metadata" ("key" character varying NOT NULL PRIMARY KEY, "value" character varying, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL)[0m
+  [1m[35m (794.6ms)[0m  [1m[34mSELECT pg_try_advisory_lock(2818499705813938860)[0m
+  [1m[36mActiveRecord::SchemaMigration Load (452.7ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mActiveRecord::InternalMetadata Load (445.5ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = $1 ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1[0m  [[nil, "environment"]]
+  [1m[36mActiveRecord::InternalMetadata Create (456.1ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ('environment', 'development', '2026-01-22 20:03:46.712953', '2026-01-22 20:03:46.712957') RETURNING "key"[0m
+Migrating to CreateLedgerAccounts (20250122000001)
+  [1m[36mTRANSACTION (388.3ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (850.5ms)[0m  [1m[35mCREATE TABLE "ledger_accounts" ("id" uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY, "organization_id" uuid NOT NULL, "environment" character varying(20) NOT NULL, "external_account_id" uuid NOT NULL, "account_type" character varying NOT NULL, "currency" character varying NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL)[0m
+  [1m[35m (409.8ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_ledger_accounts_on_org_env_external_currency" ON "ledger_accounts" ("organization_id", "environment", "external_account_id", "currency")[0m
+  [1m[35m (407.7ms)[0m  [1m[35mCREATE INDEX "index_ledger_accounts_on_org_env" ON "ledger_accounts" ("organization_id", "environment")[0m
+  [1m[36mActiveRecord::SchemaMigration Create (407.1ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250122000001') RETURNING "version"[0m
+  [1m[36mTRANSACTION (378.5ms)[0m  [1m[35mCOMMIT[0m
+Migrating to CreateLedgerTransactions (20250122000002)
+  [1m[36mTRANSACTION (412.4ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (511.3ms)[0m  [1m[35mCREATE TABLE "ledger_transactions" ("id" uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY, "organization_id" uuid NOT NULL, "environment" character varying(20) NOT NULL, "external_transaction_id" uuid NOT NULL, "status" character varying DEFAULT 'pending' NOT NULL, "failure_reason" text, "idempotency_key" character varying NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL)[0m
+  [1m[35m (521.6ms)[0m  [1m[35mCREATE UNIQUE INDEX "index_ledger_transactions_on_org_env_idempotency" ON "ledger_transactions" ("organization_id", "environment", "idempotency_key")[0m
+  [1m[35m (500.6ms)[0m  [1m[35mCREATE INDEX "index_ledger_transactions_on_org_env_external" ON "ledger_transactions" ("organization_id", "environment", "external_transaction_id")[0m
+  [1m[35m (408.4ms)[0m  [1m[35mCREATE INDEX "index_ledger_transactions_on_org_env_status" ON "ledger_transactions" ("organization_id", "environment", "status")[0m
+  [1m[36mActiveRecord::SchemaMigration Create (396.6ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250122000002') RETURNING "version"[0m
+  [1m[36mTRANSACTION (399.5ms)[0m  [1m[35mCOMMIT[0m
+Migrating to CreateLedgerEntries (20250122000003)
+  [1m[36mTRANSACTION (425.8ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (898.5ms)[0m  [1m[35mCREATE TABLE "ledger_entries" ("id" uuid DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY, "organization_id" uuid NOT NULL, "environment" character varying(20) NOT NULL, "ledger_account_id" uuid NOT NULL, "transaction_id" uuid NOT NULL, "entry_type" character varying NOT NULL, "amount" bigint NOT NULL, "currency" character varying NOT NULL, "created_at" timestamp(6) NOT NULL, "updated_at" timestamp(6) NOT NULL)[0m
+  [1m[35m (460.1ms)[0m  [1m[35mCREATE INDEX "index_ledger_entries_on_org_env_transaction" ON "ledger_entries" ("organization_id", "environment", "transaction_id")[0m
+  [1m[35m (490.5ms)[0m  [1m[35mCREATE INDEX "index_ledger_entries_on_account" ON "ledger_entries" ("ledger_account_id")[0m
+  [1m[35m (511.5ms)[0m  [1m[35mCREATE INDEX "index_ledger_entries_on_org_env_account" ON "ledger_entries" ("organization_id", "environment", "ledger_account_id")[0m
+  [1m[36mActiveRecord::SchemaMigration Create (409.2ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20250122000003') RETURNING "version"[0m
+  [1m[36mTRANSACTION (408.1ms)[0m  [1m[35mCOMMIT[0m
+  [1m[35m (512.3ms)[0m  [1m[34mSELECT pg_advisory_unlock(2818499705813938860)[0m
+  [1m[36mActiveRecord::SchemaMigration Load (409.5ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[36mLedgerAccount Count (443.9ms)[0m  [1m[34mSELECT COUNT(*) FROM "ledger_accounts"[0m
+  [1m[36mLedgerTransaction Count (507.8ms)[0m  [1m[34mSELECT COUNT(*) FROM "ledger_transactions"[0m
+  [1m[36mLedgerEntry Count (406.6ms)[0m  [1m[34mSELECT COUNT(*) FROM "ledger_entries"[0m
