@@ -93,10 +93,11 @@ async fn correlation_id_middleware(req: Request<Body>, next: Next) -> Result<Res
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty());
 
+    let should_set_header = existing.is_none();
     let correlation_id = existing.unwrap_or_else(|| Uuid::new_v4().to_string());
 
     let mut req = req;
-    if existing.is_none() {
+    if should_set_header {
         req.headers_mut().insert(
             "x-correlation-id",
             correlation_id
