@@ -1,14 +1,13 @@
 #!/bin/bash
 
 # Rails User Creation Flow - Complete Integration Test
-# Tests: Authentication, User Creation, NATS messaging, gRPC account creation
+# Tests: Authentication, User Creation, gRPC account creation
 
 set -e
 
 # Configuration
 USERS_SERVICE="http://localhost:8080"
 ACCOUNTS_SERVICE="http://localhost:8081"
-NATS_SERVER="nats://localhost:4222"
 
 # Test data
 ORG_ID="123e4567-e89b-12d3-a456-426614174000"
@@ -151,16 +150,6 @@ test_with_auth() {
 echo -e "${BLUE}🏥 Health Checks${NC}"
 echo "----------------"
 
-# Check NATS
-echo -e "${YELLOW}🔍 Checking NATS Server...${NC}"
-if nc -z localhost 4222 2>/dev/null; then
-    echo -e "${GREEN}✅ NATS Server is running on port 4222${NC}"
-else
-    echo -e "${RED}❌ NATS Server is not running${NC}"
-    echo -e "${YELLOW}💡 Start with: nats-server --jetstream --port 4222${NC}"
-fi
-echo ""
-
 # Check Users Service
 check_service "Users Service" "$USERS_SERVICE" "/actuator/health" || true
 echo ""
@@ -221,26 +210,12 @@ echo "        -X POST \\"
 echo "        -d '$USER_DATA' \\"
 echo "        '$USERS_SERVICE/users'"
 echo ""
-echo "3. 📡 Monitor NATS messages:"
-echo "   nats sub 'users.user.created' --server=nats://localhost:4222"
-echo ""
-echo "4. 🔗 Check gRPC call to accounts service:"
+echo "3. 🔗 Check gRPC call to accounts service:"
 echo "   The users service should automatically call the accounts service"
 echo "   to create a default account for the new user."
 echo ""
-echo "5. 📊 Verify in database:"
+echo "4. 📊 Verify in database:"
 echo "   Check your Neon database for the new user and account records."
-echo ""
-
-# NATS monitoring instructions
-echo -e "${BLUE}📡 NATS Message Monitoring${NC}"
-echo "=========================="
-echo ""
-echo "Run this in a separate terminal to see NATS messages:"
-echo "nats sub 'users.*' --server=nats://localhost:4222"
-echo ""
-echo "Or specifically for user events:"
-echo "nats sub 'users.user.created' --server=nats://localhost:4222"
 echo ""
 
 # Service status summary
@@ -248,14 +223,12 @@ echo -e "${BLUE}🔧 Service Status Summary${NC}"
 echo "========================"
 echo ""
 echo "Expected services and ports:"
-echo "• NATS Server:     localhost:4222"
 echo "• Users Service:   localhost:8080 (HTTP + gRPC client)"
 echo "• Accounts Service: localhost:8081 (HTTP) + localhost:9090 (gRPC server)"
 echo ""
 echo "Complete flow test:"
 echo "1. Create user via Users Service API → "
-echo "2. Publishes NATS message to 'users.user.created' → "
-echo "3. Calls Accounts Service via gRPC to create default account"
+echo "2. Calls Accounts Service via gRPC to create default account"
 echo ""
 
 echo -e "${GREEN}🎉 Integration test script completed!${NC}"

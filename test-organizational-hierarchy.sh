@@ -14,7 +14,6 @@ NC='\033[0m' # No Color
 
 # Configuration
 BASE_URL="http://localhost:8080"
-NATS_URL="nats://localhost:4222"
 ORG_ID="123e4567-e89b-12d3-a456-426614174000"
 ENVIRONMENT="sandbox"
 
@@ -489,60 +488,6 @@ test_idempotency() {
     print_success "Idempotency key functionality works correctly"
 }
 
-test_nats_events() {
-    print_header "TEST 9: NATS event publishing"
-
-    # Check if NATS CLI is available
-    if command -v nats >/dev/null 2>&1; then
-        print_step "Subscribing to NATS events..."
-
-        # Subscribe to user events in background
-        timeout 10 nats sub "users.user.created.*.*" --server="$NATS_URL" > /tmp/nats_events.log 2>&1 &
-        NATS_PID=$!
-
-        sleep 2
-
-        # Create a user to trigger event
-        IDEMPOTENCY_KEY="test-nats-$(date +%s)"
-        RESPONSE=$(curl -s -w "HTTPSTATUS:%{http_code}" \
-            -H "Content-Type: application/json" \
-            -H "X-Rails-Env: $ENVIRONMENT" \
-            -H "Idempotency-Key: $IDEMPOTENCY_KEY" \
-            -H "Authorization: Bearer $JWT_TOKEN" \
-            -d "{
-                \"organizationId\": \"$ORG_ID\",
-                \"name\": \"NATS Test User\",
-                \"email\": \"nats.test@testorg.com\",
-                \"phone\": \"+1234567899\",
-                \"role\": \"CUSTOMER\",
-                \"metadata\": {
-                    \"source\": \"test-nats\",
-                    \"test_case\": \"nats_event_publishing\"
-                }
-            }" \
-            "$BASE_URL/users")
-
-        HTTP_STATUS=$(echo "$RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
-
-        if [ "$HTTP_STATUS" -eq 201 ]; then
-            sleep 3
-            kill $NATS_PID 2>/dev/null || true
-
-            if [ -f "/tmp/nats_events.log" ] && grep -q "user.created" /tmp/nats_events.log; then
-                print_success "NATS user.created event published successfully"
-                rm -f /tmp/nats_events.log
-            else
-                print_step "NATS event not captured (may need longer timeout)"
-            fi
-        else
-            kill $NATS_PID 2>/dev/null || true
-            print_step "NATS test skipped - user creation failed"
-        fi
-    else
-        print_step "NATS CLI not available - skipping event test"
-    fi
-}
-
 test_organizational_context() {
     print_header "TEST 10: Organizational context validation"
 
@@ -597,7 +542,6 @@ main() {
     test_idempotency
 
     # Integration tests
-    test_nats_events
     test_organizational_context
 
     # Cleanup
@@ -614,7 +558,6 @@ main() {
     echo "• Secondary admin creation works ✓"
     echo "• Validation rules enforced ✓"
     echo "• ACID compliance maintained ✓"
-    echo "• NATS events published ✓"
     echo ""
     echo "Key Test Data:"
     echo "• Organization ID: $ORG_ID"
@@ -655,12 +598,10 @@ if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
     echo "• Customer-admin relationship management"
     echo "• ACID transaction compliance"
     echo "• Data validation and constraints"
-    echo "• NATS event publishing"
     echo "• Idempotency guarantees"
     echo ""
     echo "Prerequisites:"
     echo "• Users service running on http://localhost:8080"
-    echo "• NATS server running on localhost:4222 (optional)"
     echo "• JWT keys generated in mvp/api/users/config/keys/"
     echo "• Required tools: curl, jq, python3, PyJWT"
     echo ""
