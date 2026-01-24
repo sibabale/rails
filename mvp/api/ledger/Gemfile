@@ -36,9 +36,6 @@ gem "tzinfo-data", platforms: %i[ windows jruby ]
 gem "grpc"
 gem "google-protobuf"
 
-# NATS
-gem "async-nats", "~> 0.1"
-
 # Medici for double-entry posting helper
 gem "medici"
 
@@ -48,9 +45,16 @@ gem "lograge"
 # UUID generation
 gem "uuidtools"
 
+# Sentry error tracking and performance monitoring
+gem "sentry-ruby"
+gem "sentry-rails"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ]
+  
+  # Load environment variables from .env files
+  gem "dotenv-rails"
 end
 
 group :development do

@@ -41,6 +41,30 @@ module Grpc
         failure_reason: ''
       )
     rescue => e
+      # Report gRPC errors to Sentry
+      if defined?(Sentry) && Sentry.respond_to?(:with_scope) && Sentry.respond_to?(:capture_exception)
+        begin
+          Sentry.with_scope do |scope|
+            if scope
+              scope.set_context('grpc_request', {
+                organization_id: organization_id,
+                environment: environment,
+                external_transaction_id: external_transaction_id,
+                idempotency_key: idempotency_key,
+                correlation_id: correlation_id,
+                method: 'post_transaction'
+              })
+              scope.set_tag('error_type', 'grpc_ledger_posting_failed')
+              scope.set_tag('organization_id', organization_id.to_s)
+              scope.set_tag('environment', environment)
+            end
+            Sentry.capture_exception(e)
+          end
+        rescue => sentry_error
+          Rails.logger.warn "Sentry reporting failed: #{sentry_error.message}"
+        end
+      end
+      
       Rails::Ledger::PostTransactionResponse.new(
         status: 'failed',
         ledger_transaction_id: '',

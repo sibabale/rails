@@ -67,18 +67,44 @@ class LedgerPoster
       update_balances!(source_account, destination_account)
       ledger_transaction.mark_as_posted!
 
-      emit_success_event(ledger_transaction)
       ledger_transaction
     end
   rescue => e
-    Rails.logger.error "Ledger posting failed: #{e.message}", {
-      organization_id: @organization_id,
-      environment: @environment,
-      external_transaction_id: @external_transaction_id,
-      idempotency_key: @idempotency_key,
-      correlation_id: @correlation_id,
-      error: e.message
-    }
+    Rails.logger.error(
+      "Ledger posting failed: #{e.message} " \
+      "(organization_id: #{@organization_id}, environment: #{@environment}, " \
+      "external_transaction_id: #{@external_transaction_id}, idempotency_key: #{@idempotency_key}, " \
+      "correlation_id: #{@correlation_id})"
+    )
+    
+    # Report critical ledger errors to Sentry
+    if defined?(Sentry) && Sentry.respond_to?(:with_scope) && Sentry.respond_to?(:capture_exception)
+      begin
+        Sentry.with_scope do |scope|
+          # Some misconfigured Sentry setups can yield nil scope; don't crash ledger posting.
+          if scope
+            scope.set_context('ledger_posting', {
+              organization_id: @organization_id,
+              environment: @environment,
+              external_transaction_id: @external_transaction_id,
+              idempotency_key: @idempotency_key,
+              correlation_id: @correlation_id,
+              source_account: @source_external_account_id,
+              destination_account: @destination_external_account_id,
+              amount: @amount,
+              currency: @currency
+            })
+            scope.set_tag('error_type', 'ledger_posting_failed')
+            scope.set_tag('organization_id', @organization_id.to_s)
+            scope.set_tag('environment', @environment)
+          end
+          Sentry.capture_exception(e)
+        end
+      rescue => sentry_error
+        Rails.logger.warn "Sentry reporting failed: #{sentry_error.message}"
+      end
+    end
+    
     raise PostingError, e.message
   end
 
@@ -199,17 +225,4 @@ class LedgerPoster
     )
   end
 
-  def emit_success_event(transaction)
-    NatsPublisher.publish(
-      subject: "ledger.transaction.posted.#{@environment}.#{@organization_id}",
-      payload: {
-        organization_id: @organization_id,
-        environment: @environment,
-        ledger_transaction_id: transaction.id,
-        external_transaction_id: @external_transaction_id,
-        correlation_id: @correlation_id,
-        occurred_at: Time.current.iso8601
-      }
-    )
-  end
 end

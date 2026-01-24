@@ -4,7 +4,7 @@
 Rails.application.configure do
   config.lograge.enabled = true
   config.lograge.formatter = Lograge::Formatters::Json.new
-  
+
   config.lograge.custom_options = lambda do |event|
     {
       organization_id: event.payload[:organization_id],
@@ -15,39 +15,28 @@ Rails.application.configure do
   end
 end
 
-# Initialize gRPC server and NATS consumer in background threads (only when running server)
+# Initialize gRPC server in a background thread (only when running server)
 if Rails.env.development? || Rails.env.production?
   Rails.application.config.after_initialize do
     # Load generated protobuf files
     Dir[Rails.root.join('lib', 'grpc', '**', '*_pb.rb')].each { |f| require f }
-    
+
     require 'grpc'
     require 'google/protobuf'
-    require 'nats_publisher'
-    require 'nats_transaction_consumer'
 
-    # gRPC server
     Thread.new do
       begin
         grpc_port = ENV.fetch('GRPC_PORT', 9091).to_i
         server = GRPC::RpcServer.new
         server.add_http2_port("0.0.0.0:#{grpc_port}", :this_port_is_insecure)
         server.handle(Grpc::LedgerService.new)
-        
+
         Rails.logger.info "Ledger gRPC server starting on 0.0.0.0:#{grpc_port}"
         server.run_till_terminated
       rescue => e
         Rails.logger.error "Failed to start Ledger gRPC server: #{e.message}"
       end
     end
-
-    # NATS consumer
-    Thread.new do
-      begin
-        NatsTransactionConsumer.run
-      rescue => e
-        Rails.logger.error "Failed to start Ledger NATS consumer: #{e.message}"
-      end
-    end
   end
 end
+
