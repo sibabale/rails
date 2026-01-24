@@ -55,12 +55,20 @@ impl AccountsService for AccountsGrpcService {
 
         let currency = if req.currency.is_empty() { "USD" } else { req.currency.as_str() };
 
+        let admin_user_id = if req.admin_user_id.is_empty() {
+            return Err(Status::invalid_argument("admin_user_id is required for customer accounts"));
+        } else {
+            Uuid::from_str(&req.admin_user_id)
+                .map_err(|_| Status::invalid_argument("admin_user_id must be a UUID"))?
+        };
+
         let create_req = CreateAccountRequest {
             account_type,
             user_id,
             currency: currency.to_string(),
             organization_id: Some(org_id),
             environment: Some(environment.to_string()),
+            admin_user_id: Some(admin_user_id),
         };
 
         let account = AccountService::create_account(&self.pool, create_req)

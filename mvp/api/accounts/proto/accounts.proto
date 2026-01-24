@@ -29,6 +29,7 @@ message CreateDefaultAccountRequest {
   string user_id = 3;
   AccountType account_type = 4;
   string currency = 5;
+  string admin_user_id = 6;  // Required for customer accounts
 }
 
 message CreateDefaultAccountResponse {

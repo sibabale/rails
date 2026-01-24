@@ -1,6 +1,7 @@
 use tracing::info;
 use crate::errors::AppError;
-use crate::models::{Account, AccountStatus, CreateAccountRequest};
+use crate::ledger_grpc::LedgerGrpc;
+use crate::models::{Account, AccountStatus, CreateAccountRequest, TransactionKind, TransactionStatus};
 use crate::repositories::{AccountRepository, TransactionRepository};
 use crate::utils::generate_account_number;
 use sqlx::PgPool;
@@ -16,16 +17,32 @@ impl AccountService {
         let account_number = generate_account_number(pool, 12)
             .await?;
 
-        let account = AccountRepository::create(
-            pool,
-            &account_number,
-            request.account_type,
-            request.organization_id,
-            &request.environment.unwrap_or_else(|| "default".to_string()),
-            request.user_id,
-            &request.currency,
-        )
-        .await?;
+        // Use create_with_hierarchy if admin_user_id is provided (for customer accounts)
+        let account = if let Some(admin_user_id) = request.admin_user_id {
+            AccountRepository::create_with_hierarchy(
+                pool,
+                &account_number,
+                request.account_type,
+                request.organization_id,
+                &request.environment.unwrap_or_else(|| "default".to_string()),
+                request.user_id,
+                Some(admin_user_id),
+                Some("CUSTOMER".to_string()),  // Customer accounts require admin
+                &request.currency,
+            )
+            .await?
+        } else {
+            AccountRepository::create(
+                pool,
+                &account_number,
+                request.account_type,
+                request.organization_id,
+                &request.environment.unwrap_or_else(|| "default".to_string()),
+                request.user_id,
+                &request.currency,
+            )
+            .await?
+        };
 
         info!(
             "Account created: id={}, account_number={}, user_id={}",
@@ -122,9 +139,19 @@ impl AccountService {
         pool: &PgPool,
         account_id: Uuid,
         amount: i64,
+        ledger_grpc: &LedgerGrpc,
+        correlation_id: Option<String>,
     ) -> Result<(Account, crate::models::Transaction), AppError> {
         let idempotency_key = Uuid::new_v4().to_string();
-        Self::deposit_with_idempotency(pool, account_id, amount, &idempotency_key).await
+        Self::deposit_with_idempotency(
+            pool,
+            account_id,
+            amount,
+            &idempotency_key,
+            ledger_grpc,
+            correlation_id,
+        )
+        .await
     }
 
     pub async fn deposit_with_idempotency(
@@ -132,6 +159,8 @@ impl AccountService {
         account_id: Uuid,
         amount: i64,
         idempotency_key: &str,
+        ledger_grpc: &LedgerGrpc,
+        correlation_id: Option<String>,
     ) -> Result<(Account, crate::models::Transaction), AppError> {
         if idempotency_key.trim().is_empty() {
             return Err(AppError::Validation("Idempotency-Key header is required".to_string()));
@@ -152,6 +181,11 @@ impl AccountService {
             .clone()
             .unwrap_or_else(|| "USD".to_string());
 
+        let environment = account
+            .environment
+            .clone()
+            .unwrap_or_else(|| "production".to_string());
+
         let mut tx = pool.begin().await?;
 
         let transaction = TransactionRepository::create_or_get_by_idempotency(
@@ -161,6 +195,7 @@ impl AccountService {
             account_id,
             amount,
             &currency,
+            TransactionKind::Deposit,
             idempotency_key,
         )
         .await?;
@@ -176,6 +211,43 @@ impl AccountService {
             "transaction_intent_created"
         );
 
+        // Attempt to post to Ledger via gRPC (eventual consistency: keep pending on failure)
+        let correlation_id = correlation_id.unwrap_or_else(|| transaction.id.to_string());
+        let post_result = ledger_grpc
+            .post_transaction(
+                organization_id,
+                &environment,
+                "SYSTEM_CASH_CONTROL".to_string(),
+                account_id.to_string(),
+                amount,
+                currency.clone(),
+                transaction.id,
+                transaction.idempotency_key.clone(),
+                correlation_id,
+            )
+            .await;
+
+        let transaction = match post_result {
+            Ok(()) => {
+                TransactionRepository::update_status(pool, transaction.id, TransactionStatus::Posted, None).await?
+            }
+            Err(e) => {
+                let reason = format!("{}", e);
+                tracing::warn!(
+                    transaction_id = %transaction.id,
+                    error = %reason,
+                    "Ledger gRPC post failed; leaving transaction pending"
+                );
+                TransactionRepository::update_status(
+                    pool,
+                    transaction.id,
+                    TransactionStatus::Pending,
+                    Some(&reason),
+                )
+                .await?
+            }
+        };
+
         Ok((account, transaction))
     }
 
@@ -183,9 +255,19 @@ impl AccountService {
         pool: &PgPool,
         account_id: Uuid,
         amount: i64,
+        ledger_grpc: &LedgerGrpc,
+        correlation_id: Option<String>,
     ) -> Result<(Account, crate::models::Transaction), AppError> {
         let idempotency_key = Uuid::new_v4().to_string();
-        Self::withdraw_with_idempotency(pool, account_id, amount, &idempotency_key).await
+        Self::withdraw_with_idempotency(
+            pool,
+            account_id,
+            amount,
+            &idempotency_key,
+            ledger_grpc,
+            correlation_id,
+        )
+        .await
     }
 
     pub async fn withdraw_with_idempotency(
@@ -193,7 +275,11 @@ impl AccountService {
         account_id: Uuid,
         amount: i64,
         idempotency_key: &str,
+        ledger_grpc: &LedgerGrpc,
+        correlation_id: Option<String>,
     ) -> Result<(Account, crate::models::Transaction), AppError> {
+        // Note: Withdrawals are negative amounts, but we store as positive
+        // The ledger will handle the debit/credit logic
         if idempotency_key.trim().is_empty() {
             return Err(AppError::Validation("Idempotency-Key header is required".to_string()));
         }
@@ -213,8 +299,12 @@ impl AccountService {
             .clone()
             .unwrap_or_else(|| "USD".to_string());
 
+        let environment = account
+            .environment
+            .clone()
+            .unwrap_or_else(|| "production".to_string());
+
         let mut tx = pool.begin().await?;
-        let idempotency_key = Uuid::new_v4().to_string();
 
         let transaction = TransactionRepository::create_or_get_by_idempotency(
             &mut *tx,
@@ -223,7 +313,8 @@ impl AccountService {
             account_id,
             amount,
             &currency,
-            &idempotency_key,
+            TransactionKind::Withdraw,
+            idempotency_key,
         )
         .await?;
 
@@ -238,6 +329,43 @@ impl AccountService {
             "transaction_intent_created"
         );
 
+        // Attempt to post to Ledger via gRPC (withdraw = account -> SYSTEM_CASH_CONTROL)
+        let correlation_id = correlation_id.unwrap_or_else(|| transaction.id.to_string());
+        let post_result = ledger_grpc
+            .post_transaction(
+                organization_id,
+                &environment,
+                account_id.to_string(),
+                "SYSTEM_CASH_CONTROL".to_string(),
+                amount,
+                currency.clone(),
+                transaction.id,
+                transaction.idempotency_key.clone(),
+                correlation_id,
+            )
+            .await;
+
+        let transaction = match post_result {
+            Ok(()) => {
+                TransactionRepository::update_status(pool, transaction.id, TransactionStatus::Posted, None).await?
+            }
+            Err(e) => {
+                let reason = format!("{}", e);
+                tracing::warn!(
+                    transaction_id = %transaction.id,
+                    error = %reason,
+                    "Ledger gRPC post failed; leaving transaction pending"
+                );
+                TransactionRepository::update_status(
+                    pool,
+                    transaction.id,
+                    TransactionStatus::Pending,
+                    Some(&reason),
+                )
+                .await?
+            }
+        };
+
         Ok((account, transaction))
     }
 
@@ -247,9 +375,20 @@ impl AccountService {
         to_account_id: Uuid,
         amount: i64,
         _description: Option<String>,
+        ledger_grpc: &LedgerGrpc,
+        correlation_id: Option<String>,
     ) -> Result<(Account, Account, crate::models::Transaction), AppError> {
         let idempotency_key = Uuid::new_v4().to_string();
-        Self::transfer_with_idempotency(pool, from_account_id, to_account_id, amount, &idempotency_key).await
+        Self::transfer_with_idempotency(
+            pool,
+            from_account_id,
+            to_account_id,
+            amount,
+            &idempotency_key,
+            ledger_grpc,
+            correlation_id,
+        )
+        .await
     }
 
     pub async fn transfer_with_idempotency(
@@ -258,6 +397,8 @@ impl AccountService {
         to_account_id: Uuid,
         amount: i64,
         idempotency_key: &str,
+        ledger_grpc: &LedgerGrpc,
+        correlation_id: Option<String>,
     ) -> Result<(Account, Account, crate::models::Transaction), AppError> {
         if idempotency_key.trim().is_empty() {
             return Err(AppError::Validation("Idempotency-Key header is required".to_string()));
@@ -304,6 +445,11 @@ impl AccountService {
             ));
         }
 
+        let environment = from_account
+            .environment
+            .clone()
+            .unwrap_or_else(|| "production".to_string());
+
         let mut tx = pool.begin().await?;
 
         let transaction = TransactionRepository::create_or_get_by_idempotency(
@@ -313,6 +459,7 @@ impl AccountService {
             to_account_id,
             amount,
             &from_currency,
+            TransactionKind::Transfer,
             idempotency_key,
         )
         .await?;
@@ -327,6 +474,43 @@ impl AccountService {
             status = ?transaction.status,
             "transaction_intent_created"
         );
+
+        // Attempt to post to Ledger via gRPC (eventual consistency: keep pending on failure)
+        let correlation_id = correlation_id.unwrap_or_else(|| transaction.id.to_string());
+        let post_result = ledger_grpc
+            .post_transaction(
+                from_org,
+                &environment,
+                from_account_id.to_string(),
+                to_account_id.to_string(),
+                amount,
+                from_currency.clone(),
+                transaction.id,
+                transaction.idempotency_key.clone(),
+                correlation_id,
+            )
+            .await;
+
+        let transaction = match post_result {
+            Ok(()) => {
+                TransactionRepository::update_status(pool, transaction.id, TransactionStatus::Posted, None).await?
+            }
+            Err(e) => {
+                let reason = format!("{}", e);
+                tracing::warn!(
+                    transaction_id = %transaction.id,
+                    error = %reason,
+                    "Ledger gRPC post failed; leaving transaction pending"
+                );
+                TransactionRepository::update_status(
+                    pool,
+                    transaction.id,
+                    TransactionStatus::Pending,
+                    Some(&reason),
+                )
+                .await?
+            }
+        };
 
         Ok((from_account, to_account, transaction))
     }

@@ -14,9 +14,6 @@ tokio = { version = "1", features = ["full"] }
 tonic = "0.12"
 prost = "0.13"
 
-# NATS JetStream
-async-nats = "0.37"
-
 # Database
 sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "uuid", "chrono", "json", "bigdecimal", "migrate"] }
 
@@ -49,8 +46,9 @@ config = "0.14"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
-# Async utilities
-futures = "0.3"
+# Sentry error tracking and performance monitoring
+sentry = { version = "0.32", features = ["tracing", "tower"] }
+sentry-tracing = "0.32"
 
 # Account number generation with Luhn checksum
 luhn3 = "1.1"

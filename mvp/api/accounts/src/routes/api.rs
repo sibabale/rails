@@ -16,17 +16,25 @@ use crate::handlers::{
 };
 
 use crate::errors::AppError;
+use crate::ledger_grpc::LedgerGrpc;
 
-pub fn create_router(pool: PgPool) -> Router {
-    Router::<PgPool>::new()
+#[derive(Clone)]
+pub struct AppState {
+    pub pool: PgPool,
+    pub ledger_grpc: LedgerGrpc,
+}
+
+pub fn create_router(pool: PgPool, ledger_grpc: LedgerGrpc) -> Router {
+    let state = AppState { pool, ledger_grpc };
+    Router::<AppState>::new()
         .route("/health", get(health_check))
         .nest("/api/v1", create_api_routes())
         .layer(from_fn(correlation_id_middleware))
-        .with_state(pool)
+        .with_state(state)
 }
 
-fn create_api_routes() -> Router<PgPool> {
-    Router::<PgPool>::new()
+fn create_api_routes() -> Router<AppState> {
+    Router::<AppState>::new()
         .route("/accounts", post(create_account).get(list_accounts))
         .route("/accounts/:id", get(get_account).patch(update_account_status).delete(close_account))
         .route("/accounts/:id/deposit", post(deposit))
@@ -37,7 +45,10 @@ fn create_api_routes() -> Router<PgPool> {
         .route("/transactions/:id", get(get_transaction))
 }
 
-async fn correlation_id_middleware(req: Request<Body>, next: Next) -> Result<Response, AppError> {
+async fn correlation_id_middleware(
+    req: Request<Body>,
+    next: Next,
+) -> Result<Response, AppError> {
     let path = req.uri().path().to_string();
     let method = req.method().to_string();
 

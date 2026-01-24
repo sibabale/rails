@@ -53,6 +53,8 @@ pub struct CreateAccountRequest {
     pub user_id: Uuid,
     #[serde(default = "default_currency")]
     pub currency: String,
+    #[serde(default)]
+    pub admin_user_id: Option<Uuid>,  // Required for customer accounts
 }
 
 fn default_currency() -> String {

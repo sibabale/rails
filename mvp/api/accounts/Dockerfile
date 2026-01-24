@@ -21,8 +21,8 @@ COPY proto ./proto
 # Create dummy src to cache dependencies
 RUN mkdir -p src && \
     echo "fn main() {}" > src/main.rs && \
-    mkdir -p src/config src/errors src/grpc src/handlers src/models src/nats src/repositories src/routes src/services src/utils && \
-    touch src/config/mod.rs src/errors/mod.rs src/grpc/mod.rs src/handlers/mod.rs src/models/mod.rs src/nats/mod.rs src/repositories/mod.rs src/routes/mod.rs src/services/mod.rs src/utils/mod.rs
+    mkdir -p src/config src/errors src/grpc src/handlers src/models src/repositories src/routes src/services src/utils && \
+    touch src/config/mod.rs src/errors/mod.rs src/grpc/mod.rs src/handlers/mod.rs src/models/mod.rs src/repositories/mod.rs src/routes/mod.rs src/services/mod.rs src/utils/mod.rs
 
 # Build dependencies only
 RUN cargo build --release 2>/dev/null || true

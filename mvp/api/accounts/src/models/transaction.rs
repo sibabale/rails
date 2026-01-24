@@ -14,6 +14,8 @@ pub struct Transaction {
     pub to_account_id: Uuid,
     pub amount: i64,
     pub currency: String,
+    #[serde(rename = "transaction_kind")]
+    pub transaction_kind: TransactionKind,
     pub status: TransactionStatus,
     #[serde(rename = "failure_reason")]
     pub failure_reason: Option<String>,
@@ -23,6 +25,14 @@ pub struct Transaction {
     pub created_at: DateTime<Utc>,
     #[serde(rename = "updated_at")]
     pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "varchar", rename_all = "lowercase")]
+pub enum TransactionKind {
+    Deposit,
+    Withdraw,
+    Transfer,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
@@ -54,6 +64,8 @@ pub struct TransactionResponse {
     pub to_account_id: Uuid,
     pub amount: i64,
     pub currency: String,
+    #[serde(rename = "transaction_kind")]
+    pub transaction_kind: TransactionKind,
     pub status: TransactionStatus,
     #[serde(rename = "failure_reason")]
     pub failure_reason: Option<String>,
@@ -74,6 +86,7 @@ impl From<Transaction> for TransactionResponse {
             to_account_id: transaction.to_account_id,
             amount: transaction.amount,
             currency: transaction.currency,
+            transaction_kind: transaction.transaction_kind,
             status: transaction.status,
             failure_reason: transaction.failure_reason,
             idempotency_key: transaction.idempotency_key,

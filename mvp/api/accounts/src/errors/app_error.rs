@@ -41,22 +41,30 @@ pub enum AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let (status, error_message) = match self {
+        let (status, error_message, should_report) = match &self {
             AppError::Database(ref e) => {
                 tracing::error!("Database error: {}", e);
-                (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
+                // Always report database errors - they're critical
+                sentry::capture_error(e);
+                (StatusCode::INTERNAL_SERVER_ERROR, self.to_string(), true)
             }
-            AppError::NotFound(_) => (StatusCode::NOT_FOUND, self.to_string()),
-            AppError::Validation(_) => (StatusCode::BAD_REQUEST, self.to_string()),
-            AppError::BusinessLogic(_) => (StatusCode::BAD_REQUEST, self.to_string()),
-            AppError::InsufficientFunds => (StatusCode::BAD_REQUEST, self.to_string()),
-            AppError::AccountNotActive => (StatusCode::BAD_REQUEST, self.to_string()),
-            AppError::InvalidAccountType => (StatusCode::BAD_REQUEST, self.to_string()),
-            AppError::InvalidTransactionType => (StatusCode::BAD_REQUEST, self.to_string()),
-            AppError::NotImplemented(_) => (StatusCode::NOT_IMPLEMENTED, self.to_string()),
+            AppError::NotFound(_) => (StatusCode::NOT_FOUND, self.to_string(), false),
+            AppError::Validation(_) => (StatusCode::BAD_REQUEST, self.to_string(), false),
+            AppError::BusinessLogic(_) => (StatusCode::BAD_REQUEST, self.to_string(), false),
+            AppError::InsufficientFunds => {
+                // Report insufficient funds - business critical
+                sentry::capture_message("Insufficient funds", sentry::Level::Warning);
+                (StatusCode::BAD_REQUEST, self.to_string(), true)
+            }
+            AppError::AccountNotActive => (StatusCode::BAD_REQUEST, self.to_string(), false),
+            AppError::InvalidAccountType => (StatusCode::BAD_REQUEST, self.to_string(), false),
+            AppError::InvalidTransactionType => (StatusCode::BAD_REQUEST, self.to_string(), false),
+            AppError::NotImplemented(_) => (StatusCode::NOT_IMPLEMENTED, self.to_string(), false),
             AppError::Internal(ref e) => {
                 tracing::error!("Internal error: {}", e);
-                (StatusCode::INTERNAL_SERVER_ERROR, self.to_string())
+                // Always report internal errors
+                sentry::capture_message(e, sentry::Level::Error);
+                (StatusCode::INTERNAL_SERVER_ERROR, self.to_string(), true)
             }
         };
 

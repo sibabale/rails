@@ -3,8 +3,8 @@ mod errors;
 mod grpc;
 mod handlers;
 mod ledger;
+mod ledger_grpc;
 mod models;
-mod nats;
 mod repositories;
 mod routes;
 mod services;
@@ -15,9 +15,11 @@ use sqlx::postgres::PgPoolOptions;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use tracing::info;
+use tracing_subscriber::prelude::*;
 
 use config::Settings;
 use routes::create_router;
+use crate::ledger_grpc::LedgerGrpc;
 
 use grpc::accounts::AccountsGrpcService;
 use grpc::proto::accounts_service_server::AccountsServiceServer;
@@ -28,14 +30,43 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load configuration
     let settings = Settings::from_env()?;
 
-    // Initialize tracing
-    tracing_subscriber::fmt()
-        .with_env_filter(&settings.log_level)
-        .init();
+    // Initialize Sentry before tracing to capture all errors
+    let _guard = if let Some(dsn) = &settings.sentry_dsn {
+        tracing::info!("Initializing Sentry error tracking");
+        Some(sentry::init((
+            dsn.clone(),
+            sentry::ClientOptions {
+                release: sentry::release_name!(),
+                environment: Some(settings.environment.clone().into()),
+                traces_sample_rate: 0.1, // Sample 10% of transactions for MVP
+                ..Default::default()
+            },
+        )))
+    } else {
+        tracing::info!("Sentry DSN not configured, skipping error tracking");
+        None
+    };
+
+    // Initialize tracing with Sentry integration
+    if settings.sentry_dsn.is_some() {
+        tracing_subscriber::registry()
+            .with(tracing_subscriber::fmt::layer().with_filter(tracing_subscriber::EnvFilter::new(&settings.log_level)))
+            .with(sentry_tracing::layer())
+            .init();
+    } else {
+        tracing_subscriber::fmt()
+            .with_env_filter(&settings.log_level)
+            .init();
+    }
 
     // Create database connection pool
+    // For Neon pooler connections, use fewer max_connections (pooler has limits)
+    // Increased pool size to handle concurrent gRPC requests
     let pool = PgPoolOptions::new()
-        .max_connections(50)
+        .max_connections(10) // Increased for concurrent gRPC requests
+        .acquire_timeout(std::time::Duration::from_secs(60)) // Increased timeout for remote databases
+        .idle_timeout(std::time::Duration::from_secs(600)) // 10 minutes
+        .max_lifetime(std::time::Duration::from_secs(1800)) // 30 minutes
         .connect(&settings.database_url)
         .await?;
 
@@ -59,19 +90,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Database migrations completed");
 
-    // Create router
-    let app = create_router(pool.clone());
+    // Ledger gRPC client wrapper (lazy connect per call)
+    let ledger_grpc = LedgerGrpc::new(settings.ledger_grpc_url.clone());
+
+    // Create router with Ledger gRPC config
+    let app = create_router(pool.clone(), ledger_grpc.clone());
 
     let grpc_addr = SocketAddr::from(([0, 0, 0, 0], settings.grpc_port));
     let grpc_service = AccountsGrpcService::new(pool.clone());
 
-    let nats_pool = pool.clone();
-    let nats_url = settings.nats_url.clone();
-    let nats_stream = settings.nats_stream.clone();
+    // Background retry loop: post pending transactions to Ledger via gRPC
+    let retry_pool = pool.clone();
+    let retry_ledger = ledger_grpc.clone();
     tokio::spawn(async move {
-        if let Err(e) = crate::nats::run(nats_pool, nats_url, nats_stream).await {
-            tracing::error!("Accounts NATS loop crashed: {}", e);
-        }
+        crate::services::transaction_retry::run(retry_pool, retry_ledger).await;
     });
 
     // Start server

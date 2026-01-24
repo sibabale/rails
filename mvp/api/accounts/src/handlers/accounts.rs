@@ -5,10 +5,10 @@ use axum::{
     Json,
 };
 use serde::Deserialize;
-use sqlx::PgPool;
 use uuid::Uuid;
 use crate::errors::AppError;
 use crate::models::{AccountResponse, CreateAccountRequest, UpdateAccountRequest};
+use crate::routes::api::AppState;
 use crate::services::AccountService;
 
 #[derive(Deserialize)]
@@ -17,28 +17,28 @@ pub struct ListAccountsQuery {
 }
 
 pub async fn create_account(
-    State(pool): State<PgPool>,
+    State(state): State<AppState>,
     Json(request): Json<CreateAccountRequest>,
 ) -> Result<(StatusCode, Json<AccountResponse>), AppError> {
     // Account number is auto-generated, no validation needed
-    let account = AccountService::create_account(&pool, request).await?;
+    let account = AccountService::create_account(&state.pool, request).await?;
     Ok((StatusCode::CREATED, Json(account.into())))
 }
 
 pub async fn get_account(
-    State(pool): State<PgPool>,
+    State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<AccountResponse>, AppError> {
-    let account = AccountService::get_account(&pool, id).await?;
+    let account = AccountService::get_account(&state.pool, id).await?;
     Ok(Json(account.into()))
 }
 
 pub async fn list_accounts(
-    State(pool): State<PgPool>,
+    State(state): State<AppState>,
     Query(query): Query<ListAccountsQuery>,
 ) -> Result<Json<Vec<AccountResponse>>, AppError> {
     let accounts = if let Some(user_id) = query.user_id {
-        AccountService::get_accounts_by_user(&pool, user_id).await?
+        AccountService::get_accounts_by_user(&state.pool, user_id).await?
     } else {
         return Err(AppError::Validation("user_id query parameter is required".to_string()));
     };
@@ -47,7 +47,7 @@ pub async fn list_accounts(
 }
 
 pub async fn update_account_status(
-    State(pool): State<PgPool>,
+    State(state): State<AppState>,
     Path(id): Path<Uuid>,
     Json(request): Json<UpdateAccountRequest>,
 ) -> Result<Json<AccountResponse>, AppError> {
@@ -56,20 +56,20 @@ pub async fn update_account_status(
         AppError::Validation("status field is required".to_string())
     })?;
 
-    let account = AccountService::update_account_status(&pool, id, status).await?;
+    let account = AccountService::update_account_status(&state.pool, id, status).await?;
     Ok(Json(account.into()))
 }
 
 pub async fn close_account(
-    State(pool): State<PgPool>,
+    State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<AccountResponse>, AppError> {
-    let account = AccountService::close_account(&pool, id).await?;
+    let account = AccountService::close_account(&state.pool, id).await?;
     Ok(Json(account.into()))
 }
 
 pub async fn deposit(
-    State(pool): State<PgPool>,
+    State(state): State<AppState>,
     Path(id): Path<Uuid>,
     headers: HeaderMap,
     Json(request): Json<crate::handlers::accounts::DepositRequest>,
@@ -85,12 +85,21 @@ pub async fn deposit(
         return Err(AppError::Validation("Amount must be greater than zero".to_string()));
     }
 
+    let correlation_id = headers
+        .get("x-correlation-id")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty());
+
     let (account, transaction) = AccountService::deposit_with_idempotency(
-        &pool,
+        &state.pool,
         id,
         request.amount,
         &idempotency_key,
-    ).await?;
+        &state.ledger_grpc,
+        correlation_id,
+    )
+    .await?;
 
     Ok((
         StatusCode::OK,
@@ -102,7 +111,7 @@ pub async fn deposit(
 }
 
 pub async fn withdraw(
-    State(pool): State<PgPool>,
+    State(state): State<AppState>,
     Path(id): Path<Uuid>,
     headers: HeaderMap,
     Json(request): Json<crate::handlers::accounts::WithdrawRequest>,
@@ -118,12 +127,21 @@ pub async fn withdraw(
         return Err(AppError::Validation("Amount must be greater than zero".to_string()));
     }
 
+    let correlation_id = headers
+        .get("x-correlation-id")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty());
+
     let (account, transaction) = AccountService::withdraw_with_idempotency(
-        &pool,
+        &state.pool,
         id,
         request.amount,
         &idempotency_key,
-    ).await?;
+        &state.ledger_grpc,
+        correlation_id,
+    )
+    .await?;
 
     Ok((
         StatusCode::OK,
@@ -135,7 +153,7 @@ pub async fn withdraw(
 }
 
 pub async fn transfer(
-    State(pool): State<PgPool>,
+    State(state): State<AppState>,
     Path(from_id): Path<Uuid>,
     headers: HeaderMap,
     Json(request): Json<crate::handlers::accounts::TransferRequest>,
@@ -151,13 +169,22 @@ pub async fn transfer(
         return Err(AppError::Validation("Amount must be greater than zero".to_string()));
     }
 
+    let correlation_id = headers
+        .get("x-correlation-id")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty());
+
     let (from_account, to_account, transaction) = AccountService::transfer_with_idempotency(
-        &pool,
+        &state.pool,
         from_id,
         request.to_account_id,
         request.amount,
         &idempotency_key,
-    ).await?;
+        &state.ledger_grpc,
+        correlation_id,
+    )
+    .await?;
 
     Ok((
         StatusCode::OK,

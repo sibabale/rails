@@ -1,6 +1,6 @@
 use crate::errors::AppError;
 use crate::ledger::{LedgerAdapter, NoopLedgerAdapter};
-use crate::models::{CreateTransactionRequest, Transaction};
+use crate::models::{CreateTransactionRequest, Transaction, TransactionKind};
 use crate::repositories::{AccountRepository, TransactionRepository};
 use sqlx::PgPool;
 use tracing::info;
@@ -63,14 +63,23 @@ impl TransactionService {
             request.to_account_id,
             request.amount,
             &request.currency,
+            TransactionKind::Transfer,
             idempotency_key,
         )
         .await?;
 
         tx.commit().await?;
 
+        // Get environment from from_account for ledger notification
+        let environment = from_account
+            .environment
+            .clone()
+            .unwrap_or_else(|| "production".to_string());
+
         let ledger = NoopLedgerAdapter;
-        ledger.notify_ledger(&transaction)?;
+        // Ledger notifications for direct transaction creation are handled via NoopLedgerAdapter
+        // For now, transactions created via this endpoint won't be sent to ledger
+        let _ = ledger.notify_ledger(&transaction, &environment).await;
 
         info!(
             organization_id = %transaction.organization_id,

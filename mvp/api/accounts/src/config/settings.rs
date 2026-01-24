@@ -5,11 +5,12 @@ pub struct Settings {
     pub database_url: String,
     pub port: u16,
     pub grpc_port: u16,
-    pub nats_url: String,
-    pub nats_stream: String,
+    pub ledger_grpc_url: String,
     #[allow(dead_code)]
     pub host: String,
     pub log_level: String,
+    pub sentry_dsn: Option<String>,
+    pub environment: String,
 }
 
 impl Settings {
@@ -29,11 +30,8 @@ impl Settings {
             .parse()
             .unwrap_or(9090);
 
-        let nats_url = std::env::var("NATS_URL")
-            .unwrap_or_else(|_| "nats://localhost:4222".to_string());
-
-        let nats_stream = std::env::var("NATS_STREAM")
-            .unwrap_or_else(|_| "rails_events".to_string());
+        let ledger_grpc_url = std::env::var("LEDGER_GRPC_URL")
+            .unwrap_or_else(|_| "http://127.0.0.1:9091".to_string());
 
         let host = std::env::var("HOST")
             .unwrap_or_else(|_| "0.0.0.0".to_string());
@@ -41,14 +39,19 @@ impl Settings {
         let log_level = std::env::var("RUST_LOG")
             .unwrap_or_else(|_| "info".to_string());
 
+        let sentry_dsn = std::env::var("SENTRY_DSN").ok();
+        let environment = std::env::var("ENVIRONMENT")
+            .unwrap_or_else(|_| "development".to_string());
+
         Ok(Settings {
             database_url,
             port,
             grpc_port,
-            nats_url,
-            nats_stream,
+            ledger_grpc_url,
             host,
             log_level,
+            sentry_dsn,
+            environment,
         })
     }
 }
