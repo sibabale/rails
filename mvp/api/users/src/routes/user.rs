@@ -195,20 +195,44 @@ pub async fn create_user(
         AppError::Internal
     })?;
 
-    // Publish NATS event
-    let event = serde_json::json!({
-        "event": "users.user.created",
-        "organization_id": business_id,
-        "environment": environment_type.clone(),
-        "user_id": user_id,
-        "business_id": business_id,
-        "environment_id": environment_id,
-        "email": payload.email,
-        "created_at": now,
-    });
-    let subject = std::env::var("NATS_SUBJECT_USER_CREATED")
-        .unwrap_or_else(|_| format!("users.user.created.{}.{}", business_id, environment_type));
-    let _ = state.nats.publish(subject, serde_json::to_vec(&event).unwrap().into()).await;
+    // Create account synchronously via gRPC
+    // Customer accounts require admin_user_id - use the admin who created this user
+    let admin_user_id = created_by_user_id.ok_or_else(|| {
+        tracing::error!("Cannot create account: customer accounts require an admin_user_id, but created_by_user_id is None");
+        AppError::BadRequest("Customer accounts require an admin user. User must be created by an admin.".to_string())
+    })?;
+
+    match state.grpc.create_default_account(
+        business_id,
+        &environment_type,
+        user_id,
+        admin_user_id,
+        "USD",
+    ).await {
+        Ok((account_id, account_number)) => {
+            tracing::info!(
+                "Created account {} ({}) for user {} via gRPC",
+                account_id,
+                account_number,
+                user_id
+            );
+        }
+        Err(e) => {
+            tracing::error!(
+                "Failed to create account for user {} via gRPC: {}",
+                user_id,
+                e
+            );
+            // Return error with more details - account creation is critical
+            // Check if client is initialized
+            let error_msg = if state.grpc.accounts_client.is_some() {
+                format!("gRPC call failed: {}. Check Accounts service logs.", e)
+            } else {
+                format!("gRPC client not initialized: {}. Ensure Accounts service is running and ACCOUNTS_GRPC_URL is correct.", e)
+            };
+            return Err(AppError::BadRequest(error_msg));
+        }
+    }
 
     Ok(Json(CreateUserResponse {
         user_id,

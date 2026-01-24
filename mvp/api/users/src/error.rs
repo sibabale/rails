@@ -19,14 +19,20 @@ pub enum AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let (status, code, details) = match &self {
-            AppError::NotFound => (StatusCode::NOT_FOUND, "not_found", None),
-            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "unauthorized", None),
-            AppError::Forbidden => (StatusCode::FORBIDDEN, "forbidden", None),
-            AppError::UnrecognizedSource => (StatusCode::FORBIDDEN, "unrecognized_source", None),
-            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, "bad_request", Some(msg.clone())),
-            AppError::Internal => (StatusCode::INTERNAL_SERVER_ERROR, "internal", None),
+        let (status, code, details, should_report) = match &self {
+            AppError::NotFound => (StatusCode::NOT_FOUND, "not_found", None, false),
+            AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "unauthorized", None, false),
+            AppError::Forbidden => (StatusCode::FORBIDDEN, "forbidden", None, false),
+            AppError::UnrecognizedSource => (StatusCode::FORBIDDEN, "unrecognized_source", None, true), // Security issue
+            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, "bad_request", Some(msg.clone()), false),
+            AppError::Internal => (StatusCode::INTERNAL_SERVER_ERROR, "internal", None, true), // Always report internal errors
         };
+        
+        // Report critical errors to Sentry
+        if should_report {
+            sentry::capture_message(&self.to_string(), sentry::Level::Error);
+        }
+        
         let mut body = serde_json::json!({
             "error": self.to_string(),
             "code": code

@@ -1,8 +1,10 @@
 #[derive(Debug, Clone)]
 pub struct Config {
     pub database_url: String,
-    pub nats_url: String,
     pub server_addr: String,
+    pub accounts_grpc_url: String,
+    pub sentry_dsn: Option<String>,
+    pub environment: String,
 }
 
 pub fn load() -> Result<Config, anyhow::Error> {
@@ -25,14 +27,18 @@ pub fn load() -> Result<Config, anyhow::Error> {
         std::env::var("SERVER_ADDR").unwrap_or_else(|_| "0.0.0.0:8080".to_string())
     };
 
-    let nats_url = std::env::var("NATS_URL")
-        .ok()
-        .filter(|v| !v.trim().is_empty())
-        .unwrap_or_else(|| "nats://localhost:4222".to_string());
+    let accounts_grpc_url = std::env::var("ACCOUNTS_GRPC_URL")
+        .unwrap_or_else(|_| "http://localhost:50052".to_string());
+    
+    let sentry_dsn = std::env::var("SENTRY_DSN").ok();
+    let environment = std::env::var("ENVIRONMENT")
+        .unwrap_or_else(|_| "development".to_string());
     
     Ok(Config {
         database_url,
-        nats_url,
         server_addr,
+        accounts_grpc_url,
+        sentry_dsn,
+        environment,
     })
 }

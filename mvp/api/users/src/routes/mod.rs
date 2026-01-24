@@ -3,6 +3,7 @@ pub mod environment;
 pub mod apikey;
 pub mod user;
 pub mod auth;
+pub mod health;
 
 use axum::{Router, routing::{post, get}};
 use axum::body::Body;
@@ -10,7 +11,6 @@ use axum::http::Request;
 use axum::middleware::{from_fn, Next};
 use axum::response::Response;
 use crate::db::Db;
-use crate::nats::NatsClient;
 use crate::grpc::GrpcClients;
 use crate::error::AppError;
 use uuid::Uuid;
@@ -18,13 +18,13 @@ use uuid::Uuid;
 #[derive(Clone)]
 pub struct AppState {
     pub db: Db,
-    pub nats: NatsClient,
     pub grpc: GrpcClients,
 }
 
-pub fn register_routes(db: Db, nats: NatsClient, grpc: GrpcClients) -> Router {
-    let state = AppState { db, nats, grpc };
+pub fn register_routes(db: Db, grpc: GrpcClients) -> Router {
+    let state = AppState { db, grpc };
     let public = Router::new()
+        .route("/health", get(health::health_check))
         .route("/api/v1/business/register", post(business::register_business))
         .route("/api/v1/auth/login", post(auth::login))
         .route("/api/v1/auth/refresh", post(auth::refresh_token))
