@@ -31,7 +31,7 @@ impl Settings {
             .unwrap_or(9090);
 
         let ledger_grpc_url = std::env::var("LEDGER_GRPC_URL")
-            .unwrap_or_else(|_| "http://127.0.0.1:9091".to_string());
+            .unwrap_or_else(|_| "http://127.0.0.1:50053".to_string());
 
         let host = std::env::var("HOST")
             .unwrap_or_else(|_| "0.0.0.0".to_string());
