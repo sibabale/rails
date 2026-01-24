@@ -25,6 +25,10 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
+ 
+# Rails (ledger service)
+mvp/api/ledger/log/*.log
+mvp/api/ledger/tmp/
 
 # IDEs and Editors
 .idea/
