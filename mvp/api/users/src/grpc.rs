@@ -15,15 +15,6 @@ pub struct GrpcClients {
 }
 
 impl GrpcClients {
-    pub fn accounts_grpc_url(&self) -> Option<String> {
-        // We can't get the URL from the client, but we can check if it's initialized
-        if self.accounts_client.is_some() {
-            Some("http://localhost:50052".to_string()) // Default, should match .env
-        } else {
-            None
-        }
-    }
-
     pub async fn create_default_account(
         &self,
         organization_id: uuid::Uuid,

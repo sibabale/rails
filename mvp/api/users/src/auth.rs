@@ -27,8 +27,10 @@ pub struct AuthContext {
 #[derive(Debug, Deserialize)]
 struct JwtClaims {
     sub: String,
-    exp: i64,
-    env: Option<String>,
+    #[allow(dead_code)]
+    exp: i64, // Used by jsonwebtoken for validation, but not explicitly read
+    #[allow(dead_code)]
+    env: Option<String>, // Reserved for future use
 }
 
 #[async_trait]

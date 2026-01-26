@@ -3,8 +3,6 @@ use axum::{http::StatusCode, response::{IntoResponse, Response}};
 
 #[derive(Error, Debug)]
 pub enum AppError {
-    #[error("Not found")] 
-    NotFound,
     #[error("Unauthorized")] 
     Unauthorized,
     #[error("Forbidden")] 
@@ -20,7 +18,6 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, code, details, should_report) = match &self {
-            AppError::NotFound => (StatusCode::NOT_FOUND, "not_found", None, false),
             AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "unauthorized", None, false),
             AppError::Forbidden => (StatusCode::FORBIDDEN, "forbidden", None, false),
             AppError::UnrecognizedSource => (StatusCode::FORBIDDEN, "unrecognized_source", None, true), // Security issue

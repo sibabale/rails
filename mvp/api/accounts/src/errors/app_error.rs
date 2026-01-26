@@ -20,20 +20,11 @@ pub enum AppError {
     #[error("Business logic error: {0}")]
     BusinessLogic(String),
 
-    #[error("Insufficient funds")]
-    InsufficientFunds,
-
     #[error("Account is not active")]
     AccountNotActive,
 
     #[error("Invalid account type")]
     InvalidAccountType,
-
-    #[error("Invalid transaction type")]
-    InvalidTransactionType,
-
-    #[error("Not implemented: {0}")]
-    NotImplemented(String),
 
     #[error("Internal server error: {0}")]
     Internal(String),
@@ -41,7 +32,7 @@ pub enum AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let (status, error_message, should_report) = match &self {
+        let (status, error_message, _should_report) = match &self {
             AppError::Database(ref e) => {
                 tracing::error!("Database error: {}", e);
                 // Always report database errors - they're critical
@@ -51,15 +42,8 @@ impl IntoResponse for AppError {
             AppError::NotFound(_) => (StatusCode::NOT_FOUND, self.to_string(), false),
             AppError::Validation(_) => (StatusCode::BAD_REQUEST, self.to_string(), false),
             AppError::BusinessLogic(_) => (StatusCode::BAD_REQUEST, self.to_string(), false),
-            AppError::InsufficientFunds => {
-                // Report insufficient funds - business critical
-                sentry::capture_message("Insufficient funds", sentry::Level::Warning);
-                (StatusCode::BAD_REQUEST, self.to_string(), true)
-            }
             AppError::AccountNotActive => (StatusCode::BAD_REQUEST, self.to_string(), false),
             AppError::InvalidAccountType => (StatusCode::BAD_REQUEST, self.to_string(), false),
-            AppError::InvalidTransactionType => (StatusCode::BAD_REQUEST, self.to_string(), false),
-            AppError::NotImplemented(_) => (StatusCode::NOT_IMPLEMENTED, self.to_string(), false),
             AppError::Internal(ref e) => {
                 tracing::error!("Internal error: {}", e);
                 // Always report internal errors

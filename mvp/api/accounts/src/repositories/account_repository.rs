@@ -92,25 +92,6 @@ impl AccountRepository {
         Ok(Self::row_to_account(&row)?)
     }
 
-    pub async fn find_by_account_number(
-        pool: &PgPool,
-        account_number: &str,
-    ) -> Result<Account, AppError> {
-        let row = sqlx::query(
-            r#"
-            SELECT id, account_number, account_type, organization_id, environment, user_id, currency, status, created_at, updated_at
-            FROM accounts
-            WHERE account_number = $1
-            "#,
-        )
-        .bind(account_number)
-        .fetch_optional(pool)
-        .await?
-        .ok_or_else(|| AppError::NotFound(format!("Account {} not found", account_number)))?;
-
-        Ok(Self::row_to_account(&row)?)
-    }
-
     pub async fn find_by_user_id(pool: &PgPool, user_id: Uuid) -> Result<Vec<Account>, AppError> {
         let rows = sqlx::query(
             r#"
@@ -157,31 +138,6 @@ impl AccountRepository {
         .await?;
 
         Ok(Self::row_to_account(&row)?)
-    }
-
-    pub async fn batch_create(
-        pool: &PgPool,
-        accounts: Vec<(String, AccountType, Option<Uuid>, String, Uuid, String)>,
-    ) -> Result<Vec<Account>, AppError> {
-        let mut created_accounts = Vec::new();
-
-        for (account_number, account_type, organization_id, environment, user_id, currency) in
-            accounts
-        {
-            let account = Self::create(
-                pool,
-                &account_number,
-                account_type,
-                organization_id,
-                &environment,
-                user_id,
-                &currency,
-            )
-            .await?;
-            created_accounts.push(account);
-        }
-
-        Ok(created_accounts)
     }
 
     fn row_to_account(row: &sqlx::postgres::PgRow) -> Result<Account, AppError> {

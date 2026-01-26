@@ -1,5 +1,4 @@
 pub mod business;
-pub mod environment;
 pub mod apikey;
 pub mod user;
 pub mod auth;

@@ -199,18 +199,21 @@ pub async fn transfer(
 #[derive(Deserialize)]
 pub struct DepositRequest {
     pub amount: i64,
-    pub description: Option<String>,
+    #[allow(dead_code)]
+    pub description: Option<String>, // Reserved for future use
 }
 
 #[derive(Deserialize)]
 pub struct WithdrawRequest {
     pub amount: i64,
-    pub description: Option<String>,
+    #[allow(dead_code)]
+    pub description: Option<String>, // Reserved for future use
 }
 
 #[derive(Deserialize)]
 pub struct TransferRequest {
     pub to_account_id: Uuid,
     pub amount: i64,
-    pub description: Option<String>,
+    #[allow(dead_code)]
+    pub description: Option<String>, // Reserved for future use
 }

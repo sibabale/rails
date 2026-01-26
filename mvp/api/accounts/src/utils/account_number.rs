@@ -60,19 +60,3 @@ async fn account_number_exists(
 
     Ok(result)
 }
-
-/// Validate account number format and Luhn checksum
-pub fn validate_account_number(account_number: &str) -> bool {
-    // Must be all digits
-    if !account_number.chars().all(|c| c.is_ascii_digit()) {
-        return false;
-    }
-    
-    // Must be between 10-16 digits
-    if account_number.len() < 10 || account_number.len() > 16 {
-        return false;
-    }
-    
-    // Validate Luhn checksum
-    decimal::valid(account_number.as_bytes())
-}

@@ -63,17 +63,6 @@ impl AccountService {
         AccountRepository::find_by_user_id(pool, user_id).await
     }
 
-    pub async fn get_accounts_by_admin(
-        pool: &PgPool,
-        admin_user_id: Uuid,
-        _organization_id: Option<Uuid>,
-        _environment: Option<&str>,
-    ) -> Result<Vec<Account>, AppError> {
-        // TODO: Implement with proper filtering for admin accounts
-        // For now, just get accounts for the user
-        AccountRepository::find_by_user_id(pool, admin_user_id).await
-    }
-
     pub async fn update_account_status(
         pool: &PgPool,
         id: Uuid,
@@ -97,42 +86,6 @@ impl AccountService {
 
     pub async fn close_account(pool: &PgPool, id: Uuid) -> Result<Account, AppError> {
         Self::update_account_status(pool, id, AccountStatus::Closed).await
-    }
-
-    
-    pub async fn update_account_permissions_for_admin(
-        &self,
-        user_id: Uuid,
-    ) -> Result<(), AppError> {
-        // This is a placeholder - implement based on your permission logic
-        info!("Updating account permissions for admin: {}", user_id);
-        Ok(())
-    }
-
-    pub async fn update_account_permissions_for_customer(
-        &self,
-        user_id: Uuid,
-        new_admin_id: Option<Uuid>,
-    ) -> Result<(), AppError> {
-        // This is a placeholder - implement based on your permission logic
-        info!(
-            "Updating account permissions for customer: {}, new_admin: {:?}",
-            user_id, new_admin_id
-        );
-        Ok(())
-    }
-
-    pub async fn reassign_customer_accounts(
-        &self,
-        user_id: Uuid,
-        new_admin_id: Option<Uuid>,
-    ) -> Result<(), AppError> {
-        // This is a placeholder - implement based on your reassignment logic
-        info!(
-            "Reassigning customer {} accounts to new admin: {:?}",
-            user_id, new_admin_id
-        );
-        Ok(())
     }
 
     pub async fn deposit_with_idempotency(
