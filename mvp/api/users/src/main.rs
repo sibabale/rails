@@ -36,13 +36,20 @@ async fn main() -> anyhow::Result<()> {
     };
     
     // Initialize tracing with Sentry integration
+    // Filter out sqlx slow query warnings and connection pool ping errors
+    let filter = tracing_subscriber::EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info,sqlx=error,sqlx_core=error"));
+    
     if config.sentry_dsn.is_some() {
         tracing_subscriber::registry()
             .with(tracing_subscriber::fmt::layer())
             .with(sentry_tracing::layer())
+            .with(filter)
             .init();
     } else {
-        tracing_subscriber::fmt::init();
+        tracing_subscriber::fmt()
+            .with_env_filter(filter)
+            .init();
     }
     tracing::info!("Loaded configuration");
     tracing::info!("  DATABASE_URL: {}", mask_url(&config.database_url));
