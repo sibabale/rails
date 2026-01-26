@@ -36,9 +36,8 @@ async fn main() -> anyhow::Result<()> {
     };
     
     // Initialize tracing with Sentry integration
-    // Filter out sqlx slow query warnings and connection pool ping errors
     let filter = tracing_subscriber::EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info,sqlx=error,sqlx_core=error"));
+        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"));
     
     if config.sentry_dsn.is_some() {
         tracing_subscriber::registry()

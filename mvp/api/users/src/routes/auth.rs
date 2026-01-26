@@ -61,8 +61,9 @@ pub async fn login(
     State(state): State<AppState>,
     Json(payload): Json<LoginRequest>
 ) -> Result<Json<LoginResponse>, AppError> {
+    // Optimized: Get active users with their environment_ids in one query
     let user_rows = sqlx::query(
-        "SELECT id, password_hash, status, environment_id FROM users WHERE email = $1"
+        "SELECT id, password_hash, status, environment_id FROM users WHERE email = $1 AND status = 'active'"
     )
     .bind(&payload.email)
     .fetch_all(&state.db)
@@ -73,15 +74,8 @@ pub async fn login(
         return Err(AppError::Unauthorized);
     }
 
-    let mut password_hash: Option<String> = None;
-    for row in &user_rows {
-        let status: String = row.get("status");
-        if status == "active" {
-            password_hash = Some(row.get("password_hash"));
-            break;
-        }
-    }
-    let password_hash = password_hash.ok_or_else(|| AppError::Unauthorized)?;
+    // Get password hash from first active user (should only be one per email in practice)
+    let password_hash: String = user_rows[0].get("password_hash");
 
     // 2. Verify password
     let parsed_hash = PasswordHash::new(&password_hash).map_err(|_| AppError::Internal)?;
@@ -89,13 +83,24 @@ pub async fn login(
         return Err(AppError::Unauthorized);
     }
 
-    let environments = sqlx::query(
-        "SELECT DISTINCT e.id, e.type FROM environments e JOIN users u ON u.environment_id = e.id WHERE u.email = $1 AND u.status = 'active' AND e.status = 'active'"
-    )
-    .bind(&payload.email)
-    .fetch_all(&state.db)
-    .await
-    .map_err(|_| AppError::Internal)?;
+    // Optimized: Get environment_ids from users, then query environments directly (avoids expensive JOIN)
+    let environment_ids: Vec<uuid::Uuid> = user_rows
+        .iter()
+        .map(|row| row.get::<uuid::Uuid, _>("environment_id"))
+        .collect();
+
+    let environments = if environment_ids.is_empty() {
+        Vec::new()
+    } else {
+        // Use PostgreSQL array syntax for efficient IN query with indexed lookup
+        sqlx::query(
+            "SELECT id, type FROM environments WHERE id = ANY($1::uuid[]) AND status = 'active'"
+        )
+        .bind(&environment_ids)
+        .fetch_all(&state.db)
+        .await
+        .map_err(|_| AppError::Internal)?
+    };
 
     if environments.is_empty() {
         return Err(AppError::Unauthorized);
