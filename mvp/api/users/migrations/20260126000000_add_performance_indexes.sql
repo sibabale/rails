@@ -26,6 +26,10 @@ CREATE INDEX IF NOT EXISTS environments_business_id_idx ON environments(business
 -- Composite index for common query pattern: WHERE id = $1 AND business_id = $2 AND status = 'active'
 CREATE INDEX IF NOT EXISTS environments_id_business_status_idx ON environments(id, business_id, status) WHERE status = 'active';
 
+-- Index for ANY array queries: WHERE id = ANY($1::uuid[]) AND status = 'active'
+-- This helps with the login query that uses array syntax
+CREATE INDEX IF NOT EXISTS environments_id_status_active_idx ON environments(id, status) WHERE status = 'active';
+
 -- Index for type filtering (used in joins)
 CREATE INDEX IF NOT EXISTS environments_type_idx ON environments(type);
 

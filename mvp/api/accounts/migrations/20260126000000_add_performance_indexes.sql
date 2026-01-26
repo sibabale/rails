@@ -19,6 +19,9 @@ CREATE INDEX IF NOT EXISTS transactions_created_at_idx
 -- Composite index for organization + status queries (if needed)
 -- Already exists: idx_transactions_org_status_created_at
 
+-- Index for transaction id lookups (primary key should be fast, but ensure it's optimized)
+-- Primary key already provides this, but we can verify it's being used
+
 -- Accounts table indexes
 -- Composite index for user accounts query: WHERE user_id = $1 ORDER BY created_at DESC
 CREATE INDEX IF NOT EXISTS accounts_user_id_created_at_idx 
