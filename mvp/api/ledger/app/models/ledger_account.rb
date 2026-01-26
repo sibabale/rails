@@ -22,7 +22,13 @@ class LedgerAccount < ApplicationRecord
   }
 
   def self.resolve(organization_id:, environment:, external_account_id:, currency:, account_type: 'liability')
-    find_or_create_by!(
+    Rails.logger.info(
+      "LedgerAccount.resolve called " \
+      "external_account_id=#{external_account_id.inspect} " \
+      "type=#{external_account_id.class} " \
+      "org=#{organization_id.inspect} env=#{environment.inspect}"
+    )
+    result = find_or_create_by!(
       organization_id: organization_id,
       environment: environment,
       external_account_id: external_account_id,
@@ -30,6 +36,8 @@ class LedgerAccount < ApplicationRecord
     ) do |account|
       account.account_type = account_type
     end
+    Rails.logger.info("LedgerAccount.resolve result: id=#{result.id} external_account_id=#{result.external_account_id.inspect}")
+    result
   end
 
   def current_balance

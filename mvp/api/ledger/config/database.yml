@@ -15,7 +15,10 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  # Increased pool size to handle concurrent gRPC requests (each takes 15-20+ seconds)
+  # gRPC server runs in separate threads, so we need more connections than just Puma threads
+  # Default pool size is 50 (can be overridden with DB_POOL_SIZE env var)
+  pool: <%= ENV.fetch("DB_POOL_SIZE") { 50 } %>
   url: <%= ENV.fetch("DATABASE_URL") { "postgresql://localhost:5432/ledger_development" } %>
 
 development:

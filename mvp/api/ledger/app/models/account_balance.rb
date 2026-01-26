@@ -6,7 +6,9 @@ class AccountBalance < ApplicationRecord
   validates :organization_id, presence: true
   validates :environment, presence: true, inclusion: { in: %w[sandbox production] }
   validates :ledger_account_id, presence: true
-  validates :balance_cents, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  # Signed balance: debits increase (+), credits decrease (-).
+  # Liability/equity/income accounts will naturally trend negative.
+  validates :balance_cents, presence: true, numericality: true
   validates :currency, presence: true
   validates :last_updated_at, presence: true
 

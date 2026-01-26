@@ -63,8 +63,8 @@ class LedgerPoster
       destination_account = resolve_ledger_account(@destination_external_account_id, determine_destination_account_type)
 
       validate_account_types!(source_account, destination_account)
-      create_double_entry!(ledger_transaction, source_account, destination_account)
-      update_balances!(source_account, destination_account)
+      source_entry_type, destination_entry_type = create_double_entry!(ledger_transaction, source_account, destination_account)
+      update_balances!(source_account, destination_account, source_entry_type, destination_entry_type)
       ledger_transaction.mark_as_posted!
 
       ledger_transaction
@@ -158,6 +158,12 @@ class LedgerPoster
   end
 
   def resolve_ledger_account(external_account_id, account_type)
+    Rails.logger.info(
+      "resolve_ledger_account called " \
+      "external_account_id=#{external_account_id.inspect} " \
+      "account_type=#{account_type.inspect} " \
+      "org=#{@organization_id.inspect} env=#{@environment.inspect}"
+    )
     LedgerAccount.resolve(
       organization_id: @organization_id,
       environment: @environment,
@@ -173,56 +179,111 @@ class LedgerPoster
       raise PostingError, "Self-transfers are not allowed"
     end
 
-    # Validate account type compatibility
-    if @is_deposit
-      raise PostingError, "Deposits must come from cash_control account" unless source_account.external_account_id == 'SYSTEM_CASH_CONTROL'
-    end
+    # Deposits/withdrawals are routed via SYSTEM_CASH_CONTROL.
+    # Transfers are between distinct accounts.
   end
 
   def create_double_entry!(transaction, source_account, destination_account)
-    # Source account gets CREDIT (money out)
+    operation = detect_operation(source_account, destination_account)
+
+    source_change = account_change_for(operation, :source)
+    dest_change = account_change_for(operation, :destination)
+
+    source_entry_type = entry_type_for(source_account.account_type, source_change)
+    destination_entry_type = entry_type_for(destination_account.account_type, dest_change)
+
+    # Create both entries (must balance: one debit, one credit, same amount).
     LedgerEntry.create!(
       organization_id: @organization_id,
       environment: @environment,
       ledger_account_id: source_account.id,
       transaction_id: transaction.id,
-      entry_type: 'credit',
+      entry_type: source_entry_type,
       amount: @amount,
       currency: @currency
     )
 
-    # Destination account gets DEBIT (money in)
     LedgerEntry.create!(
       organization_id: @organization_id,
       environment: @environment,
       ledger_account_id: destination_account.id,
       transaction_id: transaction.id,
-      entry_type: 'debit',
+      entry_type: destination_entry_type,
       amount: @amount,
       currency: @currency
+    )
+
+    # Return which entry type was applied to each side for balance updates.
+    [source_entry_type, destination_entry_type]
+  end
+
+  def update_balances!(source_account, destination_account, source_entry_type, destination_entry_type)
+    # Signed balance convention is handled in AccountBalance (debit +, credit -).
+    AccountBalance.update_balance!(
+      organization_id: @organization_id,
+      environment: @environment,
+      ledger_account_id: source_account.id,
+      amount_cents: @amount,
+      currency: @currency,
+      entry_type: source_entry_type
+    )
+
+    AccountBalance.update_balance!(
+      organization_id: @organization_id,
+      environment: @environment,
+      ledger_account_id: destination_account.id,
+      amount_cents: @amount,
+      currency: @currency,
+      entry_type: destination_entry_type
     )
   end
 
-  def update_balances!(source_account, destination_account)
-    # Update source account balance (credit = decrease)
-    AccountBalance.update_balance!(
-      organization_id: @organization_id,
-      environment: @environment,
-      ledger_account_id: source_account.id,
-      amount_cents: @amount,
-      currency: @currency,
-      entry_type: 'credit'
-    )
+  def detect_operation(source_account, destination_account)
+    source_is_cash = source_account.external_account_id == 'SYSTEM_CASH_CONTROL'
+    dest_is_cash = destination_account.external_account_id == 'SYSTEM_CASH_CONTROL'
 
-    # Update destination account balance (debit = increase)
-    AccountBalance.update_balance!(
-      organization_id: @organization_id,
-      environment: @environment,
-      ledger_account_id: destination_account.id,
-      amount_cents: @amount,
-      currency: @currency,
-      entry_type: 'debit'
-    )
+    # Accounts service uses:
+    # - deposit:  SYSTEM_CASH_CONTROL -> user_account
+    # - withdraw: user_account -> SYSTEM_CASH_CONTROL
+    if source_is_cash && !dest_is_cash
+      :deposit
+    elsif dest_is_cash && !source_is_cash
+      :withdraw
+    else
+      :transfer
+    end
+  end
+
+  def account_change_for(operation, side)
+    case operation
+    when :transfer
+      side == :source ? :decrease : :increase
+    when :deposit
+      # Bank deposit increases both cash (asset) and customer liability.
+      :increase
+    when :withdraw
+      # Withdrawal decreases both cash (asset) and customer liability.
+      :decrease
+    else
+      raise PostingError, "Unknown operation"
+    end
+  end
+
+  def entry_type_for(account_type, change)
+    normal_balance = case account_type
+                     when 'asset', 'expense'
+                       :debit
+                     when 'liability', 'equity', 'income'
+                       :credit
+                     else
+                       raise PostingError, "Invalid account type: #{account_type}"
+                     end
+
+    if change == :increase
+      normal_balance == :debit ? 'debit' : 'credit'
+    else
+      normal_balance == :debit ? 'credit' : 'debit'
+    end
   end
 
 end

@@ -10,14 +10,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_01_22_000003) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_24_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "account_balances", force: :cascade do |t|
+    t.uuid "organization_id", null: false
+    t.string "environment", limit: 20, null: false
+    t.uuid "ledger_account_id", null: false
+    t.bigint "balance_cents", default: 0, null: false
+    t.string "currency", limit: 3, null: false
+    t.datetime "last_updated_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ledger_account_id"], name: "index_account_balances_on_ledger_account_id"
+    t.index ["organization_id", "environment", "ledger_account_id"], name: "index_account_balances_unique", unique: true
+    t.index ["organization_id", "environment"], name: "index_account_balances_on_organization_id_and_environment"
+  end
 
   create_table "ledger_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "organization_id", null: false
     t.string "environment", limit: 20, null: false
-    t.uuid "external_account_id", null: false
+    t.string "external_account_id", null: false
     t.string "account_type", null: false
     t.string "currency", null: false
     t.datetime "created_at", null: false

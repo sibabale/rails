@@ -7,7 +7,9 @@
 # Any libraries that use thread pools should be configured to match
 # the maximum value specified for Puma. Default is set to 5 threads for minimum
 # and maximum; this matches the default thread size of Active Record.
-max_threads_count = ENV.fetch("RAILS_MAX_THREADS") { 5 }
+# This service also hosts a gRPC server inside the same process, so under load
+# we need more headroom to avoid starving `/health` and other endpoints.
+max_threads_count = ENV.fetch("RAILS_MAX_THREADS") { 20 }
 min_threads_count = ENV.fetch("RAILS_MIN_THREADS") { max_threads_count }
 threads min_threads_count, max_threads_count
 

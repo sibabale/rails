@@ -9,7 +9,8 @@ set +e
 # Configuration
 USERS_SERVICE="http://localhost:8080"
 ACCOUNTS_SERVICE="http://localhost:8081"
-LEDGER_SERVICE="http://localhost:3000"  # Assuming Rails runs on 3000
+# Use 127.0.0.1 to avoid IPv6 localhost delays when Rails binds IPv4 only.
+LEDGER_SERVICE="http://127.0.0.1:3000"  # Assuming Rails runs on 3000
 
 # Test data
 ORG_ID="123e4567-e89b-12d3-a456-426614174000"
@@ -49,7 +50,7 @@ check_service() {
     
     echo -e "${YELLOW}🔍 Checking ${service_name}...${NC}"
     
-    if curl -s -f "$service_url/health" > /dev/null 2>&1; then
+    if curl -s -f --connect-timeout 5 --max-time 10 "$service_url/health" > /dev/null 2>&1; then
         echo -e "${GREEN}✅ ${service_name} is running${NC}"
         return 0
     else
@@ -74,6 +75,61 @@ run_test() {
     fi
 }
 
+# Helper: poll Accounts transaction status until Posted (or fail)
+wait_for_transaction_posted() {
+    local tx_id=$1
+    local label=$2
+    local timeout_seconds=${3:-45}
+
+    if [[ -z "$tx_id" ]]; then
+        echo -e "${RED}❌ Missing transaction id for ${label}${NC}"
+        return 1
+    fi
+
+    local start_ts=$(date +%s)
+    while true; do
+        local now_ts=$(date +%s)
+        local elapsed=$((now_ts - start_ts))
+        if [[ "$elapsed" -ge "$timeout_seconds" ]]; then
+            echo -e "${RED}❌ ${label} did not reach Posted within ${timeout_seconds}s${NC}"
+            return 1
+        fi
+
+        local resp=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+            -H "Authorization: Bearer test-token" \
+            "$ACCOUNTS_SERVICE/api/v1/transactions/$tx_id" 2>/dev/null || echo "")
+        local status=$(echo "$resp" | grep "HTTP_STATUS:" | cut -d: -f2)
+        local body=$(echo "$resp" | grep -v "HTTP_STATUS:")
+
+        if [[ "$status" != "200" ]]; then
+            echo -e "${YELLOW}⏳ ${label}: transaction not readable yet (HTTP ${status:-unknown}), retrying...${NC}"
+            sleep 1
+            continue
+        fi
+
+        local tx_status=$(echo "$body" | jq -r '.status // empty' 2>/dev/null)
+        local failure_reason=$(echo "$body" | jq -r '.failure_reason // empty' 2>/dev/null)
+
+        if [[ "$tx_status" == "Posted" ]]; then
+            echo -e "${GREEN}✅ ${label}: Posted${NC}"
+            return 0
+        fi
+
+        if [[ "$tx_status" == "Failed" ]]; then
+            echo -e "${RED}❌ ${label}: Failed${NC}"
+            echo -e "${RED}   Reason: ${failure_reason}${NC}"
+            return 1
+        fi
+
+        # Pending or unknown: keep waiting
+        echo -e "${YELLOW}⏳ ${label}: ${tx_status:-unknown} (elapsed ${elapsed}s)${NC}"
+        if [[ -n "$failure_reason" ]]; then
+            echo -e "${YELLOW}   Last failure: ${failure_reason}${NC}"
+        fi
+        sleep 2
+    done
+}
+
 # Pre-flight checks
 echo -e "${BLUE}🏥 Pre-flight Service Checks${NC}"
 echo "-------------------"
@@ -81,6 +137,15 @@ echo "-------------------"
 check_service "Users Service" "$USERS_SERVICE" || exit 1
 check_service "Accounts Service" "$ACCOUNTS_SERVICE" || exit 1
 check_service "Ledger Service" "$LEDGER_SERVICE" || exit 1
+
+# Hardened readiness: ensure ledger gRPC is up (not just HTTP)
+LEDGER_HEALTH=$(curl -s "$LEDGER_SERVICE/health" 2>/dev/null || echo "")
+LEDGER_GRPC_STATUS=$(echo "$LEDGER_HEALTH" | jq -r '.grpc.status // empty' 2>/dev/null)
+if [[ "$LEDGER_GRPC_STATUS" != "ok" ]]; then
+    echo -e "${RED}❌ Ledger gRPC is not ready (health.grpc.status=${LEDGER_GRPC_STATUS:-missing})${NC}"
+    echo -e "${YELLOW}Ledger /health response: ${LEDGER_HEALTH}${NC}"
+    exit 1
+fi
 
 echo ""
 
@@ -572,8 +637,9 @@ EOF
 fi
 
 # Wait for ledger processing
-echo -e "${YELLOW}⏳ Waiting for ledger processing (3s)...${NC}"
-sleep 3
+echo -e "${YELLOW}⏳ Waiting for ledger posting...${NC}"
+wait_for_transaction_posted "$DEPOSIT_X_TRANSACTION_ID" "Deposit User X" 60 || exit 1
+wait_for_transaction_posted "$DEPOSIT_Y_TRANSACTION_ID" "Deposit User Y" 60 || exit 1
 
 # Test 7: User X Sends Money to User Y (Transfer)
 echo ""
@@ -623,8 +689,8 @@ EOF
 fi
 
 # Wait for ledger processing
-echo -e "${YELLOW}⏳ Waiting for ledger processing (3s)...${NC}"
-sleep 3
+echo -e "${YELLOW}⏳ Waiting for ledger posting...${NC}"
+wait_for_transaction_posted "$TRANSFER_XY_TRANSACTION_ID" "Transfer X→Y" 60 || exit 1
 
 # Test 8: Verify Final Balances
 echo ""
@@ -665,13 +731,9 @@ else
         echo -e "${YELLOW}👤 User Y Account: $USER_Y_ACCOUNT_NUM${NC}"
         echo -e "${YELLOW}ℹ️  Balance verification requires ledger service integration${NC}"
         
-        # Verify transactions were created
-        if [[ -n "$DEPOSIT_X_TRANSACTION_ID" && -n "$TRANSFER_XY_TRANSACTION_ID" ]]; then
-            echo -e "${GREEN}✅ All transactions completed successfully${NC}"
-            echo -e "${YELLOW}💡 Expected balances: User X = \$125.00, User Y = \$100.00${NC}"
-        else
-            echo -e "${YELLOW}⚠️  Some transactions may not have been created, skipping balance verification${NC}"
-        fi
+        # If we got here, all required transactions were confirmed Posted.
+        echo -e "${GREEN}✅ All transactions are Posted in the ledger${NC}"
+        echo -e "${YELLOW}💡 Expected balances: User X = \$125.00, User Y = \$100.00${NC}"
     else
         echo -e "${YELLOW}⚠️  Could not retrieve final balances${NC}"
         echo -e "${YELLOW}   User X status: ${USER_X_BALANCE_HTTP_STATUS:-unknown}${NC}"

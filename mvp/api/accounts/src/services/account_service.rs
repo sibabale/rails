@@ -135,25 +135,6 @@ impl AccountService {
         Ok(())
     }
 
-    pub async fn deposit(
-        pool: &PgPool,
-        account_id: Uuid,
-        amount: i64,
-        ledger_grpc: &LedgerGrpc,
-        correlation_id: Option<String>,
-    ) -> Result<(Account, crate::models::Transaction), AppError> {
-        let idempotency_key = Uuid::new_v4().to_string();
-        Self::deposit_with_idempotency(
-            pool,
-            account_id,
-            amount,
-            &idempotency_key,
-            ledger_grpc,
-            correlation_id,
-        )
-        .await
-    }
-
     pub async fn deposit_with_idempotency(
         pool: &PgPool,
         account_id: Uuid,
@@ -249,25 +230,6 @@ impl AccountService {
         };
 
         Ok((account, transaction))
-    }
-
-    pub async fn withdraw(
-        pool: &PgPool,
-        account_id: Uuid,
-        amount: i64,
-        ledger_grpc: &LedgerGrpc,
-        correlation_id: Option<String>,
-    ) -> Result<(Account, crate::models::Transaction), AppError> {
-        let idempotency_key = Uuid::new_v4().to_string();
-        Self::withdraw_with_idempotency(
-            pool,
-            account_id,
-            amount,
-            &idempotency_key,
-            ledger_grpc,
-            correlation_id,
-        )
-        .await
     }
 
     pub async fn withdraw_with_idempotency(
@@ -367,28 +329,6 @@ impl AccountService {
         };
 
         Ok((account, transaction))
-    }
-
-    pub async fn transfer(
-        pool: &PgPool,
-        from_account_id: Uuid,
-        to_account_id: Uuid,
-        amount: i64,
-        _description: Option<String>,
-        ledger_grpc: &LedgerGrpc,
-        correlation_id: Option<String>,
-    ) -> Result<(Account, Account, crate::models::Transaction), AppError> {
-        let idempotency_key = Uuid::new_v4().to_string();
-        Self::transfer_with_idempotency(
-            pool,
-            from_account_id,
-            to_account_id,
-            amount,
-            &idempotency_key,
-            ledger_grpc,
-            correlation_id,
-        )
-        .await
     }
 
     pub async fn transfer_with_idempotency(

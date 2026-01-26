@@ -18,31 +18,4 @@ class LedgerEntry < ApplicationRecord
     debit: 'debit',
     credit: 'credit'
   }
-
-  # Custom validations for double-entry compliance
-  validate :ensure_transaction_has_two_entries, on: :create
-  validate :ensure_transaction_balanced, on: :create
-
-  private
-
-  def ensure_transaction_has_two_entries
-    return unless transaction_id
-
-    entry_count = LedgerEntry.where(transaction_id: transaction_id).count
-    if entry_count > 2
-      errors.add(:base, 'Transaction cannot have more than 2 entries')
-    end
-  end
-
-  def ensure_transaction_balanced
-    return unless transaction_id
-
-    entries = LedgerEntry.where(transaction_id: transaction_id)
-    debit_total = entries.where(entry_type: 'debit').sum(:amount)
-    credit_total = entries.where(entry_type: 'credit').sum(:amount)
-
-    if debit_total != credit_total
-      errors.add(:base, 'Transaction debits and credits must balance')
-    end
-  end
 end

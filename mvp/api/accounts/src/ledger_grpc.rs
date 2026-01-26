@@ -14,10 +14,24 @@ pub struct LedgerGrpc {
 
 impl LedgerGrpc {
     pub fn new(endpoint: String) -> Self {
+        let timeout_secs = std::env::var("LEDGER_GRPC_TIMEOUT_SECS")
+            .ok()
+            .and_then(|v| v.parse::<u64>().ok())
+            .filter(|v| *v > 0)
+            .unwrap_or(10);
+
         Self {
             endpoint,
-            timeout: Duration::from_secs(2),
+            timeout: Duration::from_secs(timeout_secs),
         }
+    }
+
+    pub fn endpoint(&self) -> &str {
+        &self.endpoint
+    }
+
+    pub fn timeout(&self) -> Duration {
+        self.timeout
     }
 
     fn env_to_proto(environment: &str) -> Result<i32, AppError> {
@@ -67,11 +81,14 @@ impl LedgerGrpc {
             correlation_id,
         };
 
-        let resp = client
-            .post_transaction(req)
-            .await
-            .map_err(|e| AppError::Internal(format!("ledger gRPC post failed: {}", e)))?
-            .into_inner();
+        let resp = tokio::time::timeout(
+            self.timeout,
+            client.post_transaction(tonic::Request::new(req))
+        )
+        .await
+        .map_err(|_| AppError::Internal("ledger gRPC post timeout expired".to_string()))?
+        .map_err(|e| AppError::Internal(format!("ledger gRPC post failed: {}", e)))?
+        .into_inner();
 
         if resp.status == "posted" {
             Ok(())
