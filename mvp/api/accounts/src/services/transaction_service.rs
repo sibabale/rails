@@ -12,14 +12,15 @@ impl TransactionService {
     pub async fn create_transaction(
         pool: &PgPool,
         request: CreateTransactionRequest,
+        environment: &str,
         idempotency_key: &str,
     ) -> Result<Transaction, AppError> {
         if idempotency_key.trim().is_empty() {
             return Err(AppError::Validation("Idempotency-Key header is required".to_string()));
         }
 
-        let from_account = AccountRepository::find_by_id(pool, request.from_account_id).await?;
-        let to_account = AccountRepository::find_by_id(pool, request.to_account_id).await?;
+        let from_account = AccountRepository::find_by_id(pool, request.from_account_id, environment).await?;
+        let to_account = AccountRepository::find_by_id(pool, request.to_account_id, environment).await?;
 
         let from_org = from_account
             .organization_id
@@ -70,11 +71,7 @@ impl TransactionService {
 
         tx.commit().await?;
 
-        // Get environment from from_account for ledger notification
-        let environment = from_account
-            .environment
-            .clone()
-            .unwrap_or_else(|| "sandbox".to_string());
+        // Use environment from header (already validated), not from account record
 
         let ledger = NoopLedgerAdapter;
         // Ledger notifications for direct transaction creation are handled via NoopLedgerAdapter
@@ -92,15 +89,26 @@ impl TransactionService {
         Ok(transaction)
     }
 
-    pub async fn get_transaction(pool: &PgPool, id: Uuid) -> Result<Transaction, AppError> {
-        TransactionRepository::find_by_id(pool, id).await
+    pub async fn get_transaction(pool: &PgPool, id: Uuid, environment: &str) -> Result<Transaction, AppError> {
+        // Transactions don't have environment column, but we verify the account is in the correct environment
+        // by checking the account exists in that environment first
+        let transaction = TransactionRepository::find_by_id(pool, id).await?;
+        
+        // Verify the from_account is in the correct environment
+        let _account = AccountRepository::find_by_id(pool, transaction.from_account_id, environment).await?;
+        
+        Ok(transaction)
     }
 
     pub async fn get_account_transactions(
         pool: &PgPool,
         account_id: Uuid,
+        environment: &str,
         limit: Option<i64>,
     ) -> Result<Vec<Transaction>, AppError> {
+        // Verify account exists in the correct environment before fetching transactions
+        let _account = AccountRepository::find_by_id(pool, account_id, environment).await?;
+        
         TransactionRepository::find_by_account_id(pool, account_id, limit).await
     }
 }

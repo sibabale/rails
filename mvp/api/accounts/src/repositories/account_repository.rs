@@ -76,32 +76,34 @@ impl AccountRepository {
         Ok(Self::row_to_account(&row).map_err(|e| sqlx::Error::Protocol(e.to_string().into()))?)
     }
 
-    pub async fn find_by_id(pool: &PgPool, id: Uuid) -> Result<Account, AppError> {
+    pub async fn find_by_id(pool: &PgPool, id: Uuid, environment: &str) -> Result<Account, AppError> {
         let row = sqlx::query(
             r#"
             SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             FROM accounts
-            WHERE id = $1
+            WHERE id = $1 AND environment = $2
             "#,
         )
         .bind(id)
+        .bind(environment)
         .fetch_optional(pool)
         .await?
-        .ok_or_else(|| AppError::NotFound(format!("Account with id {} not found", id)))?;
+        .ok_or_else(|| AppError::NotFound(format!("Account with id {} not found in environment {}", id, environment)))?;
 
         Ok(Self::row_to_account(&row)?)
     }
 
-    pub async fn find_by_user_id(pool: &PgPool, user_id: Uuid) -> Result<Vec<Account>, AppError> {
+    pub async fn find_by_user_id(pool: &PgPool, user_id: Uuid, environment: &str) -> Result<Vec<Account>, AppError> {
         let rows = sqlx::query(
             r#"
             SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             FROM accounts
-            WHERE user_id = $1
+            WHERE user_id = $1 AND environment = $2
             ORDER BY created_at DESC, id DESC
             "#,
         )
         .bind(user_id)
+        .bind(environment)
         .fetch_all(pool)
         .await?;
 
@@ -113,16 +115,17 @@ impl AccountRepository {
         Ok(accounts)
     }
 
-    pub async fn find_by_organization_id(pool: &PgPool, organization_id: Uuid) -> Result<Vec<Account>, AppError> {
+    pub async fn find_by_organization_id(pool: &PgPool, organization_id: Uuid, environment: &str) -> Result<Vec<Account>, AppError> {
         let rows = sqlx::query(
             r#"
             SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             FROM accounts
-            WHERE organization_id = $1
+            WHERE organization_id = $1 AND environment = $2
             ORDER BY created_at DESC, id DESC
             "#,
         )
         .bind(organization_id)
+        .bind(environment)
         .fetch_all(pool)
         .await?;
 
@@ -134,16 +137,17 @@ impl AccountRepository {
         Ok(accounts)
     }
 
-    pub async fn find_by_admin_user_id(pool: &PgPool, admin_user_id: Uuid) -> Result<Vec<Account>, AppError> {
+    pub async fn find_by_admin_user_id(pool: &PgPool, admin_user_id: Uuid, environment: &str) -> Result<Vec<Account>, AppError> {
         let rows = sqlx::query(
             r#"
             SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             FROM accounts
-            WHERE admin_user_id = $1
+            WHERE admin_user_id = $1 AND environment = $2
             ORDER BY created_at DESC, id DESC
             "#,
         )
         .bind(admin_user_id)
+        .bind(environment)
         .fetch_all(pool)
         .await?;
 
@@ -158,33 +162,36 @@ impl AccountRepository {
     pub async fn find_by_user_id_paginated(
         pool: &PgPool,
         user_id: Uuid,
+        environment: &str,
         page: u32,
         per_page: u32,
     ) -> Result<PaginatedAccountsResponse, AppError> {
         let offset = (page - 1) * per_page;
 
-        // Get total count
+        // Get total count (filtered by environment)
         let count_row = sqlx::query(
-            "SELECT COUNT(*) as count FROM accounts WHERE user_id = $1"
+            "SELECT COUNT(*) as count FROM accounts WHERE user_id = $1 AND environment = $2"
         )
         .bind(user_id)
+        .bind(environment)
         .fetch_one(pool)
         .await?;
 
         let total_count: i64 = count_row.get("count");
         let total_pages = ((total_count as f64) / (per_page as f64)).ceil() as u32;
 
-        // Fetch paginated results
+        // Fetch paginated results (filtered by environment)
         let rows = sqlx::query(
             r#"
             SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             FROM accounts
-            WHERE user_id = $1
+            WHERE user_id = $1 AND environment = $2
             ORDER BY created_at DESC, id DESC
-            LIMIT $2 OFFSET $3
+            LIMIT $3 OFFSET $4
             "#,
         )
         .bind(user_id)
+        .bind(environment)
         .bind(per_page as i64)
         .bind(offset as i64)
         .fetch_all(pool)
@@ -209,33 +216,36 @@ impl AccountRepository {
     pub async fn find_by_organization_id_paginated(
         pool: &PgPool,
         organization_id: Uuid,
+        environment: &str,
         page: u32,
         per_page: u32,
     ) -> Result<PaginatedAccountsResponse, AppError> {
         let offset = (page - 1) * per_page;
 
-        // Get total count
+        // Get total count (filtered by environment)
         let count_row = sqlx::query(
-            "SELECT COUNT(*) as count FROM accounts WHERE organization_id = $1"
+            "SELECT COUNT(*) as count FROM accounts WHERE organization_id = $1 AND environment = $2"
         )
         .bind(organization_id)
+        .bind(environment)
         .fetch_one(pool)
         .await?;
 
         let total_count: i64 = count_row.get("count");
         let total_pages = ((total_count as f64) / (per_page as f64)).ceil() as u32;
 
-        // Fetch paginated results
+        // Fetch paginated results (filtered by environment)
         let rows = sqlx::query(
             r#"
             SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             FROM accounts
-            WHERE organization_id = $1
+            WHERE organization_id = $1 AND environment = $2
             ORDER BY created_at DESC, id DESC
-            LIMIT $2 OFFSET $3
+            LIMIT $3 OFFSET $4
             "#,
         )
         .bind(organization_id)
+        .bind(environment)
         .bind(per_page as i64)
         .bind(offset as i64)
         .fetch_all(pool)
@@ -260,33 +270,36 @@ impl AccountRepository {
     pub async fn find_by_admin_user_id_paginated(
         pool: &PgPool,
         admin_user_id: Uuid,
+        environment: &str,
         page: u32,
         per_page: u32,
     ) -> Result<PaginatedAccountsResponse, AppError> {
         let offset = (page - 1) * per_page;
 
-        // Get total count
+        // Get total count (filtered by environment)
         let count_row = sqlx::query(
-            "SELECT COUNT(*) as count FROM accounts WHERE admin_user_id = $1"
+            "SELECT COUNT(*) as count FROM accounts WHERE admin_user_id = $1 AND environment = $2"
         )
         .bind(admin_user_id)
+        .bind(environment)
         .fetch_one(pool)
         .await?;
 
         let total_count: i64 = count_row.get("count");
         let total_pages = ((total_count as f64) / (per_page as f64)).ceil() as u32;
 
-        // Fetch paginated results
+        // Fetch paginated results (filtered by environment)
         let rows = sqlx::query(
             r#"
             SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             FROM accounts
-            WHERE admin_user_id = $1
+            WHERE admin_user_id = $1 AND environment = $2
             ORDER BY created_at DESC, id DESC
-            LIMIT $2 OFFSET $3
+            LIMIT $3 OFFSET $4
             "#,
         )
         .bind(admin_user_id)
+        .bind(environment)
         .bind(per_page as i64)
         .bind(offset as i64)
         .fetch_all(pool)
@@ -311,6 +324,7 @@ impl AccountRepository {
     pub async fn update_status(
         pool: &PgPool,
         id: Uuid,
+        environment: &str,
         status: AccountStatus,
     ) -> Result<Account, AppError> {
         let status_str: &str = match status {
@@ -322,12 +336,13 @@ impl AccountRepository {
         let row = sqlx::query(
             r#"
             UPDATE accounts
-            SET status = $2, updated_at = NOW()
-            WHERE id = $1
+            SET status = $3, updated_at = NOW()
+            WHERE id = $1 AND environment = $2
             RETURNING id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             "#,
         )
         .bind(id)
+        .bind(environment)
         .bind(status_str)
         .fetch_one(pool)
         .await?;

@@ -52,64 +52,71 @@ impl AccountService {
         Ok(account)
     }
 
-    pub async fn get_account(pool: &PgPool, id: Uuid) -> Result<Account, AppError> {
-        AccountRepository::find_by_id(pool, id).await
+    pub async fn get_account(pool: &PgPool, id: Uuid, environment: &str) -> Result<Account, AppError> {
+        AccountRepository::find_by_id(pool, id, environment).await
     }
 
     pub async fn get_accounts_by_user(
         pool: &PgPool,
         user_id: Uuid,
+        environment: &str,
     ) -> Result<Vec<Account>, AppError> {
-        AccountRepository::find_by_user_id(pool, user_id).await
+        AccountRepository::find_by_user_id(pool, user_id, environment).await
     }
 
     pub async fn get_accounts_by_organization(
         pool: &PgPool,
         organization_id: Uuid,
+        environment: &str,
     ) -> Result<Vec<Account>, AppError> {
-        AccountRepository::find_by_organization_id(pool, organization_id).await
+        AccountRepository::find_by_organization_id(pool, organization_id, environment).await
     }
 
     pub async fn get_accounts_by_admin(
         pool: &PgPool,
         admin_user_id: Uuid,
+        environment: &str,
     ) -> Result<Vec<Account>, AppError> {
-        AccountRepository::find_by_admin_user_id(pool, admin_user_id).await
+        AccountRepository::find_by_admin_user_id(pool, admin_user_id, environment).await
     }
 
     pub async fn get_accounts_by_user_paginated(
         pool: &PgPool,
         user_id: Uuid,
+        environment: &str,
         page: u32,
         per_page: u32,
     ) -> Result<PaginatedAccountsResponse, AppError> {
-        AccountRepository::find_by_user_id_paginated(pool, user_id, page, per_page).await
+        AccountRepository::find_by_user_id_paginated(pool, user_id, environment, page, per_page).await
     }
 
     pub async fn get_accounts_by_organization_paginated(
         pool: &PgPool,
         organization_id: Uuid,
+        environment: &str,
         page: u32,
         per_page: u32,
     ) -> Result<PaginatedAccountsResponse, AppError> {
-        AccountRepository::find_by_organization_id_paginated(pool, organization_id, page, per_page).await
+        AccountRepository::find_by_organization_id_paginated(pool, organization_id, environment, page, per_page).await
     }
 
     pub async fn get_accounts_by_admin_paginated(
         pool: &PgPool,
         admin_user_id: Uuid,
+        environment: &str,
         page: u32,
         per_page: u32,
     ) -> Result<PaginatedAccountsResponse, AppError> {
-        AccountRepository::find_by_admin_user_id_paginated(pool, admin_user_id, page, per_page).await
+        AccountRepository::find_by_admin_user_id_paginated(pool, admin_user_id, environment, page, per_page).await
     }
 
     pub async fn update_account_status(
         pool: &PgPool,
         id: Uuid,
+        environment: &str,
         status: AccountStatus,
     ) -> Result<Account, AppError> {
-        let account = AccountRepository::find_by_id(pool, id).await?;
+        let account = AccountRepository::find_by_id(pool, id, environment).await?;
 
         if account.status == Some(AccountStatus::Closed) && status != AccountStatus::Closed {
             return Err(AppError::BusinessLogic(
@@ -122,16 +129,17 @@ impl AccountService {
             id, status
         );
 
-        AccountRepository::update_status(pool, id, status).await
+        AccountRepository::update_status(pool, id, environment, status).await
     }
 
-    pub async fn close_account(pool: &PgPool, id: Uuid) -> Result<Account, AppError> {
-        Self::update_account_status(pool, id, AccountStatus::Closed).await
+    pub async fn close_account(pool: &PgPool, id: Uuid, environment: &str) -> Result<Account, AppError> {
+        Self::update_account_status(pool, id, environment, AccountStatus::Closed).await
     }
 
     pub async fn deposit_with_idempotency(
         pool: &PgPool,
         account_id: Uuid,
+        environment: &str,
         amount: i64,
         idempotency_key: &str,
         ledger_grpc: &LedgerGrpc,
@@ -141,7 +149,7 @@ impl AccountService {
             return Err(AppError::Validation("Idempotency-Key header is required".to_string()));
         }
 
-        let account = AccountRepository::find_by_id(pool, account_id).await?;
+        let account = AccountRepository::find_by_id(pool, account_id, environment).await?;
 
         if account.status != Some(AccountStatus::Active) {
             return Err(AppError::AccountNotActive);
@@ -156,10 +164,8 @@ impl AccountService {
             .clone()
             .unwrap_or_else(|| "USD".to_string());
 
-        let environment = account
-            .environment
-            .clone()
-            .unwrap_or_else(|| "sandbox".to_string());
+        // Use environment from header (already validated), not from account record
+        // This ensures we're operating in the correct environment context
 
         let mut tx = pool.begin().await?;
 
@@ -229,6 +235,7 @@ impl AccountService {
     pub async fn withdraw_with_idempotency(
         pool: &PgPool,
         account_id: Uuid,
+        environment: &str,
         amount: i64,
         idempotency_key: &str,
         ledger_grpc: &LedgerGrpc,
@@ -240,7 +247,7 @@ impl AccountService {
             return Err(AppError::Validation("Idempotency-Key header is required".to_string()));
         }
 
-        let account = AccountRepository::find_by_id(pool, account_id).await?;
+        let account = AccountRepository::find_by_id(pool, account_id, environment).await?;
 
         if account.status != Some(AccountStatus::Active) {
             return Err(AppError::AccountNotActive);
@@ -255,10 +262,8 @@ impl AccountService {
             .clone()
             .unwrap_or_else(|| "USD".to_string());
 
-        let environment = account
-            .environment
-            .clone()
-            .unwrap_or_else(|| "sandbox".to_string());
+        // Use environment from header (already validated), not from account record
+        // This ensures we're operating in the correct environment context
 
         let mut tx = pool.begin().await?;
 
@@ -328,6 +333,7 @@ impl AccountService {
     pub async fn transfer_with_idempotency(
         pool: &PgPool,
         from_account_id: Uuid,
+        environment: &str,
         to_account_id: Uuid,
         amount: i64,
         idempotency_key: &str,
@@ -338,14 +344,14 @@ impl AccountService {
             return Err(AppError::Validation("Idempotency-Key header is required".to_string()));
         }
 
-        let from_account = AccountRepository::find_by_id(pool, from_account_id).await?;
+        let from_account = AccountRepository::find_by_id(pool, from_account_id, environment).await?;
 
         if from_account.status != Some(AccountStatus::Active) {
             return Err(AppError::AccountNotActive);
         }
 
 
-        let to_account = AccountRepository::find_by_id(pool, to_account_id).await?;
+        let to_account = AccountRepository::find_by_id(pool, to_account_id, environment).await?;
 
         if to_account.status != Some(AccountStatus::Active) {
             return Err(AppError::AccountNotActive);
@@ -379,10 +385,8 @@ impl AccountService {
             ));
         }
 
-        let environment = from_account
-            .environment
-            .clone()
-            .unwrap_or_else(|| "sandbox".to_string());
+        // Use environment from header (already validated), not from account record
+        // This ensures we're operating in the correct environment context
 
         let mut tx = pool.begin().await?;
 
