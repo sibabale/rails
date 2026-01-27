@@ -19,6 +19,27 @@ Rails.application.configure do
   # key such as config/credentials/production.key. This key is used to decrypt credentials (and other encrypted files).
   # config.require_master_key = true
 
+  # Set secret_key_base from environment variable (preferred) or credentials
+  # This is required for session encryption, signed cookies, etc.
+  config.secret_key_base = ENV.fetch("SECRET_KEY_BASE") do
+    # Fall back to credentials if master key is available
+    if Rails.application.credentials.secret_key_base.present?
+      Rails.application.credentials.secret_key_base
+    else
+      raise ArgumentError, <<~ERROR
+        Missing SECRET_KEY_BASE for production environment.
+        
+        Set this as an environment variable:
+          SECRET_KEY_BASE=your_secret_key_here
+        
+        Or ensure RAILS_MASTER_KEY is set to decrypt credentials.yml.enc
+        
+        Generate a new secret key with:
+          bin/rails secret
+      ERROR
+    end
+  end
+
   # Disable serving static files from `public/`, relying on NGINX/Apache to do so instead.
   # config.public_file_server.enabled = false
 
@@ -39,10 +60,15 @@ Rails.application.configure do
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   # Can be used together with config.force_ssl for Strict-Transport-Security and secure cookies.
-  # config.assume_ssl = true
+  # Railway terminates SSL at the edge, so we assume SSL for security headers
+  config.assume_ssl = true
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
+  # Exclude /up healthcheck endpoint from SSL redirect to allow Railway's HTTP healthchecks
   config.force_ssl = true
+  config.ssl_options = {
+    redirect: { exclude: ->(request) { request.path == "/up" || request.path == "/up/" } }
+  }
 
   # Log to STDOUT by default
   config.logger = ActiveSupport::Logger.new(STDOUT)
@@ -81,10 +107,16 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
 
   # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
+  # Allow Railway healthcheck hostname for internal health checks
+  config.hosts << "healthcheck.railway.app"
+  
   # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # This ensures Railway healthchecks can reach /up even if host authorization is strict
+  # Handle both /up and /up/ paths, and match at start of path to avoid false positives
+  config.host_authorization = { 
+    exclude: ->(request) { 
+      path = request.path
+      path == "/up" || path == "/up/" || path.start_with?("/up?")
+    }
+  }
 end
