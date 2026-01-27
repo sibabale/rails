@@ -61,9 +61,9 @@ pub async fn login(
     State(state): State<AppState>,
     Json(payload): Json<LoginRequest>
 ) -> Result<Json<LoginResponse>, AppError> {
-    // Optimized: Get active users with their environment_ids in one query
+    // Optimized: Get active users with their environment_ids and business_id in one query
     let user_rows = sqlx::query(
-        "SELECT id, password_hash, status, environment_id FROM users WHERE email = $1 AND status = 'active'"
+        "SELECT id, password_hash, status, environment_id, business_id FROM users WHERE email = $1 AND status = 'active'"
     )
     .bind(&payload.email)
     .fetch_all(&state.db)
@@ -83,24 +83,18 @@ pub async fn login(
         return Err(AppError::Unauthorized);
     }
 
-    // Optimized: Get environment_ids from users, then query environments directly (avoids expensive JOIN)
-    let environment_ids: Vec<uuid::Uuid> = user_rows
-        .iter()
-        .map(|row| row.get::<uuid::Uuid, _>("environment_id"))
-        .collect();
-
-    let environments = if environment_ids.is_empty() {
-        Vec::new()
-    } else {
-        // Use PostgreSQL array syntax for efficient IN query with indexed lookup
-        sqlx::query(
-            "SELECT id, type FROM environments WHERE id = ANY($1::uuid[]) AND status = 'active'"
-        )
-        .bind(&environment_ids)
-        .fetch_all(&state.db)
-        .await
-        .map_err(|_| AppError::Internal)?
-    };
+    // Get business_id from first user (all users with same email should have same business_id)
+    let business_id: Uuid = user_rows[0].get("business_id");
+    
+    // Get ALL environments for the business (not just where user exists)
+    // This allows users to see both sandbox and production environments
+    let environments = sqlx::query(
+        "SELECT id, type FROM environments WHERE business_id = $1 AND status = 'active' ORDER BY type"
+    )
+    .bind(&business_id)
+    .fetch_all(&state.db)
+    .await
+    .map_err(|_| AppError::Internal)?;
 
     if environments.is_empty() {
         return Err(AppError::Unauthorized);
@@ -114,6 +108,7 @@ pub async fn login(
         })
         .collect();
 
+    // Sort: sandbox first, then production
     available_envs.sort_by(|a, b| a.r#type.cmp(&b.r#type));
 
     let requested_env_id = payload.environment_id;
@@ -136,6 +131,7 @@ pub async fn login(
         available_envs[0].id
     };
 
+    // Find user in the selected environment
     let user_id = user_rows
         .iter()
         .find(|row| {
@@ -145,17 +141,6 @@ pub async fn login(
         })
         .map(|row| row.get::<Uuid, _>("id"))
         .ok_or_else(|| AppError::Unauthorized)?;
-
-    // Get business_id for JWT
-    let business_row = sqlx::query(
-        "SELECT business_id FROM users WHERE id = $1"
-    )
-    .bind(&user_id)
-    .fetch_optional(&state.db)
-    .await
-    .map_err(|_| AppError::Internal)?
-    .ok_or(AppError::Internal)?;
-    let business_id: Uuid = business_row.get("business_id");
 
     // 3. Generate JWT access token
     let jwt_id = Uuid::new_v4().to_string();
