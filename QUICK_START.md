@@ -1,110 +1,91 @@
-# Quick Start Guide
+# Quick Start - Admin Dashboard Testing
 
-## Documentation Files
+## ✅ What's Already Done
 
-- **CLAUDE.md** - Main project context and architecture
-- **AI_WORKFLOW.md** - AI-assisted development workflow with examples
-- **MCP_COMMANDS.md** - Complete MCP commands reference
-- **QUICK_START.md** - This file (quick reference)
+- ✅ Frontend configured to use client-server only
+- ✅ Client-server proxy routes added for all services
+- ✅ Environment files created with correct structure
+- ✅ API endpoints implemented in users and ledger services
 
-## AI-Assisted Development Quick Reference
+## 🔧 What You Need To Do (3 Steps)
 
-### Custom Cursor Commands
-
-- `/conventionalcommits` - Format commit messages
-- `/edge-cases` - Analyze edge cases and performance
-- `/explain` - Simple explanations with examples
-- `/nocode` - Explanations without code
-- `/regression-check` - Check for breaking changes
-- `/short` - Brief, concise answers
-
-### Available MCP Servers
-
-1. **PostHog** - Analytics, dashboards, feature flags
-2. **Neon** - Database operations, migrations, query tuning
-3. **Railway** - Deployment and infrastructure
-4. **Browser** - Frontend testing and automation
-
-### Common Workflows
-
-#### Create New Feature
-```
-1. Ask Cursor: "Create [feature] following pattern in [file]"
-2. Review generated code
-3. Generate tests: "Create tests for [feature]"
-4. Use Neon MCP for database changes
-5. Deploy via Railway MCP
+### Step 1: Install JWT Gem (30 seconds)
+```bash
+cd mvp/api/ledger
+bundle install
 ```
 
-#### Database Changes
-```
-1. Ask Cursor: "Add [column] to [table]"
-2. Use Neon MCP: prepare_database_migration
-3. Test in branch
-4. Use Neon MCP: complete_database_migration
-```
+### Step 2: Set JWT_SECRET (1 minute)
 
-#### Frontend Testing
-```
-1. Use Browser MCP: navigate to localhost
-2. Use Browser MCP: snapshot to see page
-3. Use Browser MCP: click/interact with elements
-4. Use Browser MCP: take_screenshot for visual testing
-```
+**IMPORTANT:** Both services must use the SAME JWT_SECRET value.
 
-#### Feature Flag Rollout
-```
-1. PostHog MCP: create_feature_flag
-2. Deploy code with flag check
-3. Railway MCP: deploy
-4. PostHog MCP: monitor usage
-5. Gradually increase rollout percentage
+**Option A - Use existing secret:**
+If you already have a JWT_SECRET in `mvp/api/users/.env`, copy it to `mvp/api/ledger/.env`:
+
+```bash
+# Get the secret from users service
+grep JWT_SECRET mvp/api/users/.env
+
+# Add it to ledger service .env
+echo "JWT_SECRET=your_secret_here" >> mvp/api/ledger/.env
 ```
 
-#### Before Committing
+**Option B - Create new secret:**
+```bash
+# Generate a secret (any random string works)
+openssl rand -hex 32
+
+# Add to both services:
+echo "JWT_SECRET=your_generated_secret" >> mvp/api/users/.env
+echo "JWT_SECRET=your_generated_secret" >> mvp/api/ledger/.env
 ```
-1. Use /edge-cases to check for potential issues
-2. Use /regression-check to verify no breaking changes
-3. Use /conventionalcommits to format commit message
-4. Commit and push
+
+### Step 3: Start Services (5 terminals)
+
+```bash
+# Terminal 1: Users Service
+cd mvp/api/users && cargo run
+
+# Terminal 2: Accounts Service
+cd mvp/api/accounts && cargo run
+
+# Terminal 3: Ledger Service
+cd mvp/api/ledger && rails server
+
+# Terminal 4: Client Server
+cd mvp/rails-client-server && npm run dev
+
+# Terminal 5: Frontend
+cd mvp/rails-web && npm run dev
 ```
 
-## Valu Repo Integration
+## 🧪 Visual Testing
 
-The valu repo provides:
-- **Financial Intelligence Service** (FastAPI) - AI-powered fundamental analysis
-- **Extract to Text Service** (FastAPI) - Document extraction
+1. Open `http://localhost:5173`
+2. Login as admin
+3. Check these tabs:
+   - **Users** - Should show user list (or "No Users Found")
+   - **Accounts** - Should show accounts (or empty state)
+   - **Ledger** - Should show transactions/entries (or empty state)
 
-These services can be integrated with Rails API for:
-- Financial data analysis
-- Investment insights
-- Document processing
-- Value investing metrics
+## ⚠️ If Something Doesn't Work
 
-## Key Commands
+**401/403 Errors:**
+- JWT_SECRET doesn't match between users and ledger services
+- Fix: Make sure both `.env` files have identical `JWT_SECRET` values
 
-### PostHog
-- Create dashboard: `mcp_PostHog_dashboard-create`
-- Create insight: `mcp_PostHog_insight-create-from-query`
-- Create feature flag: `mcp_PostHog_create-feature-flag`
+**"Service not found" errors:**
+- Service isn't running or wrong port
+- Fix: Check service is running and port matches `.env` config
 
-### Neon
-- Run SQL: `mcp_Neon_run_sql`
-- Create migration: `mcp_Neon_prepare_database_migration`
-- Tune query: `mcp_Neon_prepare_query_tuning`
+**CORS errors:**
+- Frontend trying to call services directly
+- Fix: Make sure `mvp/rails-web/.env` only has `VITE_CLIENT_SERVER` (no other service URLs)
 
-### Railway
-- Deploy: `mcp_Railway_deploy`
-- View logs: `mcp_Railway_get-logs`
-- Set variables: `mcp_Railway_set-variables`
+## 📝 Files Already Configured
 
-### Browser
-- Navigate: `mcp_cursor-ide-browser_browser_navigate`
-- Snapshot: `mcp_cursor-ide-browser_browser_snapshot`
-- Click: `mcp_cursor-ide-browser_browser_click`
+- ✅ `mvp/rails-web/.env` - Frontend config
+- ✅ `mvp/rails-client-server/.env` - Client server config
+- ✅ `mvp/api/ledger/.env.example` - Updated with JWT_SECRET
 
-## Getting Help
-
-- See `AI_WORKFLOW.md` for detailed examples
-- See `MCP_COMMANDS.md` for complete command reference
-- See `CLAUDE.md` for project architecture
+That's it! Just set JWT_SECRET and start services.
