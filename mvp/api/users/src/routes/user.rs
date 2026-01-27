@@ -94,6 +94,8 @@ pub async fn me(
     ctx: AuthContext,
 ) -> Result<Json<MeResponse>, AppError> {
     let user_id = ctx.user_id.ok_or(AppError::Forbidden)?;
+    
+    // First, try to find user in the requested environment
     let user_row = sqlx::query(
         "SELECT id, business_id, environment_id, first_name, last_name, email, role, status FROM users WHERE id = $1 AND environment_id = $2 AND status = 'active'"
     )
@@ -101,8 +103,43 @@ pub async fn me(
     .bind(&ctx.environment_id)
     .fetch_optional(&state.db)
     .await
-    .map_err(|_| AppError::Internal)?
-    .ok_or(AppError::Forbidden)?;
+    .map_err(|_| AppError::Internal)?;
+    
+    // If user doesn't exist in requested environment, find them in any environment for the same business
+    // This allows users to access both sandbox and production even if they only have a user record in one
+    let user_row = if let Some(row) = user_row {
+        Some(row)
+    } else {
+        // Find user in any environment for the same business
+        let any_user_row = sqlx::query(
+            "SELECT id, business_id, environment_id, first_name, last_name, email, role, status FROM users WHERE id = $1 AND business_id = $2 AND status = 'active' LIMIT 1"
+        )
+        .bind(&user_id)
+        .bind(&ctx.business_id)
+        .fetch_optional(&state.db)
+        .await
+        .map_err(|_| AppError::Internal)?;
+        
+        // Verify that the requested environment_id belongs to the same business
+        if any_user_row.is_some() {
+            let env_check = sqlx::query(
+                "SELECT 1 FROM environments WHERE id = $1 AND business_id = $2 AND status = 'active'"
+            )
+            .bind(&ctx.environment_id)
+            .bind(&ctx.business_id)
+            .fetch_optional(&state.db)
+            .await
+            .map_err(|_| AppError::Internal)?;
+            
+            if env_check.is_none() {
+                return Err(AppError::Forbidden);
+            }
+        }
+        
+        any_user_row
+    };
+    
+    let user_row = user_row.ok_or(AppError::Forbidden)?;
 
     let user = MeUser {
         id: user_row.get("id"),
