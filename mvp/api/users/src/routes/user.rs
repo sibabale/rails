@@ -57,6 +57,23 @@ pub struct MeResponse {
     pub environment: MeEnvironment,
 }
 
+#[derive(Serialize)]
+pub struct ListUser {
+    pub id: Uuid,
+    pub first_name: String,
+    pub last_name: String,
+    pub email: String,
+    pub role: String,
+    pub status: String,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Serialize)]
+pub struct ListUsersResponse {
+    pub users: Vec<ListUser>,
+}
+
 pub async fn me(
     State(state): State<AppState>,
     ctx: AuthContext,
@@ -238,4 +255,56 @@ pub async fn create_user(
         user_id,
         status: "active".to_string(),
     }))
+}
+
+pub async fn list_users(
+    State(state): State<AppState>,
+    ctx: AuthContext,
+) -> Result<Json<ListUsersResponse>, AppError> {
+    let environment_id = ctx.environment_id;
+    let business_id = ctx.business_id;
+
+    // Only admins can list users (or API keys which are treated as admin-level)
+    if ctx.api_key_id.is_none() {
+        let user_id = ctx.user_id.ok_or(AppError::Forbidden)?;
+        let role_row = sqlx::query(
+            "SELECT role FROM users WHERE id = $1 AND environment_id = $2 AND status = 'active'"
+        )
+        .bind(&user_id)
+        .bind(&environment_id)
+        .fetch_optional(&state.db)
+        .await
+        .map_err(|_| AppError::Internal)?
+        .ok_or(AppError::Forbidden)?;
+
+        let role: String = role_row.get("role");
+        if role != "admin" {
+            return Err(AppError::Forbidden);
+        }
+    }
+
+    let rows = sqlx::query(
+        "SELECT id, first_name, last_name, email, role, status, created_at, updated_at FROM users WHERE business_id = $1 AND environment_id = $2 AND status = 'active' ORDER BY created_at DESC"
+    )
+    .bind(&business_id)
+    .bind(&environment_id)
+    .fetch_all(&state.db)
+    .await
+    .map_err(|_| AppError::Internal)?;
+
+    let users: Vec<ListUser> = rows
+        .into_iter()
+        .map(|row| ListUser {
+            id: row.get("id"),
+            first_name: row.get("first_name"),
+            last_name: row.get("last_name"),
+            email: row.get("email"),
+            role: row.get("role"),
+            status: row.get("status"),
+            created_at: row.get("created_at"),
+            updated_at: row.get("updated_at"),
+        })
+        .collect();
+
+    Ok(Json(ListUsersResponse { users }))
 }
