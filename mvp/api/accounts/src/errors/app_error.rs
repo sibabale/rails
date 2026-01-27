@@ -32,7 +32,7 @@ pub enum AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let (status, error_message, _should_report) = match &self {
+        let (status, error_message, should_report) = match &self {
             AppError::Database(ref e) => {
                 tracing::error!("Database error: {}", e);
                 // Always report database errors - they're critical

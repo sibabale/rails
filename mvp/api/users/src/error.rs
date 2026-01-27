@@ -30,6 +30,7 @@ impl IntoResponse for AppError {
             sentry::capture_message(&self.to_string(), sentry::Level::Error);
         }
         
+        // Return explicit technical error messages - transformation happens in client-server
         let mut body = serde_json::json!({
             "error": self.to_string(),
             "code": code
