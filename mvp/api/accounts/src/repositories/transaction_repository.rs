@@ -1,5 +1,5 @@
 use crate::errors::AppError;
-use crate::models::{Transaction, TransactionKind, TransactionStatus};
+use crate::models::{Transaction, TransactionKind, TransactionStatus, PaginationMeta};
 use chrono::{DateTime, Duration, Utc};
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
@@ -136,6 +136,67 @@ impl TransactionRepository {
             .collect::<Result<Vec<_>, _>>()?;
 
         Ok(transactions)
+    }
+
+    pub async fn find_by_organization_id_paginated(
+        pool: &PgPool,
+        organization_id: Uuid,
+        environment: &str,
+        page: u32,
+        per_page: u32,
+    ) -> Result<(Vec<Transaction>, PaginationMeta), AppError> {
+        let offset = (page - 1) * per_page;
+
+        // Get total count (filtered by environment, but include legacy transactions with NULL environment)
+        let count_row = sqlx::query(
+            r#"
+            SELECT COUNT(*) as count 
+            FROM transactions
+            WHERE organization_id = $1 
+              AND (environment = $2 OR environment IS NULL)
+            "#
+        )
+        .bind(organization_id)
+        .bind(environment)
+        .fetch_one(pool)
+        .await?;
+
+        let total_count: i64 = count_row.get("count");
+        let total_pages = ((total_count as f64) / (per_page as f64)).ceil() as u32;
+
+        // Fetch paginated results with deterministic ordering
+        let rows = sqlx::query(
+            r#"
+            SELECT id, organization_id, from_account_id, to_account_id, amount, currency,
+                   transaction_kind, status, failure_reason, idempotency_key, environment, created_at, updated_at
+            FROM transactions
+            WHERE organization_id = $1 
+              AND (environment = $2 OR environment IS NULL)
+            ORDER BY created_at DESC, id DESC
+            LIMIT $3 OFFSET $4
+            "#
+        )
+        .bind(organization_id)
+        .bind(environment)
+        .bind(per_page as i64)
+        .bind(offset as i64)
+        .fetch_all(pool)
+        .await?;
+
+        let transactions = rows
+            .iter()
+            .map(|row| Self::row_to_transaction(row))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok((
+            transactions,
+            PaginationMeta {
+                page,
+                per_page,
+                total_count,
+                total_pages,
+            },
+        ))
     }
 
     /// Find pending transactions across all organizations older than a cutoff.

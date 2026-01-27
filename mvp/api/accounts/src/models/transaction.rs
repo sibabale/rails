@@ -38,6 +38,7 @@ pub enum TransactionKind {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
 #[sqlx(type_name = "varchar", rename_all = "lowercase")]
+#[serde(rename_all = "lowercase")]
 pub enum TransactionStatus {
     Pending,
     Posted,
@@ -97,4 +98,10 @@ impl From<Transaction> for TransactionResponse {
             updated_at: transaction.updated_at,
         }
     }
+}
+
+#[derive(Debug, Serialize)]
+pub struct PaginatedTransactionsResponse {
+    pub data: Vec<TransactionResponse>,
+    pub pagination: crate::models::account::PaginationMeta,
 }

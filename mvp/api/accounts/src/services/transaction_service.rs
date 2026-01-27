@@ -113,4 +113,21 @@ impl TransactionService {
         // Filter by environment, but include legacy transactions (NULL environment)
         TransactionRepository::find_by_account_id(pool, account_id, limit, Some(environment)).await
     }
+
+    pub async fn get_transactions_by_organization_paginated(
+        pool: &PgPool,
+        organization_id: Uuid,
+        environment: &str,
+        page: u32,
+        per_page: u32,
+    ) -> Result<(Vec<Transaction>, crate::models::PaginationMeta), AppError> {
+        TransactionRepository::find_by_organization_id_paginated(
+            pool,
+            organization_id,
+            environment,
+            page,
+            per_page,
+        )
+        .await
+    }
 }

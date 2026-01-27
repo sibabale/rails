@@ -7,7 +7,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::errors::AppError;
-use crate::models::{CreateTransactionRequest, TransactionResponse};
+use crate::models::{CreateTransactionRequest, TransactionResponse, PaginatedTransactionsResponse};
 use crate::routes::api::AppState;
 use crate::services::TransactionService;
 
@@ -30,6 +30,9 @@ fn extract_environment(headers: &HeaderMap) -> String {
 #[derive(Deserialize)]
 pub struct ListTransactionsQuery {
     pub limit: Option<i64>,
+    pub organization_id: Option<Uuid>,
+    pub page: Option<u32>,
+    pub per_page: Option<u32>,
 }
 
 pub async fn get_transaction(
@@ -77,4 +80,33 @@ pub async fn list_account_transactions(
     ).await?;
 
     Ok(Json(transactions.into_iter().map(Into::into).collect()))
+}
+
+pub async fn list_transactions(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Query(query): Query<ListTransactionsQuery>,
+) -> Result<Json<PaginatedTransactionsResponse>, AppError> {
+    let environment = extract_environment(&headers);
+    
+    let organization_id = query.organization_id.ok_or_else(|| {
+        AppError::Validation("organization_id query parameter is required".to_string())
+    })?;
+    
+    // Parse and validate pagination params with defaults
+    let page = query.page.unwrap_or(1).max(1);
+    let per_page = query.per_page.unwrap_or(10).min(100).max(1);
+    
+    let (transactions, pagination) = TransactionService::get_transactions_by_organization_paginated(
+        &state.pool,
+        organization_id,
+        &environment,
+        page,
+        per_page,
+    ).await?;
+    
+    Ok(Json(PaginatedTransactionsResponse {
+        data: transactions.into_iter().map(Into::into).collect(),
+        pagination,
+    }))
 }

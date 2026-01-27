@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 use crate::handlers::{
     accounts::*,
-    transactions::*,
+    transactions::{create_transaction, get_transaction, list_account_transactions, list_transactions},
     health::health_check,
 };
 
@@ -41,7 +41,7 @@ fn create_api_routes() -> Router<AppState> {
         .route("/accounts/:id/withdraw", post(withdraw))
         .route("/accounts/:id/transfer", post(transfer))
         .route("/accounts/:account_id/transactions", get(list_account_transactions))
-        .route("/transactions", post(create_transaction))
+        .route("/transactions", post(create_transaction).get(list_transactions))
         .route("/transactions/:id", get(get_transaction))
 }
 
