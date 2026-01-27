@@ -424,18 +424,21 @@ if [[ -z "$USER_X_ID" ]]; then
     USER_X_ACCOUNT_NUMBER=""
 else
     # Get accounts from Accounts Service (not Users Service)
+    # Note: Accounts API returns paginated response with 'data' field and requires X-Environment-Id header
     USER_X_ACCOUNTS_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
         -H "Authorization: Bearer test-token" \
+        -H "X-Environment-Id: $SANDBOX_ENV_ID" \
         "$ACCOUNTS_SERVICE/api/v1/accounts?user_id=$USER_X_ID" 2>/dev/null || echo "")
 
     USER_X_ACCOUNTS_HTTP_STATUS=$(echo "$USER_X_ACCOUNTS_RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
     USER_X_ACCOUNTS_BODY=$(echo "$USER_X_ACCOUNTS_RESPONSE" | grep -v "HTTP_STATUS:")
 
     if [[ "$USER_X_ACCOUNTS_HTTP_STATUS" == "200" ]]; then
-        USER_X_ACCOUNT_COUNT=$(echo "$USER_X_ACCOUNTS_BODY" | jq '. | length' 2>/dev/null || echo "0")
+        # Accounts API returns paginated response: { "data": [...], "pagination": {...} }
+        USER_X_ACCOUNT_COUNT=$(echo "$USER_X_ACCOUNTS_BODY" | jq '.data | length' 2>/dev/null || echo "0")
         if [[ "$USER_X_ACCOUNT_COUNT" -gt "0" ]]; then
-            USER_X_ACCOUNT_ID=$(echo "$USER_X_ACCOUNTS_BODY" | jq -r '.[0].id // empty' 2>/dev/null)
-            USER_X_ACCOUNT_NUMBER=$(echo "$USER_X_ACCOUNTS_BODY" | jq -r '.[0].account_number // empty' 2>/dev/null)
+            USER_X_ACCOUNT_ID=$(echo "$USER_X_ACCOUNTS_BODY" | jq -r '.data[0].id // empty' 2>/dev/null)
+            USER_X_ACCOUNT_NUMBER=$(echo "$USER_X_ACCOUNTS_BODY" | jq -r '.data[0].account_number // empty' 2>/dev/null)
             echo -e "${GREEN}✅ Account found for User X${NC}"
             echo -e "${YELLOW}🏦 Account ID: $USER_X_ACCOUNT_ID${NC}"
             echo -e "${YELLOW}🔢 Account Number: $USER_X_ACCOUNT_NUMBER${NC}"
@@ -516,18 +519,21 @@ if [[ -z "$USER_Y_ID" ]]; then
     USER_Y_ACCOUNT_NUMBER=""
 else
     # Get accounts from Accounts Service (not Users Service)
+    # Note: Accounts API returns paginated response with 'data' field and requires X-Environment-Id header
     USER_Y_ACCOUNTS_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
         -H "Authorization: Bearer test-token" \
+        -H "X-Environment-Id: $SANDBOX_ENV_ID" \
         "$ACCOUNTS_SERVICE/api/v1/accounts?user_id=$USER_Y_ID" 2>/dev/null || echo "")
 
     USER_Y_ACCOUNTS_HTTP_STATUS=$(echo "$USER_Y_ACCOUNTS_RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
     USER_Y_ACCOUNTS_BODY=$(echo "$USER_Y_ACCOUNTS_RESPONSE" | grep -v "HTTP_STATUS:")
 
     if [[ "$USER_Y_ACCOUNTS_HTTP_STATUS" == "200" ]]; then
-        USER_Y_ACCOUNT_COUNT=$(echo "$USER_Y_ACCOUNTS_BODY" | jq '. | length' 2>/dev/null || echo "0")
+        # Accounts API returns paginated response: { "data": [...], "pagination": {...} }
+        USER_Y_ACCOUNT_COUNT=$(echo "$USER_Y_ACCOUNTS_BODY" | jq '.data | length' 2>/dev/null || echo "0")
         if [[ "$USER_Y_ACCOUNT_COUNT" -gt "0" ]]; then
-            USER_Y_ACCOUNT_ID=$(echo "$USER_Y_ACCOUNTS_BODY" | jq -r '.[0].id // empty' 2>/dev/null)
-            USER_Y_ACCOUNT_NUMBER=$(echo "$USER_Y_ACCOUNTS_BODY" | jq -r '.[0].account_number // empty' 2>/dev/null)
+            USER_Y_ACCOUNT_ID=$(echo "$USER_Y_ACCOUNTS_BODY" | jq -r '.data[0].id // empty' 2>/dev/null)
+            USER_Y_ACCOUNT_NUMBER=$(echo "$USER_Y_ACCOUNTS_BODY" | jq -r '.data[0].account_number // empty' 2>/dev/null)
             echo -e "${GREEN}✅ Account found for User Y${NC}"
             echo -e "${YELLOW}🏦 Account ID: $USER_Y_ACCOUNT_ID${NC}"
             echo -e "${YELLOW}🔢 Account Number: $USER_Y_ACCOUNT_NUMBER${NC}"

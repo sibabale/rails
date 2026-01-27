@@ -24,13 +24,23 @@ end
 # IMPORTANT: Do NOT start gRPC during rake tasks (e.g. db:migrate, db:prepare), as loading
 # native extensions + background threads can crash the Ruby process, especially on macOS.
 # Only start gRPC when explicitly running the Rails server command
-first_arg = ARGV.first.to_s
+#
+# Detection method: Use Rails.const_defined?('Server') which is the industry-standard way
+# to detect server mode. This works reliably because Rails defines Rails::Server constant
+# when running via `rails server` command, but not during rake tasks, console, or runner.
+is_server_mode = Rails.const_defined?('Server')
+is_console_mode = Rails.const_defined?('Console')
 is_rake_task = File.basename($0) == 'rake' || 
-               first_arg.include?('rake') || 
-               first_arg.start_with?('db:') || 
-               first_arg == 'db'
-is_server_command = first_arg == 'server' || first_arg == 's'
-should_start_grpc = is_server_command && !is_rake_task && ENV['START_GRPC_SERVER'] != '0'
+               ARGV.any? { |arg| arg.include?('rake') || arg.start_with?('db:') }
+
+# Start gRPC only in server mode, not console or rake
+# Keep START_GRPC_SERVER env var as emergency override (set to '0' to disable)
+should_start_grpc = is_server_mode && !is_console_mode && !is_rake_task && ENV['START_GRPC_SERVER'] != '0'
+
+# Log detection results for debugging
+if Rails.env.development?
+  Rails.logger.debug "gRPC initialization check: server_mode=#{is_server_mode}, console_mode=#{is_console_mode}, rake_task=#{is_rake_task}, should_start=#{should_start_grpc}"
+end
 
 if (Rails.env.development? || Rails.env.production?) && should_start_grpc
   Rails.application.config.after_initialize do
