@@ -24,7 +24,7 @@ impl AccountService {
                 &account_number,
                 request.account_type,
                 request.organization_id,
-                &request.environment.unwrap_or_else(|| "default".to_string()),
+                &request.environment.unwrap_or_else(|| "sandbox".to_string()),
                 request.user_id,
                 Some(admin_user_id),
                 Some("CUSTOMER".to_string()),  // Customer accounts require admin
@@ -37,7 +37,7 @@ impl AccountService {
                 &account_number,
                 request.account_type,
                 request.organization_id,
-                &request.environment.unwrap_or_else(|| "default".to_string()),
+                &request.environment.unwrap_or_else(|| "sandbox".to_string()),
                 request.user_id,
                 &request.currency,
             )
@@ -118,7 +118,7 @@ impl AccountService {
         let environment = account
             .environment
             .clone()
-            .unwrap_or_else(|| "production".to_string());
+            .unwrap_or_else(|| "sandbox".to_string());
 
         let mut tx = pool.begin().await?;
 
@@ -217,7 +217,7 @@ impl AccountService {
         let environment = account
             .environment
             .clone()
-            .unwrap_or_else(|| "production".to_string());
+            .unwrap_or_else(|| "sandbox".to_string());
 
         let mut tx = pool.begin().await?;
 
@@ -341,7 +341,7 @@ impl AccountService {
         let environment = from_account
             .environment
             .clone()
-            .unwrap_or_else(|| "production".to_string());
+            .unwrap_or_else(|| "sandbox".to_string());
 
         let mut tx = pool.begin().await?;
 

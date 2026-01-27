@@ -74,7 +74,7 @@ impl TransactionService {
         let environment = from_account
             .environment
             .clone()
-            .unwrap_or_else(|| "production".to_string());
+            .unwrap_or_else(|| "sandbox".to_string());
 
         let ledger = NoopLedgerAdapter;
         // Ledger notifications for direct transaction creation are handled via NoopLedgerAdapter

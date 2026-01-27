@@ -62,7 +62,7 @@ fn default_currency() -> String {
 }
 
 fn default_environment() -> Option<String> {
-    Some("production".to_string())
+    Some("sandbox".to_string())
 }
 
 #[derive(Debug, Deserialize)]

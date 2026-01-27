@@ -45,7 +45,7 @@ pub async fn run(pool: PgPool, ledger_grpc: LedgerGrpc) {
             let environment = account
                 .environment
                 .clone()
-                .unwrap_or_else(|| "production".to_string());
+                .unwrap_or_else(|| "sandbox".to_string());
 
             let (source_external, dest_external) = match tx.transaction_kind {
                 TransactionKind::Transfer => (
