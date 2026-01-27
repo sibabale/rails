@@ -30,15 +30,24 @@ pub async fn run(pool: PgPool, ledger_grpc: LedgerGrpc) {
 
         for tx in pending {
             // Determine environment from account record (accounts table stores environment).
-            let account = match AccountRepository::find_by_id(&pool, tx.from_account_id).await {
+            // Note: We need to try both environments since we don't know which one the transaction belongs to.
+            // This is a limitation of the current schema - transactions don't have environment.
+            // For retry worker, we'll try sandbox first, then production if not found.
+            let account = match AccountRepository::find_by_id(&pool, tx.from_account_id, "sandbox").await {
                 Ok(a) => a,
-                Err(e) => {
-                    warn!(
-                        transaction_id = %tx.id,
-                        error = %e,
-                        "retry_worker_missing_account; leaving pending"
-                    );
-                    continue;
+                Err(_) => {
+                    // Try production if sandbox fails
+                    match AccountRepository::find_by_id(&pool, tx.from_account_id, "production").await {
+                        Ok(a) => a,
+                        Err(e) => {
+                            warn!(
+                                transaction_id = %tx.id,
+                                error = %e,
+                                "retry_worker_missing_account; leaving pending"
+                            );
+                            continue;
+                        }
+                    }
                 }
             };
 
