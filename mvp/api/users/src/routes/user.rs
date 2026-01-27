@@ -1,4 +1,4 @@
-use axum::{Json, extract::{State, Query}};
+use axum::{Json, extract::{State, Query}, http::HeaderMap};
 use uuid::Uuid;
 use crate::{error::AppError};
 use crate::routes::AppState;
@@ -276,6 +276,7 @@ pub async fn list_users(
     State(state): State<AppState>,
     ctx: AuthContext,
     Query(query): Query<ListUsersQuery>,
+    headers: HeaderMap,
 ) -> Result<Json<ListUsersResponse>, AppError> {
     let environment_id = ctx.environment_id;
     let business_id = ctx.business_id;
@@ -283,6 +284,8 @@ pub async fn list_users(
     // Only admins can list users (or API keys which are treated as admin-level)
     if ctx.api_key_id.is_none() {
         let user_id = ctx.user_id.ok_or(AppError::Forbidden)?;
+        
+        // Check if user is admin in the requested environment
         let role_row = sqlx::query(
             "SELECT role FROM users WHERE id = $1 AND environment_id = $2 AND status = 'active'"
         )
@@ -290,44 +293,110 @@ pub async fn list_users(
         .bind(&environment_id)
         .fetch_optional(&state.db)
         .await
-        .map_err(|_| AppError::Internal)?
-        .ok_or(AppError::Forbidden)?;
+        .map_err(|_| AppError::Internal)?;
 
-        let role: String = role_row.get("role");
-        if role != "admin" {
+        // If user doesn't exist in requested environment, check if they're admin in any environment for the same business
+        // This allows admins to access both sandbox and production even if they only have a user record in one
+        let is_admin = if let Some(row) = role_row {
+            let role: String = row.get("role");
+            role == "admin"
+        } else {
+            // User doesn't exist in requested environment, check if they're admin in any environment for this business
+            let admin_check = sqlx::query(
+                "SELECT 1 FROM users WHERE id = $1 AND business_id = $2 AND role = 'admin' AND status = 'active' LIMIT 1"
+            )
+            .bind(&user_id)
+            .bind(&business_id)
+            .fetch_optional(&state.db)
+            .await
+            .map_err(|_| AppError::Internal)?;
+            
+            admin_check.is_some()
+        };
+
+        if !is_admin {
             return Err(AppError::Forbidden);
         }
     }
+
+    // Get X-Environment header (sandbox/production) to filter by environment type
+    // This allows filtering by environment type in addition to environment_id
+    let environment_type: Option<String> = headers
+        .get("x-environment")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.trim().to_lowercase())
+        .filter(|s| s == "sandbox" || s == "production");
 
     // Parse and validate pagination params with defaults
     let page = query.page.unwrap_or(1).max(1);
     let per_page = query.per_page.unwrap_or(10).min(100).max(1);
     let offset = (page - 1) * per_page;
 
+    // Build query with optional environment type filter
+    // If X-Environment header is provided, filter by both environment_id AND environment.type
+    // This ensures we only get users from the correct environment type (sandbox/production)
+    let (count_query, list_query) = if let Some(ref env_type) = environment_type {
+        // Filter by business_id, environment_id, AND environment.type
+        (
+            "SELECT COUNT(*) as count FROM users u 
+             INNER JOIN environments e ON u.environment_id = e.id 
+             WHERE u.business_id = $1 AND u.environment_id = $2 AND e.type = $3 AND u.status = 'active'",
+            "SELECT u.id, u.first_name, u.last_name, u.email, u.role, u.status, u.created_at, u.updated_at 
+             FROM users u 
+             INNER JOIN environments e ON u.environment_id = e.id 
+             WHERE u.business_id = $1 AND u.environment_id = $2 AND e.type = $3 AND u.status = 'active' 
+             ORDER BY u.created_at DESC, u.id DESC LIMIT $4 OFFSET $5"
+        )
+    } else {
+        // Fallback to original behavior: filter by environment_id only
+        (
+            "SELECT COUNT(*) as count FROM users WHERE business_id = $1 AND environment_id = $2 AND status = 'active'",
+            "SELECT id, first_name, last_name, email, role, status, created_at, updated_at FROM users WHERE business_id = $1 AND environment_id = $2 AND status = 'active' ORDER BY created_at DESC, id DESC LIMIT $3 OFFSET $4"
+        )
+    };
+
     // Get total count
-    let count_row = sqlx::query(
-        "SELECT COUNT(*) as count FROM users WHERE business_id = $1 AND environment_id = $2 AND status = 'active'"
-    )
-    .bind(&business_id)
-    .bind(&environment_id)
-    .fetch_one(&state.db)
-    .await
-    .map_err(|_| AppError::Internal)?;
+    let count_row = if let Some(ref env_type) = environment_type {
+        sqlx::query(count_query)
+            .bind(&business_id)
+            .bind(&environment_id)
+            .bind(env_type)
+            .fetch_one(&state.db)
+            .await
+            .map_err(|_| AppError::Internal)?
+    } else {
+        sqlx::query(count_query)
+            .bind(&business_id)
+            .bind(&environment_id)
+            .fetch_one(&state.db)
+            .await
+            .map_err(|_| AppError::Internal)?
+    };
 
     let total_count: i64 = count_row.get("count");
     let total_pages = ((total_count as f64) / (per_page as f64)).ceil() as u32;
 
     // Fetch paginated results with deterministic ordering
-    let rows = sqlx::query(
-        "SELECT id, first_name, last_name, email, role, status, created_at, updated_at FROM users WHERE business_id = $1 AND environment_id = $2 AND status = 'active' ORDER BY created_at DESC, id DESC LIMIT $3 OFFSET $4"
-    )
-    .bind(&business_id)
-    .bind(&environment_id)
-    .bind(per_page as i64)
-    .bind(offset as i64)
-    .fetch_all(&state.db)
-    .await
-    .map_err(|_| AppError::Internal)?;
+    let rows = if let Some(ref env_type) = environment_type {
+        sqlx::query(list_query)
+            .bind(&business_id)
+            .bind(&environment_id)
+            .bind(env_type)
+            .bind(per_page as i64)
+            .bind(offset as i64)
+            .fetch_all(&state.db)
+            .await
+            .map_err(|_| AppError::Internal)?
+    } else {
+        sqlx::query(list_query)
+            .bind(&business_id)
+            .bind(&environment_id)
+            .bind(per_page as i64)
+            .bind(offset as i64)
+            .fetch_all(&state.db)
+            .await
+            .map_err(|_| AppError::Internal)?
+    };
 
     let users: Vec<ListUser> = rows
         .into_iter()
