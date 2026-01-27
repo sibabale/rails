@@ -63,6 +63,20 @@ impl AccountService {
         AccountRepository::find_by_user_id(pool, user_id).await
     }
 
+    pub async fn get_accounts_by_organization(
+        pool: &PgPool,
+        organization_id: Uuid,
+    ) -> Result<Vec<Account>, AppError> {
+        AccountRepository::find_by_organization_id(pool, organization_id).await
+    }
+
+    pub async fn get_accounts_by_admin(
+        pool: &PgPool,
+        admin_user_id: Uuid,
+    ) -> Result<Vec<Account>, AppError> {
+        AccountRepository::find_by_admin_user_id(pool, admin_user_id).await
+    }
+
     pub async fn update_account_status(
         pool: &PgPool,
         id: Uuid,

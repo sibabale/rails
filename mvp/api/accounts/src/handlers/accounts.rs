@@ -14,6 +14,8 @@ use crate::services::AccountService;
 #[derive(Deserialize)]
 pub struct ListAccountsQuery {
     pub user_id: Option<Uuid>,
+    pub organization_id: Option<Uuid>,
+    pub admin_user_id: Option<Uuid>,
 }
 
 pub async fn create_account(
@@ -37,10 +39,20 @@ pub async fn list_accounts(
     State(state): State<AppState>,
     Query(query): Query<ListAccountsQuery>,
 ) -> Result<Json<Vec<AccountResponse>>, AppError> {
+    // Support three filtering options:
+    // 1. user_id: Get accounts owned by a specific user
+    // 2. organization_id: Get all accounts in an organization (for admins)
+    // 3. admin_user_id: Get accounts managed by an admin (customer accounts)
     let accounts = if let Some(user_id) = query.user_id {
         AccountService::get_accounts_by_user(&state.pool, user_id).await?
+    } else if let Some(organization_id) = query.organization_id {
+        AccountService::get_accounts_by_organization(&state.pool, organization_id).await?
+    } else if let Some(admin_user_id) = query.admin_user_id {
+        AccountService::get_accounts_by_admin(&state.pool, admin_user_id).await?
     } else {
-        return Err(AppError::Validation("user_id query parameter is required".to_string()));
+        return Err(AppError::Validation(
+            "One of user_id, organization_id, or admin_user_id query parameter is required".to_string()
+        ));
     };
 
     Ok(Json(accounts.into_iter().map(Into::into).collect()))

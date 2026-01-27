@@ -79,7 +79,7 @@ impl AccountRepository {
     pub async fn find_by_id(pool: &PgPool, id: Uuid) -> Result<Account, AppError> {
         let row = sqlx::query(
             r#"
-            SELECT id, account_number, account_type, organization_id, environment, user_id, currency, status, created_at, updated_at
+            SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             FROM accounts
             WHERE id = $1
             "#,
@@ -95,13 +95,55 @@ impl AccountRepository {
     pub async fn find_by_user_id(pool: &PgPool, user_id: Uuid) -> Result<Vec<Account>, AppError> {
         let rows = sqlx::query(
             r#"
-            SELECT id, account_number, account_type, organization_id, environment, user_id, currency, status, created_at, updated_at
+            SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             FROM accounts
             WHERE user_id = $1
             ORDER BY created_at DESC
             "#,
         )
         .bind(user_id)
+        .fetch_all(pool)
+        .await?;
+
+        let accounts = rows
+            .iter()
+            .map(|row| Self::row_to_account(row))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(accounts)
+    }
+
+    pub async fn find_by_organization_id(pool: &PgPool, organization_id: Uuid) -> Result<Vec<Account>, AppError> {
+        let rows = sqlx::query(
+            r#"
+            SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
+            FROM accounts
+            WHERE organization_id = $1
+            ORDER BY created_at DESC
+            "#,
+        )
+        .bind(organization_id)
+        .fetch_all(pool)
+        .await?;
+
+        let accounts = rows
+            .iter()
+            .map(|row| Self::row_to_account(row))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(accounts)
+    }
+
+    pub async fn find_by_admin_user_id(pool: &PgPool, admin_user_id: Uuid) -> Result<Vec<Account>, AppError> {
+        let rows = sqlx::query(
+            r#"
+            SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
+            FROM accounts
+            WHERE admin_user_id = $1
+            ORDER BY created_at DESC
+            "#,
+        )
+        .bind(admin_user_id)
         .fetch_all(pool)
         .await?;
 
@@ -129,7 +171,7 @@ impl AccountRepository {
             UPDATE accounts
             SET status = $2, updated_at = NOW()
             WHERE id = $1
-            RETURNING id, account_number, account_type, organization_id, environment, user_id, currency, status, created_at, updated_at
+            RETURNING id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             "#,
         )
         .bind(id)
