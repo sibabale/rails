@@ -161,6 +161,7 @@ impl FromRequestParts<AppState> for AuthContext {
 
         let user_id = Uuid::parse_str(&decoded.claims.sub).map_err(|_| AppError::Unauthorized)?;
 
+        // First, try to find user in the requested environment
         let rec = sqlx::query(
             "SELECT business_id FROM users WHERE id = $1 AND environment_id = $2 AND status = 'active'"
         )
@@ -168,10 +169,41 @@ impl FromRequestParts<AppState> for AuthContext {
         .bind(&environment_id)
         .fetch_optional(&state.db)
         .await
-        .map_err(|_| AppError::Internal)?
-        .ok_or(AppError::Forbidden)?;
+        .map_err(|_| AppError::Internal)?;
 
-        let business_id: Uuid = rec.try_get("business_id").map_err(|_| AppError::Internal)?;
+        let business_id: Uuid = if let Some(row) = rec {
+            // User exists in requested environment
+            row.try_get("business_id").map_err(|_| AppError::Internal)?
+        } else {
+            // User doesn't exist in requested environment, but check if they exist in any environment for the same business
+            // This allows admins to access both sandbox and production even if they only have a user record in one
+            let any_user_rec = sqlx::query(
+                "SELECT business_id FROM users WHERE id = $1 AND status = 'active' LIMIT 1"
+            )
+            .bind(&user_id)
+            .fetch_optional(&state.db)
+            .await
+            .map_err(|_| AppError::Internal)?
+            .ok_or(AppError::Forbidden)?;
+            
+            let user_business_id: Uuid = any_user_rec.try_get("business_id").map_err(|_| AppError::Internal)?;
+            
+            // Verify that the requested environment_id belongs to the same business
+            let env_check = sqlx::query(
+                "SELECT 1 FROM environments WHERE id = $1 AND business_id = $2 AND status = 'active'"
+            )
+            .bind(&environment_id)
+            .bind(&user_business_id)
+            .fetch_optional(&state.db)
+            .await
+            .map_err(|_| AppError::Internal)?;
+            
+            if env_check.is_none() {
+                return Err(AppError::Forbidden);
+            }
+            
+            user_business_id
+        };
 
         Ok(Self {
             user_id: Some(user_id),
