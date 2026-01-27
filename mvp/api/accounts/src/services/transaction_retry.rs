@@ -88,13 +88,34 @@ pub async fn run(pool: PgPool, ledger_grpc: LedgerGrpc) {
                 }
                 Err(e) => {
                     let reason = format!("{}", e);
-                    let _ = TransactionRepository::update_status(
-                        &pool,
-                        tx.id,
-                        TransactionStatus::Pending,
-                        Some(&reason),
-                    )
-                    .await;
+                    // If the error is a duplicate key violation for idempotency_key, the transaction
+                    // was already posted to the ledger. This can happen due to race conditions
+                    // between the ledger's existence check and transaction creation.
+                    // Treat this as success since the transaction is already in the ledger.
+                    let reason_lower = reason.to_lowercase();
+                    if (reason_lower.contains("duplicate key") || reason_lower.contains("uniqueviolation"))
+                        && reason_lower.contains("idempotency") {
+                        info!(
+                            transaction_id = %tx.id,
+                            idempotency_key = %tx.idempotency_key,
+                            "Transaction already posted to ledger (duplicate idempotency key), marking as posted"
+                        );
+                        let _ = TransactionRepository::update_status(
+                            &pool,
+                            tx.id,
+                            TransactionStatus::Posted,
+                            None,
+                        )
+                        .await;
+                    } else {
+                        let _ = TransactionRepository::update_status(
+                            &pool,
+                            tx.id,
+                            TransactionStatus::Pending,
+                            Some(&reason),
+                        )
+                        .await;
+                    }
                 }
             }
         }
