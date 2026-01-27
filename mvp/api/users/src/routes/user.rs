@@ -1,4 +1,4 @@
-use axum::{Json, extract::State};
+use axum::{Json, extract::{State, Query}};
 use uuid::Uuid;
 use crate::{error::AppError};
 use crate::routes::AppState;
@@ -69,9 +69,24 @@ pub struct ListUser {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
+#[derive(Deserialize)]
+pub struct ListUsersQuery {
+    pub page: Option<u32>,
+    pub per_page: Option<u32>,
+}
+
+#[derive(Serialize)]
+pub struct PaginationMeta {
+    pub page: u32,
+    pub per_page: u32,
+    pub total_count: i64,
+    pub total_pages: u32,
+}
+
 #[derive(Serialize)]
 pub struct ListUsersResponse {
-    pub users: Vec<ListUser>,
+    pub data: Vec<ListUser>,
+    pub pagination: PaginationMeta,
 }
 
 pub async fn me(
@@ -260,6 +275,7 @@ pub async fn create_user(
 pub async fn list_users(
     State(state): State<AppState>,
     ctx: AuthContext,
+    Query(query): Query<ListUsersQuery>,
 ) -> Result<Json<ListUsersResponse>, AppError> {
     let environment_id = ctx.environment_id;
     let business_id = ctx.business_id;
@@ -283,11 +299,32 @@ pub async fn list_users(
         }
     }
 
-    let rows = sqlx::query(
-        "SELECT id, first_name, last_name, email, role, status, created_at, updated_at FROM users WHERE business_id = $1 AND environment_id = $2 AND status = 'active' ORDER BY created_at DESC"
+    // Parse and validate pagination params with defaults
+    let page = query.page.unwrap_or(1).max(1);
+    let per_page = query.per_page.unwrap_or(10).min(100).max(1);
+    let offset = (page - 1) * per_page;
+
+    // Get total count
+    let count_row = sqlx::query(
+        "SELECT COUNT(*) as count FROM users WHERE business_id = $1 AND environment_id = $2 AND status = 'active'"
     )
     .bind(&business_id)
     .bind(&environment_id)
+    .fetch_one(&state.db)
+    .await
+    .map_err(|_| AppError::Internal)?;
+
+    let total_count: i64 = count_row.get("count");
+    let total_pages = ((total_count as f64) / (per_page as f64)).ceil() as u32;
+
+    // Fetch paginated results with deterministic ordering
+    let rows = sqlx::query(
+        "SELECT id, first_name, last_name, email, role, status, created_at, updated_at FROM users WHERE business_id = $1 AND environment_id = $2 AND status = 'active' ORDER BY created_at DESC, id DESC LIMIT $3 OFFSET $4"
+    )
+    .bind(&business_id)
+    .bind(&environment_id)
+    .bind(per_page as i64)
+    .bind(offset as i64)
     .fetch_all(&state.db)
     .await
     .map_err(|_| AppError::Internal)?;
@@ -306,5 +343,13 @@ pub async fn list_users(
         })
         .collect();
 
-    Ok(Json(ListUsersResponse { users }))
+    Ok(Json(ListUsersResponse {
+        data: users,
+        pagination: PaginationMeta {
+            page,
+            per_page,
+            total_count,
+            total_pages,
+        },
+    }))
 }

@@ -1,7 +1,7 @@
 use tracing::info;
 use crate::errors::AppError;
 use crate::ledger_grpc::LedgerGrpc;
-use crate::models::{Account, AccountStatus, CreateAccountRequest, TransactionKind, TransactionStatus};
+use crate::models::{Account, AccountStatus, CreateAccountRequest, TransactionKind, TransactionStatus, PaginatedAccountsResponse};
 use crate::repositories::{AccountRepository, TransactionRepository};
 use crate::utils::generate_account_number;
 use sqlx::PgPool;
@@ -75,6 +75,33 @@ impl AccountService {
         admin_user_id: Uuid,
     ) -> Result<Vec<Account>, AppError> {
         AccountRepository::find_by_admin_user_id(pool, admin_user_id).await
+    }
+
+    pub async fn get_accounts_by_user_paginated(
+        pool: &PgPool,
+        user_id: Uuid,
+        page: u32,
+        per_page: u32,
+    ) -> Result<PaginatedAccountsResponse, AppError> {
+        AccountRepository::find_by_user_id_paginated(pool, user_id, page, per_page).await
+    }
+
+    pub async fn get_accounts_by_organization_paginated(
+        pool: &PgPool,
+        organization_id: Uuid,
+        page: u32,
+        per_page: u32,
+    ) -> Result<PaginatedAccountsResponse, AppError> {
+        AccountRepository::find_by_organization_id_paginated(pool, organization_id, page, per_page).await
+    }
+
+    pub async fn get_accounts_by_admin_paginated(
+        pool: &PgPool,
+        admin_user_id: Uuid,
+        page: u32,
+        per_page: u32,
+    ) -> Result<PaginatedAccountsResponse, AppError> {
+        AccountRepository::find_by_admin_user_id_paginated(pool, admin_user_id, page, per_page).await
     }
 
     pub async fn update_account_status(

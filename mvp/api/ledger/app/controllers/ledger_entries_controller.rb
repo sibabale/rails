@@ -6,11 +6,15 @@ class LedgerEntriesController < ApplicationController
 
   # GET /api/v1/ledger/entries
   def index
-    entries = LedgerEntry
+    # Parse and validate pagination params with defaults
+    page = [params[:page].to_i, 1].max
+    per_page = [[params[:per_page].to_i, 100].min, 1].max
+    offset = (page - 1) * per_page
+
+    # Build base query
+    base_query = LedgerEntry
       .where(organization_id: @organization_id, environment: @environment)
       .includes(:ledger_account, :ledger_transaction)
-      .order(created_at: :desc)
-      .limit(100)
 
     # Optional filtering by account_id
     if params[:account_id].present?
@@ -19,11 +23,23 @@ class LedgerEntriesController < ApplicationController
         environment: @environment,
         external_account_id: params[:account_id]
       )
-      entries = entries.where(ledger_account_id: ledger_account.id) if ledger_account
+      base_query = base_query.where(ledger_account_id: ledger_account.id) if ledger_account
     end
 
+    # Get total count
+    total_count = base_query.count
+
+    # Calculate total pages
+    total_pages = (total_count.to_f / per_page).ceil
+
+    # Fetch paginated results with deterministic ordering
+    entries = base_query
+      .order(created_at: :desc, id: :desc)
+      .limit(per_page)
+      .offset(offset)
+
     render json: {
-      entries: entries.map { |entry|
+      data: entries.map { |entry|
         {
           id: entry.id,
           ledger_account_id: entry.ledger_account_id,
@@ -35,6 +51,12 @@ class LedgerEntriesController < ApplicationController
           currency: entry.currency,
           created_at: entry.created_at.iso8601
         }
+      },
+      pagination: {
+        page: page,
+        per_page: per_page,
+        total_count: total_count,
+        total_pages: total_pages
       }
     }
   end

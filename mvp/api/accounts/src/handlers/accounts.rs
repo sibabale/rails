@@ -7,7 +7,7 @@ use axum::{
 use serde::Deserialize;
 use uuid::Uuid;
 use crate::errors::AppError;
-use crate::models::{AccountResponse, CreateAccountRequest, UpdateAccountRequest};
+use crate::models::{AccountResponse, CreateAccountRequest, UpdateAccountRequest, PaginatedAccountsResponse};
 use crate::routes::api::AppState;
 use crate::services::AccountService;
 
@@ -16,6 +16,8 @@ pub struct ListAccountsQuery {
     pub user_id: Option<Uuid>,
     pub organization_id: Option<Uuid>,
     pub admin_user_id: Option<Uuid>,
+    pub page: Option<u32>,
+    pub per_page: Option<u32>,
 }
 
 pub async fn create_account(
@@ -38,24 +40,28 @@ pub async fn get_account(
 pub async fn list_accounts(
     State(state): State<AppState>,
     Query(query): Query<ListAccountsQuery>,
-) -> Result<Json<Vec<AccountResponse>>, AppError> {
+) -> Result<Json<PaginatedAccountsResponse>, AppError> {
+    // Parse and validate pagination params with defaults
+    let page = query.page.unwrap_or(1).max(1);
+    let per_page = query.per_page.unwrap_or(10).min(100).max(1);
+
     // Support three filtering options:
     // 1. user_id: Get accounts owned by a specific user
     // 2. organization_id: Get all accounts in an organization (for admins)
     // 3. admin_user_id: Get accounts managed by an admin (customer accounts)
-    let accounts = if let Some(user_id) = query.user_id {
-        AccountService::get_accounts_by_user(&state.pool, user_id).await?
+    let result = if let Some(user_id) = query.user_id {
+        AccountService::get_accounts_by_user_paginated(&state.pool, user_id, page, per_page).await?
     } else if let Some(organization_id) = query.organization_id {
-        AccountService::get_accounts_by_organization(&state.pool, organization_id).await?
+        AccountService::get_accounts_by_organization_paginated(&state.pool, organization_id, page, per_page).await?
     } else if let Some(admin_user_id) = query.admin_user_id {
-        AccountService::get_accounts_by_admin(&state.pool, admin_user_id).await?
+        AccountService::get_accounts_by_admin_paginated(&state.pool, admin_user_id, page, per_page).await?
     } else {
         return Err(AppError::Validation(
             "One of user_id, organization_id, or admin_user_id query parameter is required".to_string()
         ));
     };
 
-    Ok(Json(accounts.into_iter().map(Into::into).collect()))
+    Ok(Json(result))
 }
 
 pub async fn update_account_status(

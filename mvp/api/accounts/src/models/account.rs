@@ -111,3 +111,17 @@ impl From<Account> for AccountResponse {
         }
     }
 }
+
+#[derive(Debug, Serialize)]
+pub struct PaginationMeta {
+    pub page: u32,
+    pub per_page: u32,
+    pub total_count: i64,
+    pub total_pages: u32,
+}
+
+#[derive(Debug, Serialize)]
+pub struct PaginatedAccountsResponse {
+    pub data: Vec<AccountResponse>,
+    pub pagination: PaginationMeta,
+}

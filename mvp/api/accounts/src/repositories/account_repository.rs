@@ -1,5 +1,5 @@
 use crate::errors::AppError;
-use crate::models::{Account, AccountStatus, AccountType};
+use crate::models::{Account, AccountStatus, AccountType, PaginatedAccountsResponse, PaginationMeta, AccountResponse};
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
 
@@ -98,7 +98,7 @@ impl AccountRepository {
             SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             FROM accounts
             WHERE user_id = $1
-            ORDER BY created_at DESC
+            ORDER BY created_at DESC, id DESC
             "#,
         )
         .bind(user_id)
@@ -119,7 +119,7 @@ impl AccountRepository {
             SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             FROM accounts
             WHERE organization_id = $1
-            ORDER BY created_at DESC
+            ORDER BY created_at DESC, id DESC
             "#,
         )
         .bind(organization_id)
@@ -140,7 +140,7 @@ impl AccountRepository {
             SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
             FROM accounts
             WHERE admin_user_id = $1
-            ORDER BY created_at DESC
+            ORDER BY created_at DESC, id DESC
             "#,
         )
         .bind(admin_user_id)
@@ -153,6 +153,159 @@ impl AccountRepository {
             .collect::<Result<Vec<_>, _>>()?;
 
         Ok(accounts)
+    }
+
+    pub async fn find_by_user_id_paginated(
+        pool: &PgPool,
+        user_id: Uuid,
+        page: u32,
+        per_page: u32,
+    ) -> Result<PaginatedAccountsResponse, AppError> {
+        let offset = (page - 1) * per_page;
+
+        // Get total count
+        let count_row = sqlx::query(
+            "SELECT COUNT(*) as count FROM accounts WHERE user_id = $1"
+        )
+        .bind(user_id)
+        .fetch_one(pool)
+        .await?;
+
+        let total_count: i64 = count_row.get("count");
+        let total_pages = ((total_count as f64) / (per_page as f64)).ceil() as u32;
+
+        // Fetch paginated results
+        let rows = sqlx::query(
+            r#"
+            SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
+            FROM accounts
+            WHERE user_id = $1
+            ORDER BY created_at DESC, id DESC
+            LIMIT $2 OFFSET $3
+            "#,
+        )
+        .bind(user_id)
+        .bind(per_page as i64)
+        .bind(offset as i64)
+        .fetch_all(pool)
+        .await?;
+
+        let accounts: Vec<Account> = rows
+            .iter()
+            .map(|row| Self::row_to_account(row))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(PaginatedAccountsResponse {
+            data: accounts.into_iter().map(AccountResponse::from).collect(),
+            pagination: PaginationMeta {
+                page,
+                per_page,
+                total_count,
+                total_pages,
+            },
+        })
+    }
+
+    pub async fn find_by_organization_id_paginated(
+        pool: &PgPool,
+        organization_id: Uuid,
+        page: u32,
+        per_page: u32,
+    ) -> Result<PaginatedAccountsResponse, AppError> {
+        let offset = (page - 1) * per_page;
+
+        // Get total count
+        let count_row = sqlx::query(
+            "SELECT COUNT(*) as count FROM accounts WHERE organization_id = $1"
+        )
+        .bind(organization_id)
+        .fetch_one(pool)
+        .await?;
+
+        let total_count: i64 = count_row.get("count");
+        let total_pages = ((total_count as f64) / (per_page as f64)).ceil() as u32;
+
+        // Fetch paginated results
+        let rows = sqlx::query(
+            r#"
+            SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
+            FROM accounts
+            WHERE organization_id = $1
+            ORDER BY created_at DESC, id DESC
+            LIMIT $2 OFFSET $3
+            "#,
+        )
+        .bind(organization_id)
+        .bind(per_page as i64)
+        .bind(offset as i64)
+        .fetch_all(pool)
+        .await?;
+
+        let accounts: Vec<Account> = rows
+            .iter()
+            .map(|row| Self::row_to_account(row))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(PaginatedAccountsResponse {
+            data: accounts.into_iter().map(AccountResponse::from).collect(),
+            pagination: PaginationMeta {
+                page,
+                per_page,
+                total_count,
+                total_pages,
+            },
+        })
+    }
+
+    pub async fn find_by_admin_user_id_paginated(
+        pool: &PgPool,
+        admin_user_id: Uuid,
+        page: u32,
+        per_page: u32,
+    ) -> Result<PaginatedAccountsResponse, AppError> {
+        let offset = (page - 1) * per_page;
+
+        // Get total count
+        let count_row = sqlx::query(
+            "SELECT COUNT(*) as count FROM accounts WHERE admin_user_id = $1"
+        )
+        .bind(admin_user_id)
+        .fetch_one(pool)
+        .await?;
+
+        let total_count: i64 = count_row.get("count");
+        let total_pages = ((total_count as f64) / (per_page as f64)).ceil() as u32;
+
+        // Fetch paginated results
+        let rows = sqlx::query(
+            r#"
+            SELECT id, account_number, account_type, organization_id, environment, user_id, admin_user_id, user_role, currency, status, created_at, updated_at
+            FROM accounts
+            WHERE admin_user_id = $1
+            ORDER BY created_at DESC, id DESC
+            LIMIT $2 OFFSET $3
+            "#,
+        )
+        .bind(admin_user_id)
+        .bind(per_page as i64)
+        .bind(offset as i64)
+        .fetch_all(pool)
+        .await?;
+
+        let accounts: Vec<Account> = rows
+            .iter()
+            .map(|row| Self::row_to_account(row))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(PaginatedAccountsResponse {
+            data: accounts.into_iter().map(AccountResponse::from).collect(),
+            pagination: PaginationMeta {
+                page,
+                per_page,
+                total_count,
+                total_pages,
+            },
+        })
     }
 
     pub async fn update_status(
