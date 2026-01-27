@@ -10,23 +10,27 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy manifests first for dependency caching
-COPY Cargo.toml Cargo.lock ./
+# Copy manifests and build script first for dependency caching
+COPY Cargo.toml Cargo.lock build.rs ./
+
+# Copy proto files (needed for build.rs to generate code)
+COPY proto ./proto
 
 # Create dummy src to cache dependencies
 RUN mkdir -p src && echo "fn main() {}" > src/main.rs
 
-# Build dependencies only
-RUN cargo build --release
+# Build dependencies only (this will run build.rs but proto generation will fail - that's ok for dependency caching)
+RUN cargo build --release || true
 
 # Remove dummy source
 RUN rm -rf src
 
-# Copy actual source code
+# Copy actual source code and migrations
 COPY src ./src
+COPY migrations ./migrations
 
-# Build the application
-RUN touch src/main.rs && cargo build --release
+# Build the application (now with real source, proto files, and migrations)
+RUN cargo build --release
 
 FROM debian:bookworm-slim
 
