@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_01_24_230000) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_27_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -23,6 +23,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_24_230000) do
     t.datetime "last_updated_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["environment", "organization_id", "ledger_account_id"], name: "idx_account_balances_env_org_account"
     t.index ["ledger_account_id"], name: "index_account_balances_on_ledger_account_id"
     t.index ["organization_id", "environment", "ledger_account_id"], name: "index_account_balances_unique", unique: true
     t.index ["organization_id", "environment"], name: "index_account_balances_on_organization_id_and_environment"
@@ -36,6 +37,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_24_230000) do
     t.string "currency", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["environment", "organization_id", "external_account_id", "currency"], name: "idx_ledger_accounts_env_org_external_currency"
     t.index ["organization_id", "environment", "external_account_id", "currency"], name: "index_ledger_accounts_on_org_env_external_currency", unique: true
     t.index ["organization_id", "environment"], name: "index_ledger_accounts_on_org_env"
   end
@@ -50,6 +52,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_24_230000) do
     t.string "currency", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["environment", "organization_id", "ledger_account_id", "created_at"], name: "idx_ledger_entries_env_org_account_created"
     t.index ["ledger_account_id"], name: "index_ledger_entries_on_account"
     t.index ["organization_id", "environment", "ledger_account_id"], name: "index_ledger_entries_on_org_env_account"
     t.index ["organization_id", "environment", "transaction_id"], name: "index_ledger_entries_on_org_env_transaction"
@@ -64,6 +67,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_24_230000) do
     t.string "idempotency_key", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["environment", "organization_id", "created_at"], name: "idx_ledger_transactions_env_org_created"
     t.index ["organization_id", "environment", "external_transaction_id"], name: "index_ledger_transactions_on_org_env_external"
     t.index ["organization_id", "environment", "idempotency_key"], name: "index_ledger_transactions_on_org_env_idempotency", unique: true
     t.index ["organization_id", "environment", "status"], name: "index_ledger_transactions_on_org_env_status"

@@ -99,7 +99,12 @@ class LedgerService < Rails::Ledger::V1::LedgerService::Service
       currency: currency
     )
 
-    balance = LedgerEntry.balance_for(account.id)
+    # Use AccountBalance.get_balance which filters by environment
+    balance = AccountBalance.get_balance(
+      organization_id: organization_id,
+      environment: environment,
+      ledger_account_id: account.id
+    )
 
     Rails::Ledger::V1::GetAccountBalanceResponse.new(
       balance: balance.to_s,
