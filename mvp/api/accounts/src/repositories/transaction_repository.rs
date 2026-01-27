@@ -16,6 +16,7 @@ impl TransactionRepository {
         currency: &str,
         transaction_kind: TransactionKind,
         idempotency_key: &str,
+        environment: Option<&str>,
     ) -> Result<Transaction, AppError> {
         let kind_str: &str = match transaction_kind {
             TransactionKind::Deposit => "deposit",
@@ -23,18 +24,36 @@ impl TransactionRepository {
             TransactionKind::Transfer => "transfer",
         };
 
+        // Use a CTE-based approach to handle idempotency with the COALESCE-based unique index.
+        // This avoids ON CONFLICT issues with expression-based indexes.
+        // The unique index on (organization_id, COALESCE(environment, ''), idempotency_key)
+        // will catch any race conditions and prevent duplicates.
+        // Use a single query with CTE to check and insert atomically.
         let row = sqlx::query(
             r#"
-            INSERT INTO transactions (
-                organization_id, from_account_id, to_account_id, amount, currency,
-                transaction_kind, status, failure_reason, idempotency_key
+            WITH existing AS (
+                SELECT id, organization_id, from_account_id, to_account_id, amount, currency,
+                       transaction_kind, status, failure_reason, idempotency_key, environment, created_at, updated_at
+                FROM transactions
+                WHERE organization_id = $1
+                  AND COALESCE(environment, '') = COALESCE($8, '')
+                  AND idempotency_key = $7
+                LIMIT 1
+            ),
+            inserted AS (
+                INSERT INTO transactions (
+                    organization_id, from_account_id, to_account_id, amount, currency,
+                    transaction_kind, status, failure_reason, idempotency_key, environment
+                )
+                SELECT $1, $2, $3, $4, $5, $6, 'pending', NULL, $7, $8
+                WHERE NOT EXISTS (SELECT 1 FROM existing)
+                RETURNING id, organization_id, from_account_id, to_account_id, amount, currency,
+                          transaction_kind, status, failure_reason, idempotency_key, environment, created_at, updated_at
             )
-            VALUES ($1, $2, $3, $4, $5, $6, 'pending', NULL, $7)
-            ON CONFLICT (organization_id, idempotency_key)
-            DO UPDATE SET
-                updated_at = transactions.updated_at
-            RETURNING id, organization_id, from_account_id, to_account_id, amount, currency,
-                      transaction_kind, status, failure_reason, idempotency_key, created_at, updated_at
+            SELECT * FROM inserted
+            UNION ALL
+            SELECT * FROM existing
+            LIMIT 1
             "#,
         )
         .bind(organization_id)
@@ -44,6 +63,7 @@ impl TransactionRepository {
         .bind(currency)
         .bind(kind_str)
         .bind(idempotency_key)
+        .bind(environment)
         .fetch_one(executor)
         .await?;
 
@@ -54,7 +74,7 @@ impl TransactionRepository {
         let row = sqlx::query(
             r#"
             SELECT id, organization_id, from_account_id, to_account_id, amount, currency,
-                   transaction_kind, status, failure_reason, idempotency_key, created_at, updated_at
+                   transaction_kind, status, failure_reason, idempotency_key, environment, created_at, updated_at
             FROM transactions
             WHERE id = $1
             "#,
@@ -71,23 +91,44 @@ impl TransactionRepository {
         pool: &PgPool,
         account_id: Uuid,
         limit: Option<i64>,
+        environment: Option<&str>,
     ) -> Result<Vec<Transaction>, AppError> {
         let limit = limit.unwrap_or(100);
 
-        let rows = sqlx::query(
-            r#"
-            SELECT id, organization_id, from_account_id, to_account_id, amount, currency,
-                   transaction_kind, status, failure_reason, idempotency_key, created_at, updated_at
-            FROM transactions
-            WHERE from_account_id = $1 OR to_account_id = $1
-            ORDER BY created_at DESC
-            LIMIT $2
-            "#,
-        )
-        .bind(account_id)
-        .bind(limit)
-        .fetch_all(pool)
-        .await?;
+        // Optionally filter by environment, but include legacy transactions (NULL environment)
+        let rows = if let Some(env) = environment {
+            sqlx::query(
+                r#"
+                SELECT id, organization_id, from_account_id, to_account_id, amount, currency,
+                       transaction_kind, status, failure_reason, idempotency_key, environment, created_at, updated_at
+                FROM transactions
+                WHERE (from_account_id = $1 OR to_account_id = $1)
+                  AND (environment = $3 OR environment IS NULL)
+                ORDER BY created_at DESC
+                LIMIT $2
+                "#,
+            )
+            .bind(account_id)
+            .bind(limit)
+            .bind(env)
+            .fetch_all(pool)
+            .await?
+        } else {
+            sqlx::query(
+                r#"
+                SELECT id, organization_id, from_account_id, to_account_id, amount, currency,
+                       transaction_kind, status, failure_reason, idempotency_key, environment, created_at, updated_at
+                FROM transactions
+                WHERE from_account_id = $1 OR to_account_id = $1
+                ORDER BY created_at DESC
+                LIMIT $2
+                "#,
+            )
+            .bind(account_id)
+            .bind(limit)
+            .fetch_all(pool)
+            .await?
+        };
 
         let transactions = rows
             .iter()
@@ -99,28 +140,51 @@ impl TransactionRepository {
 
     /// Find pending transactions across all organizations older than a cutoff.
     /// Used by the ledger retry worker (eventual consistency).
+    /// Optionally filters by environment, but includes legacy transactions (NULL environment).
     pub async fn find_pending_older_than_any_org(
         pool: &PgPool,
         older_than: Duration,
         limit: Option<i64>,
+        environment: Option<&str>,
     ) -> Result<Vec<Transaction>, AppError> {
         let cutoff: DateTime<Utc> = Utc::now() - older_than;
         let limit = limit.unwrap_or(100);
 
-        let rows = sqlx::query(
-            r#"
-            SELECT id, organization_id, from_account_id, to_account_id, amount, currency,
-                   transaction_kind, status, failure_reason, idempotency_key, created_at, updated_at
-            FROM transactions
-            WHERE status = 'pending' AND created_at < $1
-            ORDER BY created_at ASC
-            LIMIT $2
-            "#,
-        )
-        .bind(cutoff)
-        .bind(limit)
-        .fetch_all(pool)
-        .await?;
+        // Optionally filter by environment, but include legacy transactions (NULL environment)
+        let rows = if let Some(env) = environment {
+            sqlx::query(
+                r#"
+                SELECT id, organization_id, from_account_id, to_account_id, amount, currency,
+                       transaction_kind, status, failure_reason, idempotency_key, environment, created_at, updated_at
+                FROM transactions
+                WHERE status = 'pending' 
+                  AND created_at < $1
+                  AND (environment = $3 OR environment IS NULL)
+                ORDER BY created_at ASC
+                LIMIT $2
+                "#,
+            )
+            .bind(cutoff)
+            .bind(limit)
+            .bind(env)
+            .fetch_all(pool)
+            .await?
+        } else {
+            sqlx::query(
+                r#"
+                SELECT id, organization_id, from_account_id, to_account_id, amount, currency,
+                       transaction_kind, status, failure_reason, idempotency_key, environment, created_at, updated_at
+                FROM transactions
+                WHERE status = 'pending' AND created_at < $1
+                ORDER BY created_at ASC
+                LIMIT $2
+                "#,
+            )
+            .bind(cutoff)
+            .bind(limit)
+            .fetch_all(pool)
+            .await?
+        };
 
         Ok(rows
             .iter()
@@ -146,7 +210,7 @@ impl TransactionRepository {
             SET status = $2, failure_reason = $3, updated_at = NOW()
             WHERE id = $1
             RETURNING id, organization_id, from_account_id, to_account_id, amount, currency,
-                      transaction_kind, status, failure_reason, idempotency_key, created_at, updated_at
+                      transaction_kind, status, failure_reason, idempotency_key, environment, created_at, updated_at
             "#,
         )
         .bind(id)
@@ -186,6 +250,7 @@ impl TransactionRepository {
             status,
             failure_reason: row.get("failure_reason"),
             idempotency_key: row.get("idempotency_key"),
+            environment: row.get("environment"),
             created_at: row.get("created_at"),
             updated_at: row.get("updated_at"),
         })

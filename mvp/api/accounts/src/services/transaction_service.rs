@@ -66,6 +66,7 @@ impl TransactionService {
             &request.currency,
             TransactionKind::Transfer,
             idempotency_key,
+            Some(environment), // Always pass environment for new transactions
         )
         .await?;
 
@@ -109,6 +110,7 @@ impl TransactionService {
         // Verify account exists in the correct environment before fetching transactions
         let _account = AccountRepository::find_by_id(pool, account_id, environment).await?;
         
-        TransactionRepository::find_by_account_id(pool, account_id, limit).await
+        // Filter by environment, but include legacy transactions (NULL environment)
+        TransactionRepository::find_by_account_id(pool, account_id, limit, Some(environment)).await
     }
 }

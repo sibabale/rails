@@ -13,10 +13,12 @@ pub async fn run(pool: PgPool, ledger_grpc: LedgerGrpc) {
 
     loop {
         // Retry pending transactions older than a short delay to avoid racing immediate posts.
+        // Don't filter by environment - process both new (with environment) and legacy (NULL) transactions
         let pending = match TransactionRepository::find_pending_older_than_any_org(
             &pool,
             Duration::seconds(2),
             Some(200),
+            None, // Don't filter by environment - process all pending transactions
         )
         .await
         {
@@ -29,32 +31,35 @@ pub async fn run(pool: PgPool, ledger_grpc: LedgerGrpc) {
         };
 
         for tx in pending {
-            // Determine environment from account record (accounts table stores environment).
-            // Note: We need to try both environments since we don't know which one the transaction belongs to.
-            // This is a limitation of the current schema - transactions don't have environment.
-            // For retry worker, we'll try sandbox first, then production if not found.
-            let account = match AccountRepository::find_by_id(&pool, tx.from_account_id, "sandbox").await {
-                Ok(a) => a,
-                Err(_) => {
-                    // Try production if sandbox fails
-                    match AccountRepository::find_by_id(&pool, tx.from_account_id, "production").await {
-                        Ok(a) => a,
-                        Err(e) => {
-                            warn!(
-                                transaction_id = %tx.id,
-                                error = %e,
-                                "retry_worker_missing_account; leaving pending"
-                            );
-                            continue;
+            // Use environment from transaction if available, otherwise fallback to account lookup
+            let environment = if let Some(ref env) = tx.environment {
+                env.clone()
+            } else {
+                // Legacy transaction: determine environment from account record
+                // Try sandbox first, then production if not found
+                let account = match AccountRepository::find_by_id(&pool, tx.from_account_id, "sandbox").await {
+                    Ok(a) => a,
+                    Err(_) => {
+                        // Try production if sandbox fails
+                        match AccountRepository::find_by_id(&pool, tx.from_account_id, "production").await {
+                            Ok(a) => a,
+                            Err(e) => {
+                                warn!(
+                                    transaction_id = %tx.id,
+                                    error = %e,
+                                    "retry_worker_missing_account; leaving pending"
+                                );
+                                continue;
+                            }
                         }
                     }
-                }
+                };
+                
+                account
+                    .environment
+                    .clone()
+                    .unwrap_or_else(|| "sandbox".to_string())
             };
-
-            let environment = account
-                .environment
-                .clone()
-                .unwrap_or_else(|| "sandbox".to_string());
 
             let (source_external, dest_external) = match tx.transaction_kind {
                 TransactionKind::Transfer => (

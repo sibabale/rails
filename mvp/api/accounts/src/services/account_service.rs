@@ -178,6 +178,7 @@ impl AccountService {
             &currency,
             TransactionKind::Deposit,
             idempotency_key,
+            Some(environment), // Always pass environment for new transactions
         )
         .await?;
 
@@ -276,6 +277,7 @@ impl AccountService {
             &currency,
             TransactionKind::Withdraw,
             idempotency_key,
+            Some(environment), // Always pass environment for new transactions
         )
         .await?;
 
@@ -399,6 +401,7 @@ impl AccountService {
             &from_currency,
             TransactionKind::Transfer,
             idempotency_key,
+            Some(environment), // Always pass environment for new transactions
         )
         .await?;
 

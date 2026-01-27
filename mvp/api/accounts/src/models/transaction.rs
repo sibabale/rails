@@ -21,6 +21,7 @@ pub struct Transaction {
     pub failure_reason: Option<String>,
     #[serde(rename = "idempotency_key")]
     pub idempotency_key: String,
+    pub environment: Option<String>,
     #[serde(rename = "created_at")]
     pub created_at: DateTime<Utc>,
     #[serde(rename = "updated_at")]
@@ -71,6 +72,7 @@ pub struct TransactionResponse {
     pub failure_reason: Option<String>,
     #[serde(rename = "idempotency_key")]
     pub idempotency_key: String,
+    pub environment: Option<String>,
     #[serde(rename = "created_at")]
     pub created_at: DateTime<Utc>,
     #[serde(rename = "updated_at")]
@@ -90,6 +92,7 @@ impl From<Transaction> for TransactionResponse {
             status: transaction.status,
             failure_reason: transaction.failure_reason,
             idempotency_key: transaction.idempotency_key,
+            environment: transaction.environment,
             created_at: transaction.created_at,
             updated_at: transaction.updated_at,
         }
