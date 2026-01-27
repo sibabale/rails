@@ -45,6 +45,9 @@ gem "lograge"
 # UUID generation
 gem "uuidtools"
 
+# JWT token decoding for authentication
+gem "jwt"
+
 # Sentry error tracking and performance monitoring
 gem "sentry-ruby"
 gem "sentry-rails"

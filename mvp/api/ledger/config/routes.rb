@@ -8,6 +8,16 @@ Rails.application.routes.draw do
   # Health check
   get '/health', to: 'application#health'
 
+  # REST API endpoints for viewing ledger data (read-only)
+  namespace :api do
+    namespace :v1 do
+      namespace :ledger do
+        resources :entries, only: [:index]
+        resources :transactions, only: [:index, :show]
+      end
+    end
+  end
+
   # Defines the root path route ("/")
   # root "posts#index"
 end
