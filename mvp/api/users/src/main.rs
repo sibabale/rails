@@ -16,9 +16,21 @@ use tokio::net::TcpListener;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    eprintln!("[STARTUP] Users service starting...");
+    
     dotenvy::dotenv().ok();
     
-    let config = config::load()?;
+    eprintln!("[STARTUP] Loading configuration...");
+    let config = match config::load() {
+        Ok(c) => {
+            eprintln!("[STARTUP] Configuration loaded successfully");
+            c
+        }
+        Err(e) => {
+            eprintln!("[FATAL] Failed to load configuration: {}", e);
+            return Err(e);
+        }
+    };
     
     // Initialize Sentry before tracing to capture all errors
     let _guard = if let Some(dsn) = &config.sentry_dsn {
@@ -58,9 +70,19 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("  ACCOUNTS_GRPC_URL: {}", config.accounts_grpc_url);
     
     tracing::info!("Connecting to database...");
-    let db = db::init(&config.database_url).await
-        .map_err(|e| anyhow::anyhow!("Failed to connect to database: {}. Make sure PostgreSQL is running and DATABASE_URL is correct.", e))?;
-    tracing::info!("Database connection established");
+    eprintln!("[STARTUP] Connecting to database...");
+    let db = match db::init(&config.database_url).await {
+        Ok(pool) => {
+            eprintln!("[STARTUP] Database connected successfully");
+            tracing::info!("Database connection established");
+            pool
+        }
+        Err(e) => {
+            let msg = format!("Failed to connect to database: {}. Make sure PostgreSQL is running and DATABASE_URL is correct.", e);
+            eprintln!("[FATAL] {}", msg);
+            return Err(anyhow::anyhow!(msg));
+        }
+    };
     
     // Run migrations
     tracing::info!("Running database migrations...");
