@@ -3,6 +3,7 @@ pub mod apikey;
 pub mod user;
 pub mod auth;
 pub mod health;
+pub mod password_reset;
 
 use axum::{Router, routing::{post, get}};
 use axum::body::Body;
@@ -12,22 +13,26 @@ use axum::response::Response;
 use crate::db::Db;
 use crate::grpc::GrpcClients;
 use crate::error::AppError;
+use crate::email::EmailService;
 use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct AppState {
     pub db: Db,
     pub grpc: GrpcClients,
+    pub email: Option<EmailService>,
 }
 
-pub fn register_routes(db: Db, grpc: GrpcClients) -> Router {
-    let state = AppState { db, grpc };
+pub fn register_routes(db: Db, grpc: GrpcClients, email: Option<EmailService>) -> Router {
+    let state = AppState { db, grpc, email };
     let public = Router::new()
         .route("/health", get(health::health_check))
         .route("/api/v1/business/register", post(business::register_business))
         .route("/api/v1/auth/login", post(auth::login))
         .route("/api/v1/auth/refresh", post(auth::refresh_token))
-        .route("/api/v1/auth/revoke", post(auth::revoke_token));
+        .route("/api/v1/auth/revoke", post(auth::revoke_token))
+        .route("/api/v1/auth/password-reset/request", post(password_reset::request_password_reset))
+        .route("/api/v1/auth/password-reset/reset", post(password_reset::reset_password));
 
     let protected = Router::new()
         .route("/api/v1/users", post(user::create_user).get(user::list_users))

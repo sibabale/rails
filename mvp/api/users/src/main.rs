@@ -6,9 +6,11 @@ mod error;
 mod routes;
 mod auth;
 mod grpc;
+mod email;
 
 use tracing_subscriber::prelude::*;
 use crate::routes::register_routes;
+use crate::email::EmailService;
 use axum::serve;
 use tokio::net::TcpListener;
 
@@ -85,7 +87,15 @@ async fn main() -> anyhow::Result<()> {
     let grpc = grpc::init(&config).await?;
     tracing::info!("gRPC clients initialized");
     
-    let app = register_routes(db.clone(), grpc.clone());
+    // Initialize email service
+    let email = if config.resend_api_key.is_some() {
+        Some(EmailService::new(&config))
+    } else {
+        tracing::warn!("Resend API key not configured. Password reset emails will not be sent.");
+        None
+    };
+    
+    let app = register_routes(db.clone(), grpc.clone(), email);
     let addr: std::net::SocketAddr = config.server_addr.parse()
         .map_err(|e| anyhow::anyhow!("Failed to parse SERVER_ADDR '{}': {}", config.server_addr, e))?;
     
@@ -101,6 +111,8 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("  POST /api/v1/auth/login");
     tracing::info!("  POST /api/v1/auth/refresh");
     tracing::info!("  POST /api/v1/auth/revoke");
+    tracing::info!("  POST /api/v1/auth/password-reset/request");
+    tracing::info!("  POST /api/v1/auth/password-reset/reset");
     
     serve(listener, app).await?;
     Ok(())

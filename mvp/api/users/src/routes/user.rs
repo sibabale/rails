@@ -372,7 +372,7 @@ pub async fn list_users(
     // Build query with optional environment type filter
     // If X-Environment header is provided, filter by both environment_id AND environment.type
     // This ensures we only get users from the correct environment type (sandbox/production)
-    let (count_query, list_query) = if let Some(ref env_type) = environment_type {
+    let (count_query, list_query) = if let Some(_) = environment_type {
         // Filter by business_id, environment_id, AND environment.type
         (
             "SELECT COUNT(*) as count FROM users u 
