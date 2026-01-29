@@ -1,0 +1,1 @@
+ - migrate FE to nextjs for seo
