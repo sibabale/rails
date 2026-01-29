@@ -15,6 +15,9 @@ use crate::grpc::GrpcClients;
 use crate::error::AppError;
 use crate::email::EmailService;
 use uuid::Uuid;
+use std::collections::HashMap;
+use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -28,11 +31,14 @@ pub fn register_routes(db: Db, grpc: GrpcClients, email: Option<EmailService>) -
     let public = Router::new()
         .route("/health", get(health::health_check))
         .route("/api/v1/business/register", post(business::register_business))
-        .route("/api/v1/auth/login", post(auth::login))
         .route("/api/v1/auth/refresh", post(auth::refresh_token))
-        .route("/api/v1/auth/revoke", post(auth::revoke_token))
+        .route("/api/v1/auth/revoke", post(auth::revoke_token));
+
+    let auth_limited = Router::new()
+        .route("/api/v1/auth/login", post(auth::login))
         .route("/api/v1/auth/password-reset/request", post(password_reset::request_password_reset))
-        .route("/api/v1/auth/password-reset/reset", post(password_reset::reset_password));
+        .route("/api/v1/auth/password-reset/reset", post(password_reset::reset_password))
+        .layer(from_fn(auth_rate_limit_middleware));
 
     let protected = Router::new()
         .route("/api/v1/users", post(user::create_user).get(user::list_users))
@@ -42,6 +48,7 @@ pub fn register_routes(db: Db, grpc: GrpcClients, email: Option<EmailService>) -
         .route("/api/v1/me", get(user::me));
 
     public
+        .merge(auth_limited)
         .merge(protected)
         .layer(from_fn(correlation_id_middleware))
         .layer(from_fn(internal_caller_middleware))
@@ -133,4 +140,115 @@ async fn correlation_id_middleware(req: Request<Body>, next: Next) -> Result<Res
     }
 
     Ok(res)
+}
+
+struct RateLimitWindow {
+    start: Instant,
+    count: u32,
+}
+
+struct RateLimitConfig {
+    window: Duration,
+    max: u32,
+}
+
+static AUTH_RATE_LIMITER: OnceLock<Mutex<HashMap<String, RateLimitWindow>>> = OnceLock::new();
+static AUTH_RATE_LIMIT_CONFIG: OnceLock<RateLimitConfig> = OnceLock::new();
+
+fn auth_rate_limit_config() -> &'static RateLimitConfig {
+    AUTH_RATE_LIMIT_CONFIG.get_or_init(|| {
+        let window_seconds = std::env::var("USERS_AUTH_RATE_LIMIT_WINDOW_SECONDS")
+            .ok()
+            .and_then(|v| v.parse::<u64>().ok())
+            .filter(|v| *v > 0)
+            .unwrap_or(60);
+        let max_requests = std::env::var("USERS_AUTH_RATE_LIMIT_MAX")
+            .ok()
+            .and_then(|v| v.parse::<u32>().ok())
+            .filter(|v| *v > 0)
+            .unwrap_or(10);
+        RateLimitConfig {
+            window: Duration::from_secs(window_seconds),
+            max: max_requests,
+        }
+    })
+}
+
+fn auth_rate_limit_store() -> &'static Mutex<HashMap<String, RateLimitWindow>> {
+    AUTH_RATE_LIMITER.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn extract_client_key(req: &Request<Body>) -> String {
+    let forwarded_for = req
+        .headers()
+        .get("x-forwarded-for")
+        .and_then(|v| v.to_str().ok())
+        .map(|value| value.split(',').next().unwrap_or("").trim().to_string())
+        .filter(|value| !value.is_empty());
+
+    if let Some(value) = forwarded_for {
+        return value;
+    }
+
+    let real_ip = req
+        .headers()
+        .get("x-real-ip")
+        .and_then(|v| v.to_str().ok())
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty());
+
+    real_ip.unwrap_or_else(|| "unknown".to_string())
+}
+
+fn auth_rate_limit_allow(client_key: &str) -> bool {
+    let config = auth_rate_limit_config();
+    let mut store = auth_rate_limit_store()
+        .lock()
+        .expect("auth rate limiter lock poisoned");
+    let now = Instant::now();
+    let entry = store
+        .entry(client_key.to_string())
+        .or_insert(RateLimitWindow { start: now, count: 0 });
+
+    if now.duration_since(entry.start) > config.window {
+        entry.start = now;
+        entry.count = 0;
+    }
+
+    if entry.count >= config.max {
+        return false;
+    }
+
+    entry.count += 1;
+    true
+}
+
+async fn auth_rate_limit_middleware(req: Request<Body>, next: Next) -> Result<Response, AppError> {
+    let client_key = extract_client_key(&req);
+    if !auth_rate_limit_allow(&client_key) {
+        return Err(AppError::TooManyRequests);
+    }
+    Ok(next.run(req).await)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn reset_auth_rate_limiter() {
+        if let Some(store) = AUTH_RATE_LIMITER.get() {
+            store.lock().unwrap().clear();
+        }
+    }
+
+    #[test]
+    fn auth_rate_limit_blocks_after_max() {
+        reset_auth_rate_limiter();
+        let config = auth_rate_limit_config();
+        let client = "127.0.0.1";
+        for _ in 0..config.max {
+            assert!(auth_rate_limit_allow(client));
+        }
+        assert!(!auth_rate_limit_allow(client));
+    }
 }

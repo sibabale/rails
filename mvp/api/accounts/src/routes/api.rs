@@ -7,6 +7,9 @@ use axum::{
     Router,
 };
 use sqlx::PgPool;
+use std::collections::HashMap;
+use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant};
 use uuid::Uuid;
 
 use crate::handlers::{
@@ -34,15 +37,20 @@ pub fn create_router(pool: PgPool, ledger_grpc: LedgerGrpc) -> Router {
 }
 
 fn create_api_routes() -> Router<AppState> {
-    Router::<AppState>::new()
+    let standard_routes = Router::<AppState>::new()
         .route("/accounts", post(create_account).get(list_accounts))
         .route("/accounts/:id", get(get_account).patch(update_account_status).delete(close_account))
-        .route("/accounts/:id/deposit", post(deposit))
         .route("/accounts/:id/withdraw", post(withdraw))
-        .route("/accounts/:id/transfer", post(transfer))
         .route("/accounts/:account_id/transactions", get(list_account_transactions))
         .route("/transactions", post(create_transaction).get(list_transactions))
-        .route("/transactions/:id", get(get_transaction))
+        .route("/transactions/:id", get(get_transaction));
+
+    let money_mutations = Router::<AppState>::new()
+        .route("/accounts/:id/deposit", post(deposit))
+        .route("/accounts/:id/transfer", post(transfer))
+        .layer(from_fn(money_rate_limit_middleware));
+
+    standard_routes.merge(money_mutations)
 }
 
 async fn correlation_id_middleware(
@@ -101,4 +109,115 @@ async fn correlation_id_middleware(
     }
 
     Ok(res)
+}
+
+struct RateLimitWindow {
+    start: Instant,
+    count: u32,
+}
+
+struct RateLimitConfig {
+    window: Duration,
+    max: u32,
+}
+
+static MONEY_RATE_LIMITER: OnceLock<Mutex<HashMap<String, RateLimitWindow>>> = OnceLock::new();
+static MONEY_RATE_LIMIT_CONFIG: OnceLock<RateLimitConfig> = OnceLock::new();
+
+fn money_rate_limit_config() -> &'static RateLimitConfig {
+    MONEY_RATE_LIMIT_CONFIG.get_or_init(|| {
+        let window_seconds = std::env::var("ACCOUNTS_MONEY_RATE_LIMIT_WINDOW_SECONDS")
+            .ok()
+            .and_then(|v| v.parse::<u64>().ok())
+            .filter(|v| *v > 0)
+            .unwrap_or(60);
+        let max_requests = std::env::var("ACCOUNTS_MONEY_RATE_LIMIT_MAX")
+            .ok()
+            .and_then(|v| v.parse::<u32>().ok())
+            .filter(|v| *v > 0)
+            .unwrap_or(20);
+        RateLimitConfig {
+            window: Duration::from_secs(window_seconds),
+            max: max_requests,
+        }
+    })
+}
+
+fn money_rate_limit_store() -> &'static Mutex<HashMap<String, RateLimitWindow>> {
+    MONEY_RATE_LIMITER.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn extract_client_key(req: &Request<Body>) -> String {
+    let forwarded_for = req
+        .headers()
+        .get("x-forwarded-for")
+        .and_then(|v| v.to_str().ok())
+        .map(|value| value.split(',').next().unwrap_or("").trim().to_string())
+        .filter(|value| !value.is_empty());
+
+    if let Some(value) = forwarded_for {
+        return value;
+    }
+
+    let real_ip = req
+        .headers()
+        .get("x-real-ip")
+        .and_then(|v| v.to_str().ok())
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty());
+
+    real_ip.unwrap_or_else(|| "unknown".to_string())
+}
+
+fn money_rate_limit_allow(client_key: &str) -> bool {
+    let config = money_rate_limit_config();
+    let mut store = money_rate_limit_store()
+        .lock()
+        .expect("money rate limiter lock poisoned");
+    let now = Instant::now();
+    let entry = store
+        .entry(client_key.to_string())
+        .or_insert(RateLimitWindow { start: now, count: 0 });
+
+    if now.duration_since(entry.start) > config.window {
+        entry.start = now;
+        entry.count = 0;
+    }
+
+    if entry.count >= config.max {
+        return false;
+    }
+
+    entry.count += 1;
+    true
+}
+
+async fn money_rate_limit_middleware(req: Request<Body>, next: Next) -> Result<Response, AppError> {
+    let client_key = extract_client_key(&req);
+    if !money_rate_limit_allow(&client_key) {
+        return Err(AppError::TooManyRequests);
+    }
+    Ok(next.run(req).await)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn reset_money_rate_limiter() {
+        if let Some(store) = MONEY_RATE_LIMITER.get() {
+            store.lock().unwrap().clear();
+        }
+    }
+
+    #[test]
+    fn money_rate_limit_blocks_after_max() {
+        reset_money_rate_limiter();
+        let config = money_rate_limit_config();
+        let client = "10.0.0.1";
+        for _ in 0..config.max {
+            assert!(money_rate_limit_allow(client));
+        }
+        assert!(!money_rate_limit_allow(client));
+    }
 }
