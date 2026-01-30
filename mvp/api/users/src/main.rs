@@ -133,6 +133,7 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("  POST /api/v1/auth/login");
     tracing::info!("  POST /api/v1/auth/refresh");
     tracing::info!("  POST /api/v1/auth/revoke");
+    tracing::info!("  POST /api/v1/beta/apply");
     tracing::info!("  POST /api/v1/auth/password-reset/request");
     tracing::info!("  POST /api/v1/auth/password-reset/reset");
     

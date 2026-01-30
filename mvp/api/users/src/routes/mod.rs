@@ -4,6 +4,7 @@ pub mod user;
 pub mod auth;
 pub mod health;
 pub mod password_reset;
+pub mod beta;
 
 use axum::{Router, routing::{post, get}};
 use axum::body::Body;
@@ -38,6 +39,7 @@ pub fn register_routes(db: Db, grpc: GrpcClients, email: Option<EmailService>) -
         .route("/api/v1/auth/login", post(auth::login))
         .route("/api/v1/auth/password-reset/request", post(password_reset::request_password_reset))
         .route("/api/v1/auth/password-reset/reset", post(password_reset::reset_password))
+        .route("/api/v1/beta/apply", post(beta::apply_for_beta))
         .layer(from_fn(auth_rate_limit_middleware));
 
     let protected = Router::new()

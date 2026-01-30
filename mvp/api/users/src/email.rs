@@ -10,6 +10,8 @@ pub struct EmailService {
     api_key: Option<String>,
     from_email: String,
     from_name: String,
+    base_url: String,
+    beta_notification_email: String,
     frontend_base_url: String,
 }
 
@@ -19,6 +21,8 @@ impl EmailService {
             api_key: config.resend_api_key.clone(),
             from_email: config.resend_from_email.clone(),
             from_name: config.resend_from_name.clone(),
+            base_url: config.resend_base_url.clone(),
+            beta_notification_email: config.resend_beta_notification_email.clone(),
             frontend_base_url: config.frontend_base_url.clone(),
         }
     }
@@ -78,7 +82,7 @@ impl EmailService {
         });
 
         match client
-            .post("https://api.resend.com/emails")
+            .post(format!("{}/emails", self.base_url))
             .header("Authorization", format!("Bearer {}", api_key))
             .header("Content-Type", "application/json")
             .json(&payload)
@@ -101,6 +105,90 @@ impl EmailService {
             }
             Err(e) => {
                 error!("Failed to send password reset email: {}", e);
+                Err(format!("Network error: {}", e))
+            }
+        }
+    }
+
+    /// Send private beta application email to internal notification address
+    pub async fn send_beta_application(
+        &self,
+        name: &str,
+        email: &str,
+        company: &str,
+        use_case: &str,
+    ) -> Result<(), String> {
+        if !self.is_configured() {
+            warn!("Resend API key not configured. Skipping beta application email.");
+            return Err("Email service not configured".to_string());
+        }
+
+        let subject = "We've received your private beta application";
+        let text_body = format!(
+            "Thanks for applying to the Rails private beta.\n\n\
+            We've received your application and will follow up shortly.\n\n\
+            Summary:\n\
+            Name: {}\n\
+            Company: {}\n\
+            Primary Use Case:\n{}\n\n\
+            — Rails Financial Infrastructure",
+            name, company, use_case
+        );
+        let html_body = format!(
+            "<!DOCTYPE html>\n\
+            <html>\n\
+            <head><meta charset=\"utf-8\"></head>\n\
+            <body style=\"font-family: system-ui, sans-serif; line-height: 1.6; color: #333;\">\n\
+            <h2>Thanks for applying to the Rails private beta</h2>\n\
+            <p>We've received your application and will follow up shortly.</p>\n\
+            <p><strong>Summary</strong></p>\n\
+            <p><strong>Name:</strong> {}</p>\n\
+            <p><strong>Company:</strong> {}</p>\n\
+            <p><strong>Primary Use Case:</strong></p>\n\
+            <p style=\"white-space: pre-wrap;\">{}</p>\n\
+            <hr style=\"border: none; border-top: 1px solid #eee; margin: 24px 0;\">\n\
+            <p style=\"font-size: 12px; color: #999;\">— Rails Financial Infrastructure</p>\n\
+            </body>\n\
+            </html>",
+            name, company, use_case
+        );
+
+        let client = reqwest::Client::new();
+        let api_key = self.api_key.as_ref().unwrap();
+
+        let payload = json!({
+            "from": format!("{} <{}>", self.from_name, self.from_email),
+            "to": [email],
+            "reply_to": self.beta_notification_email,
+            "subject": subject,
+            "text": text_body,
+            "html": html_body,
+        });
+
+        match client
+            .post(format!("{}/emails", self.base_url))
+            .header("Authorization", format!("Bearer {}", api_key))
+            .header("Content-Type", "application/json")
+            .json(&payload)
+            .send()
+            .await
+        {
+            Ok(response) => {
+                if response.status().is_success() {
+                    tracing::info!("Beta application email sent successfully for {}", email);
+                    Ok(())
+                } else {
+                    let status = response.status();
+                    let error_text = response.text().await.unwrap_or_default();
+                    error!(
+                        "Resend API error: status={}, response={}",
+                        status, error_text
+                    );
+                    Err(format!("Failed to send email: {}", status))
+                }
+            }
+            Err(e) => {
+                error!("Failed to send beta application email: {}", e);
                 Err(format!("Network error: {}", e))
             }
         }
