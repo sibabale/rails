@@ -73,11 +73,9 @@ pub async fn apply_for_beta(
             .await
         {
             tracing::error!("Failed to send beta application email: {}", error);
-            return Err(AppError::Internal);
         }
     } else {
         tracing::warn!("Email service not configured, beta application not sent");
-        return Err(AppError::Internal);
     }
 
     Ok(Json(BetaApplicationResponse {
@@ -205,5 +203,62 @@ mod tests {
 
         assert_eq!(count, 1);
         resend_mock.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn apply_for_beta_succeeds_without_email_service() {
+        let database_url = match std::env::var("DATABASE_URL") {
+            Ok(value) => value,
+            Err(_) => {
+                eprintln!("DATABASE_URL not set; skipping beta application integration test.");
+                return;
+            }
+        };
+
+        let pool = PgPoolOptions::new()
+            .max_connections(1)
+            .connect(&database_url)
+            .await
+            .expect("Failed to connect to database");
+
+        sqlx::migrate!("./migrations")
+            .run(&pool)
+            .await
+            .expect("Failed to run migrations");
+
+        let state = AppState {
+            db: pool.clone(),
+            grpc: GrpcClients {
+                accounts_client: None,
+            },
+            email: None,
+        };
+
+        let applicant_email = format!("beta+{}@example.com", Uuid::new_v4());
+        let payload = BetaApplicationRequest {
+            name: "Jane Doe".to_string(),
+            email: applicant_email.clone(),
+            company: "Acme".to_string(),
+            use_case: "Treasury automation".to_string(),
+        };
+
+        let response = apply_for_beta(State(state), Json(payload))
+            .await
+            .expect("apply_for_beta should succeed without email");
+
+        assert_eq!(
+            response.0.message,
+            "Application received. We'll be in touch shortly."
+        );
+
+        let count: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM beta_applications WHERE email = $1"
+        )
+        .bind(&applicant_email)
+        .fetch_one(&pool)
+        .await
+        .expect("Failed to query beta applications");
+
+        assert_eq!(count, 1);
     }
 }
