@@ -114,7 +114,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let listener = TcpListener::bind(addr).await?;
 
     let http_task = async move {
-        serve(listener, app.into_make_service())
+        serve(listener, app.into_make_service_with_connect_info::<SocketAddr>())
             .await
             .map_err(|e| anyhow::anyhow!("HTTP server error: {}", e))
     };

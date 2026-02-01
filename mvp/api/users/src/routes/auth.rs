@@ -68,7 +68,10 @@ pub async fn login(
     .bind(&payload.email)
     .fetch_all(&state.db)
     .await
-    .map_err(|_| AppError::Internal)?;
+    .map_err(|e| {
+        tracing::error!("Database error in login (user lookup): {}", e);
+        AppError::Internal
+    })?;
 
     if user_rows.is_empty() {
         return Err(AppError::Unauthorized);
@@ -78,7 +81,11 @@ pub async fn login(
     let password_hash: String = user_rows[0].get("password_hash");
 
     // 2. Verify password
-    let parsed_hash = PasswordHash::new(&password_hash).map_err(|_| AppError::Internal)?;
+    let parsed_hash = PasswordHash::new(&password_hash).map_err(|e| {
+        let user_id: Uuid = user_rows[0].get("id");
+        tracing::error!("Failed to parse password hash for user_id {}: {}", user_id, e);
+        AppError::Internal
+    })?;
     if argon2::Argon2::default().verify_password(payload.password.as_bytes(), &parsed_hash).is_err() {
         return Err(AppError::Unauthorized);
     }
@@ -94,7 +101,10 @@ pub async fn login(
     .bind(&business_id)
     .fetch_all(&state.db)
     .await
-    .map_err(|_| AppError::Internal)?;
+    .map_err(|e| {
+        tracing::error!("Database error in login (environments lookup): {}", e);
+        AppError::Internal
+    })?;
 
     if environments.is_empty() {
         return Err(AppError::Unauthorized);
@@ -179,7 +189,10 @@ pub async fn login(
     .bind(&refresh_exp)
     .execute(&state.db)
     .await
-    .map_err(|_| AppError::Internal)?;
+    .map_err(|e| {
+        tracing::error!("Database error in login (session insert): {}", e);
+        AppError::Internal
+    })?;
 
     Ok(Json(LoginResponse {
         access_token,

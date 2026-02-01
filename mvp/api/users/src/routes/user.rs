@@ -369,31 +369,15 @@ pub async fn list_users(
     let per_page = query.per_page.unwrap_or(10).min(100).max(1);
     let offset = (page - 1) * per_page;
 
+    let environment_type_filter = environment_type.as_deref();
+
     // Build query with optional environment type filter
     // If X-Environment header is provided, filter by both environment_id AND environment.type
     // This ensures we only get users from the correct environment type (sandbox/production)
-    let (count_query, list_query) = if let Some(ref env_type) = environment_type {
-        // Filter by business_id, environment_id, AND environment.type
-        (
-            "SELECT COUNT(*) as count FROM users u 
-             INNER JOIN environments e ON u.environment_id = e.id 
-             WHERE u.business_id = $1 AND u.environment_id = $2 AND e.type = $3 AND u.status = 'active'",
-            "SELECT u.id, u.first_name, u.last_name, u.email, u.role, u.status, u.created_at, u.updated_at 
-             FROM users u 
-             INNER JOIN environments e ON u.environment_id = e.id 
-             WHERE u.business_id = $1 AND u.environment_id = $2 AND e.type = $3 AND u.status = 'active' 
-             ORDER BY u.created_at DESC, u.id DESC LIMIT $4 OFFSET $5"
-        )
-    } else {
-        // Fallback to original behavior: filter by environment_id only
-        (
-            "SELECT COUNT(*) as count FROM users WHERE business_id = $1 AND environment_id = $2 AND status = 'active'",
-            "SELECT id, first_name, last_name, email, role, status, created_at, updated_at FROM users WHERE business_id = $1 AND environment_id = $2 AND status = 'active' ORDER BY created_at DESC, id DESC LIMIT $3 OFFSET $4"
-        )
-    };
+    let (count_query, list_query) = list_users_queries(environment_type_filter);
 
     // Get total count
-    let count_row = if let Some(ref env_type) = environment_type {
+    let count_row = if let Some(env_type) = environment_type_filter {
         sqlx::query(count_query)
             .bind(&business_id)
             .bind(&environment_id)
@@ -414,7 +398,7 @@ pub async fn list_users(
     let total_pages = ((total_count as f64) / (per_page as f64)).ceil() as u32;
 
     // Fetch paginated results with deterministic ordering
-    let rows = if let Some(ref env_type) = environment_type {
+    let rows = if let Some(env_type) = environment_type_filter {
         sqlx::query(list_query)
             .bind(&business_id)
             .bind(&environment_id)
@@ -458,4 +442,49 @@ pub async fn list_users(
             total_pages,
         },
     }))
+}
+
+fn list_users_queries(environment_type: Option<&str>) -> (&'static str, &'static str) {
+    if environment_type.is_some() {
+        // Filter by business_id, environment_id, AND environment.type
+        (
+            "SELECT COUNT(*) as count FROM users u 
+             INNER JOIN environments e ON u.environment_id = e.id 
+             WHERE u.business_id = $1 AND u.environment_id = $2 AND e.type = $3 AND u.status = 'active'",
+            "SELECT u.id, u.first_name, u.last_name, u.email, u.role, u.status, u.created_at, u.updated_at 
+             FROM users u 
+             INNER JOIN environments e ON u.environment_id = e.id 
+             WHERE u.business_id = $1 AND u.environment_id = $2 AND e.type = $3 AND u.status = 'active' 
+             ORDER BY u.created_at DESC, u.id DESC LIMIT $4 OFFSET $5",
+        )
+    } else {
+        // Fallback to original behavior: filter by environment_id only
+        (
+            "SELECT COUNT(*) as count FROM users WHERE business_id = $1 AND environment_id = $2 AND status = 'active'",
+            "SELECT id, first_name, last_name, email, role, status, created_at, updated_at FROM users WHERE business_id = $1 AND environment_id = $2 AND status = 'active' ORDER BY created_at DESC, id DESC LIMIT $3 OFFSET $4",
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::list_users_queries;
+
+    #[test]
+    fn list_users_queries_with_env_type_includes_environment_join() {
+        let (count_query, list_query) = list_users_queries(Some("sandbox"));
+        assert!(count_query.contains("INNER JOIN environments"));
+        assert!(count_query.contains("e.type = $3"));
+        assert!(list_query.contains("INNER JOIN environments"));
+        assert!(list_query.contains("e.type = $3"));
+    }
+
+    #[test]
+    fn list_users_queries_without_env_type_omits_environment_join() {
+        let (count_query, list_query) = list_users_queries(None);
+        assert!(!count_query.contains("INNER JOIN environments"));
+        assert!(!count_query.contains("e.type = $3"));
+        assert!(!list_query.contains("INNER JOIN environments"));
+        assert!(!list_query.contains("e.type = $3"));
+    }
 }

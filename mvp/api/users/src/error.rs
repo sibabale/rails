@@ -9,6 +9,8 @@ pub enum AppError {
     Forbidden,
     #[error("Request rejected: API called from an unrecognized source.")]
     UnrecognizedSource,
+    #[error("Too many requests")]
+    TooManyRequests,
     #[error("Bad request: {0}")]
     BadRequest(String),
     #[error("Internal server error")]
@@ -21,6 +23,7 @@ impl IntoResponse for AppError {
             AppError::Unauthorized => (StatusCode::UNAUTHORIZED, "unauthorized", None, false),
             AppError::Forbidden => (StatusCode::FORBIDDEN, "forbidden", None, false),
             AppError::UnrecognizedSource => (StatusCode::FORBIDDEN, "unrecognized_source", None, true), // Security issue
+            AppError::TooManyRequests => (StatusCode::TOO_MANY_REQUESTS, "rate_limited", None, false),
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, "bad_request", Some(msg.clone()), false),
             AppError::Internal => (StatusCode::INTERNAL_SERVER_ERROR, "internal", None, true), // Always report internal errors
         };

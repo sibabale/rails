@@ -6,17 +6,31 @@ mod error;
 mod routes;
 mod auth;
 mod grpc;
+mod email;
 
 use tracing_subscriber::prelude::*;
 use crate::routes::register_routes;
+use crate::email::EmailService;
 use axum::serve;
 use tokio::net::TcpListener;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    eprintln!("[STARTUP] Users service starting...");
+    
     dotenvy::dotenv().ok();
     
-    let config = config::load()?;
+    eprintln!("[STARTUP] Loading configuration...");
+    let config = match config::load() {
+        Ok(c) => {
+            eprintln!("[STARTUP] Configuration loaded successfully");
+            c
+        }
+        Err(e) => {
+            eprintln!("[FATAL] Failed to load configuration: {}", e);
+            return Err(e);
+        }
+    };
     
     // Initialize Sentry before tracing to capture all errors
     let _guard = if let Some(dsn) = &config.sentry_dsn {
@@ -56,9 +70,19 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("  ACCOUNTS_GRPC_URL: {}", config.accounts_grpc_url);
     
     tracing::info!("Connecting to database...");
-    let db = db::init(&config.database_url).await
-        .map_err(|e| anyhow::anyhow!("Failed to connect to database: {}. Make sure PostgreSQL is running and DATABASE_URL is correct.", e))?;
-    tracing::info!("Database connection established");
+    eprintln!("[STARTUP] Connecting to database...");
+    let db = match db::init(&config.database_url).await {
+        Ok(pool) => {
+            eprintln!("[STARTUP] Database connected successfully");
+            tracing::info!("Database connection established");
+            pool
+        }
+        Err(e) => {
+            let msg = format!("Failed to connect to database: {}. Make sure PostgreSQL is running and DATABASE_URL is correct.", e);
+            eprintln!("[FATAL] {}", msg);
+            return Err(anyhow::anyhow!(msg));
+        }
+    };
     
     // Run migrations
     tracing::info!("Running database migrations...");
@@ -85,7 +109,15 @@ async fn main() -> anyhow::Result<()> {
     let grpc = grpc::init(&config).await?;
     tracing::info!("gRPC clients initialized");
     
-    let app = register_routes(db.clone(), grpc.clone());
+    // Initialize email service
+    let email = if config.resend_api_key.is_some() {
+        Some(EmailService::new(&config))
+    } else {
+        tracing::warn!("Resend API key not configured. Password reset emails will not be sent.");
+        None
+    };
+    
+    let app = register_routes(db.clone(), grpc.clone(), email);
     let addr: std::net::SocketAddr = config.server_addr.parse()
         .map_err(|e| anyhow::anyhow!("Failed to parse SERVER_ADDR '{}': {}", config.server_addr, e))?;
     
@@ -101,8 +133,11 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("  POST /api/v1/auth/login");
     tracing::info!("  POST /api/v1/auth/refresh");
     tracing::info!("  POST /api/v1/auth/revoke");
+    tracing::info!("  POST /api/v1/beta/apply");
+    tracing::info!("  POST /api/v1/auth/password-reset/request");
+    tracing::info!("  POST /api/v1/auth/password-reset/reset");
     
-    serve(listener, app).await?;
+    serve(listener, app.into_make_service_with_connect_info::<std::net::SocketAddr>()).await?;
     Ok(())
 }
 

@@ -7,7 +7,12 @@ use axum::{
     Router,
 };
 use sqlx::PgPool;
+use std::sync::OnceLock;
+use std::time::Duration;
 use uuid::Uuid;
+
+#[path = "../../../src/rate_limit.rs"]
+mod shared_rate_limit;
 
 use crate::handlers::{
     accounts::*,
@@ -17,6 +22,7 @@ use crate::handlers::{
 
 use crate::errors::AppError;
 use crate::ledger_grpc::LedgerGrpc;
+use shared_rate_limit::{extract_client_key, RateLimitConfig, RateLimiter};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -34,15 +40,20 @@ pub fn create_router(pool: PgPool, ledger_grpc: LedgerGrpc) -> Router {
 }
 
 fn create_api_routes() -> Router<AppState> {
-    Router::<AppState>::new()
+    let standard_routes = Router::<AppState>::new()
         .route("/accounts", post(create_account).get(list_accounts))
         .route("/accounts/:id", get(get_account).patch(update_account_status).delete(close_account))
-        .route("/accounts/:id/deposit", post(deposit))
         .route("/accounts/:id/withdraw", post(withdraw))
-        .route("/accounts/:id/transfer", post(transfer))
         .route("/accounts/:account_id/transactions", get(list_account_transactions))
         .route("/transactions", post(create_transaction).get(list_transactions))
-        .route("/transactions/:id", get(get_transaction))
+        .route("/transactions/:id", get(get_transaction));
+
+    let money_mutations = Router::<AppState>::new()
+        .route("/accounts/:id/deposit", post(deposit))
+        .route("/accounts/:id/transfer", post(transfer))
+        .layer(from_fn(money_rate_limit_middleware));
+
+    standard_routes.merge(money_mutations)
 }
 
 async fn correlation_id_middleware(
@@ -101,4 +112,105 @@ async fn correlation_id_middleware(
     }
 
     Ok(res)
+}
+
+static MONEY_RATE_LIMITER: OnceLock<RateLimiter> = OnceLock::new();
+
+fn money_rate_limit_config() -> RateLimitConfig {
+    let window_seconds = std::env::var("ACCOUNTS_MONEY_RATE_LIMIT_WINDOW_SECONDS")
+        .ok()
+        .and_then(|v| v.parse::<u64>().ok())
+        .filter(|v| *v > 0)
+        .unwrap_or(60);
+    let max_requests = std::env::var("ACCOUNTS_MONEY_RATE_LIMIT_MAX")
+        .ok()
+        .and_then(|v| v.parse::<u32>().ok())
+        .filter(|v| *v > 0)
+        .unwrap_or(20);
+    RateLimitConfig {
+        window: Duration::from_secs(window_seconds),
+        max: max_requests,
+    }
+}
+
+fn money_rate_limiter() -> &'static RateLimiter {
+    MONEY_RATE_LIMITER.get_or_init(|| RateLimiter::new(money_rate_limit_config()))
+}
+
+async fn money_rate_limit_middleware(req: Request<Body>, next: Next) -> Result<Response, AppError> {
+    let client_key = extract_client_key(&req, "ACCOUNTS_TRUSTED_PROXY_IPS");
+    if !money_rate_limiter().allow(&client_key) {
+        return Err(AppError::TooManyRequests);
+    }
+    Ok(next.run(req).await)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::http::Request;
+    use axum::extract::ConnectInfo;
+    use std::net::SocketAddr;
+    use std::sync::{Mutex, OnceLock};
+
+    fn reset_money_rate_limiter() {
+        if let Some(limiter) = MONEY_RATE_LIMITER.get() {
+            limiter.reset();
+        }
+    }
+
+    fn test_env_lock() -> std::sync::MutexGuard<'static, ()> {
+        static TEST_ENV_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        TEST_ENV_LOCK.get_or_init(|| Mutex::new(())).lock().unwrap()
+    }
+
+    #[test]
+    fn money_rate_limit_blocks_after_max() {
+        reset_money_rate_limiter();
+        let config = money_rate_limit_config();
+        let client = "10.0.0.1";
+        for _ in 0..config.max {
+            assert!(money_rate_limiter().allow(client));
+        }
+        assert!(!money_rate_limiter().allow(client));
+    }
+
+    #[test]
+    fn extract_client_key_uses_peer_ip_when_untrusted() {
+        let _lock = test_env_lock();
+        std::env::remove_var("ACCOUNTS_TRUSTED_PROXY_IPS");
+        let mut req = Request::builder()
+            .uri("/api/v1/accounts/1/deposit")
+            .header("x-forwarded-for", "203.0.113.10")
+            .body(Body::empty())
+            .unwrap();
+        req.extensions_mut().insert(ConnectInfo(SocketAddr::from(([127, 0, 0, 1], 8080))));
+        assert_eq!(extract_client_key(&req, "ACCOUNTS_TRUSTED_PROXY_IPS"), "127.0.0.1");
+    }
+
+    #[test]
+    fn extract_client_key_uses_forwarded_ip_when_trusted() {
+        let _lock = test_env_lock();
+        std::env::set_var("ACCOUNTS_TRUSTED_PROXY_IPS", "127.0.0.1");
+        let mut req = Request::builder()
+            .uri("/api/v1/accounts/1/deposit")
+            .header("x-forwarded-for", "203.0.113.10, 127.0.0.1")
+            .body(Body::empty())
+            .unwrap();
+        req.extensions_mut().insert(ConnectInfo(SocketAddr::from(([127, 0, 0, 1], 8080))));
+        assert_eq!(extract_client_key(&req, "ACCOUNTS_TRUSTED_PROXY_IPS"), "203.0.113.10");
+    }
+
+    #[test]
+    fn extract_client_key_ignores_forwarded_ip_when_last_hop_untrusted() {
+        let _lock = test_env_lock();
+        std::env::set_var("ACCOUNTS_TRUSTED_PROXY_IPS", "127.0.0.1");
+        let mut req = Request::builder()
+            .uri("/api/v1/accounts/1/deposit")
+            .header("x-forwarded-for", "203.0.113.10, 198.51.100.5")
+            .body(Body::empty())
+            .unwrap();
+        req.extensions_mut().insert(ConnectInfo(SocketAddr::from(([127, 0, 0, 1], 8080))));
+        assert_eq!(extract_client_key(&req, "ACCOUNTS_TRUSTED_PROXY_IPS"), "127.0.0.1");
+    }
 }

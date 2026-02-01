@@ -26,6 +26,9 @@ pub enum AppError {
     #[error("Invalid account type")]
     InvalidAccountType,
 
+    #[error("Too many requests")]
+    TooManyRequests,
+
     #[error("Internal server error: {0}")]
     Internal(String),
 }
@@ -44,6 +47,7 @@ impl IntoResponse for AppError {
             AppError::BusinessLogic(_) => (StatusCode::BAD_REQUEST, self.to_string(), false),
             AppError::AccountNotActive => (StatusCode::BAD_REQUEST, self.to_string(), false),
             AppError::InvalidAccountType => (StatusCode::BAD_REQUEST, self.to_string(), false),
+            AppError::TooManyRequests => (StatusCode::TOO_MANY_REQUESTS, self.to_string(), false),
             AppError::Internal(ref e) => {
                 tracing::error!("Internal error: {}", e);
                 // Always report internal errors
