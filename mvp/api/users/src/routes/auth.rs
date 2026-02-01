@@ -82,7 +82,8 @@ pub async fn login(
 
     // 2. Verify password
     let parsed_hash = PasswordHash::new(&password_hash).map_err(|e| {
-        tracing::error!("Failed to parse password hash for email {}: {}", payload.email, e);
+        let user_id: Uuid = user_rows[0].get("id");
+        tracing::error!("Failed to parse password hash for user_id {}: {}", user_id, e);
         AppError::Internal
     })?;
     if argon2::Argon2::default().verify_password(payload.password.as_bytes(), &parsed_hash).is_err() {

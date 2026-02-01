@@ -7,10 +7,12 @@ use axum::{
     Router,
 };
 use sqlx::PgPool;
-use std::collections::HashMap;
-use std::sync::{Mutex, OnceLock};
-use std::time::{Duration, Instant};
+use std::sync::OnceLock;
+use std::time::Duration;
 use uuid::Uuid;
+
+#[path = "../../../src/rate_limit.rs"]
+mod shared_rate_limit;
 
 use crate::handlers::{
     accounts::*,
@@ -20,6 +22,7 @@ use crate::handlers::{
 
 use crate::errors::AppError;
 use crate::ledger_grpc::LedgerGrpc;
+use shared_rate_limit::{extract_client_key, RateLimitConfig, RateLimiter};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -111,90 +114,32 @@ async fn correlation_id_middleware(
     Ok(res)
 }
 
-struct RateLimitWindow {
-    start: Instant,
-    count: u32,
-}
+static MONEY_RATE_LIMITER: OnceLock<RateLimiter> = OnceLock::new();
 
-struct RateLimitConfig {
-    window: Duration,
-    max: u32,
-}
-
-static MONEY_RATE_LIMITER: OnceLock<Mutex<HashMap<String, RateLimitWindow>>> = OnceLock::new();
-static MONEY_RATE_LIMIT_CONFIG: OnceLock<RateLimitConfig> = OnceLock::new();
-
-fn money_rate_limit_config() -> &'static RateLimitConfig {
-    MONEY_RATE_LIMIT_CONFIG.get_or_init(|| {
-        let window_seconds = std::env::var("ACCOUNTS_MONEY_RATE_LIMIT_WINDOW_SECONDS")
-            .ok()
-            .and_then(|v| v.parse::<u64>().ok())
-            .filter(|v| *v > 0)
-            .unwrap_or(60);
-        let max_requests = std::env::var("ACCOUNTS_MONEY_RATE_LIMIT_MAX")
-            .ok()
-            .and_then(|v| v.parse::<u32>().ok())
-            .filter(|v| *v > 0)
-            .unwrap_or(20);
-        RateLimitConfig {
-            window: Duration::from_secs(window_seconds),
-            max: max_requests,
-        }
-    })
-}
-
-fn money_rate_limit_store() -> &'static Mutex<HashMap<String, RateLimitWindow>> {
-    MONEY_RATE_LIMITER.get_or_init(|| Mutex::new(HashMap::new()))
-}
-
-fn extract_client_key(req: &Request<Body>) -> String {
-    let forwarded_for = req
-        .headers()
-        .get("x-forwarded-for")
-        .and_then(|v| v.to_str().ok())
-        .map(|value| value.split(',').next().unwrap_or("").trim().to_string())
-        .filter(|value| !value.is_empty());
-
-    if let Some(value) = forwarded_for {
-        return value;
+fn money_rate_limit_config() -> RateLimitConfig {
+    let window_seconds = std::env::var("ACCOUNTS_MONEY_RATE_LIMIT_WINDOW_SECONDS")
+        .ok()
+        .and_then(|v| v.parse::<u64>().ok())
+        .filter(|v| *v > 0)
+        .unwrap_or(60);
+    let max_requests = std::env::var("ACCOUNTS_MONEY_RATE_LIMIT_MAX")
+        .ok()
+        .and_then(|v| v.parse::<u32>().ok())
+        .filter(|v| *v > 0)
+        .unwrap_or(20);
+    RateLimitConfig {
+        window: Duration::from_secs(window_seconds),
+        max: max_requests,
     }
-
-    let real_ip = req
-        .headers()
-        .get("x-real-ip")
-        .and_then(|v| v.to_str().ok())
-        .map(|value| value.trim().to_string())
-        .filter(|value| !value.is_empty());
-
-    real_ip.unwrap_or_else(|| "unknown".to_string())
 }
 
-fn money_rate_limit_allow(client_key: &str) -> bool {
-    let config = money_rate_limit_config();
-    let mut store = money_rate_limit_store()
-        .lock()
-        .expect("money rate limiter lock poisoned");
-    let now = Instant::now();
-    let entry = store
-        .entry(client_key.to_string())
-        .or_insert(RateLimitWindow { start: now, count: 0 });
-
-    if now.duration_since(entry.start) > config.window {
-        entry.start = now;
-        entry.count = 0;
-    }
-
-    if entry.count >= config.max {
-        return false;
-    }
-
-    entry.count += 1;
-    true
+fn money_rate_limiter() -> &'static RateLimiter {
+    MONEY_RATE_LIMITER.get_or_init(|| RateLimiter::new(money_rate_limit_config()))
 }
 
 async fn money_rate_limit_middleware(req: Request<Body>, next: Next) -> Result<Response, AppError> {
-    let client_key = extract_client_key(&req);
-    if !money_rate_limit_allow(&client_key) {
+    let client_key = extract_client_key(&req, "ACCOUNTS_TRUSTED_PROXY_IPS");
+    if !money_rate_limiter().allow(&client_key) {
         return Err(AppError::TooManyRequests);
     }
     Ok(next.run(req).await)
@@ -203,11 +148,20 @@ async fn money_rate_limit_middleware(req: Request<Body>, next: Next) -> Result<R
 #[cfg(test)]
 mod tests {
     use super::*;
+    use axum::http::Request;
+    use axum::extract::ConnectInfo;
+    use std::net::SocketAddr;
+    use std::sync::{Mutex, OnceLock};
 
     fn reset_money_rate_limiter() {
-        if let Some(store) = MONEY_RATE_LIMITER.get() {
-            store.lock().unwrap().clear();
+        if let Some(limiter) = MONEY_RATE_LIMITER.get() {
+            limiter.reset();
         }
+    }
+
+    fn test_env_lock() -> std::sync::MutexGuard<'static, ()> {
+        static TEST_ENV_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        TEST_ENV_LOCK.get_or_init(|| Mutex::new(())).lock().unwrap()
     }
 
     #[test]
@@ -216,8 +170,47 @@ mod tests {
         let config = money_rate_limit_config();
         let client = "10.0.0.1";
         for _ in 0..config.max {
-            assert!(money_rate_limit_allow(client));
+            assert!(money_rate_limiter().allow(client));
         }
-        assert!(!money_rate_limit_allow(client));
+        assert!(!money_rate_limiter().allow(client));
+    }
+
+    #[test]
+    fn extract_client_key_uses_peer_ip_when_untrusted() {
+        let _lock = test_env_lock();
+        std::env::remove_var("ACCOUNTS_TRUSTED_PROXY_IPS");
+        let mut req = Request::builder()
+            .uri("/api/v1/accounts/1/deposit")
+            .header("x-forwarded-for", "203.0.113.10")
+            .body(Body::empty())
+            .unwrap();
+        req.extensions_mut().insert(ConnectInfo(SocketAddr::from(([127, 0, 0, 1], 8080))));
+        assert_eq!(extract_client_key(&req, "ACCOUNTS_TRUSTED_PROXY_IPS"), "127.0.0.1");
+    }
+
+    #[test]
+    fn extract_client_key_uses_forwarded_ip_when_trusted() {
+        let _lock = test_env_lock();
+        std::env::set_var("ACCOUNTS_TRUSTED_PROXY_IPS", "127.0.0.1");
+        let mut req = Request::builder()
+            .uri("/api/v1/accounts/1/deposit")
+            .header("x-forwarded-for", "203.0.113.10, 127.0.0.1")
+            .body(Body::empty())
+            .unwrap();
+        req.extensions_mut().insert(ConnectInfo(SocketAddr::from(([127, 0, 0, 1], 8080))));
+        assert_eq!(extract_client_key(&req, "ACCOUNTS_TRUSTED_PROXY_IPS"), "203.0.113.10");
+    }
+
+    #[test]
+    fn extract_client_key_ignores_forwarded_ip_when_last_hop_untrusted() {
+        let _lock = test_env_lock();
+        std::env::set_var("ACCOUNTS_TRUSTED_PROXY_IPS", "127.0.0.1");
+        let mut req = Request::builder()
+            .uri("/api/v1/accounts/1/deposit")
+            .header("x-forwarded-for", "203.0.113.10, 198.51.100.5")
+            .body(Body::empty())
+            .unwrap();
+        req.extensions_mut().insert(ConnectInfo(SocketAddr::from(([127, 0, 0, 1], 8080))));
+        assert_eq!(extract_client_key(&req, "ACCOUNTS_TRUSTED_PROXY_IPS"), "127.0.0.1");
     }
 }

@@ -65,7 +65,10 @@ pub async fn apply_for_beta(
     .bind(&input.use_case)
     .execute(&state.db)
     .await
-    .map_err(|_| AppError::Internal)?;
+    .map_err(|error| {
+        tracing::error!("Failed to insert beta application: {}", error);
+        AppError::Internal
+    })?;
 
     if let Some(email_service) = &state.email {
         if let Err(error) = email_service
@@ -91,7 +94,7 @@ mod tests {
     use crate::grpc::GrpcClients;
     use httpmock::Method::POST;
     use httpmock::MockServer;
-    use sqlx::PgPoolOptions;
+    use sqlx::postgres::PgPoolOptions;
 
     #[test]
     fn normalize_payload_trims_and_accepts_valid_input() {
@@ -193,7 +196,7 @@ mod tests {
             "Application received. We'll be in touch shortly."
         );
 
-        let count: i64 = sqlx::query_scalar(
+        let count: i64 = sqlx::query_scalar::<_, i64>(
             "SELECT COUNT(*) FROM beta_applications WHERE email = $1"
         )
         .bind(&applicant_email)
@@ -251,7 +254,7 @@ mod tests {
             "Application received. We'll be in touch shortly."
         );
 
-        let count: i64 = sqlx::query_scalar(
+        let count: i64 = sqlx::query_scalar::<_, i64>(
             "SELECT COUNT(*) FROM beta_applications WHERE email = $1"
         )
         .bind(&applicant_email)

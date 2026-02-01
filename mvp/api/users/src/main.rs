@@ -137,7 +137,7 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("  POST /api/v1/auth/password-reset/request");
     tracing::info!("  POST /api/v1/auth/password-reset/reset");
     
-    serve(listener, app).await?;
+    serve(listener, app.into_make_service_with_connect_info::<std::net::SocketAddr>()).await?;
     Ok(())
 }
 

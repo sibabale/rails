@@ -9,7 +9,7 @@ use uuid::Uuid;
 use serde::{Deserialize, Serialize};
 use sqlx::Row;
 use sha2::{Sha256, Digest};
-use base64::engine::general_purpose::STANDARD as BASE64_ENGINE;
+use base64::engine::general_purpose::URL_SAFE_NO_PAD as BASE64_ENGINE;
 use base64::Engine;
 
 use crate::{error::AppError, routes::AppState};
@@ -65,10 +65,7 @@ pub async fn request_password_reset(
         }
     };
 
-    // Generate secure random token (32 bytes = 256 bits)
-    let mut token_bytes = [0u8; 32];
-    OsRng.fill_bytes(&mut token_bytes);
-    let raw_token = BASE64_ENGINE.encode(token_bytes);
+    let raw_token = generate_reset_token();
 
     // Hash token before storing (never store raw tokens)
     let mut hasher = Sha256::new();
@@ -124,6 +121,34 @@ pub async fn request_password_reset(
     }))
 }
 
+fn generate_reset_token() -> String {
+    // Generate URL-safe token to avoid '+' '/' '=' in query params.
+    let mut token_bytes = [0u8; 32];
+    OsRng.fill_bytes(&mut token_bytes);
+    BASE64_ENGINE.encode(token_bytes)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{claim_token_sql, generate_reset_token};
+
+    #[test]
+    fn generate_reset_token_is_url_safe() {
+        let token = generate_reset_token();
+        assert!(!token.contains('+'));
+        assert!(!token.contains('/'));
+        assert!(!token.contains('='));
+    }
+
+    #[test]
+    fn claim_token_sql_guards_against_reuse_and_expiry() {
+        let sql = claim_token_sql();
+        assert!(sql.contains("used_at IS NULL"));
+        assert!(sql.contains("expires_at"));
+        assert!(sql.contains("RETURNING id, user_id"));
+    }
+}
+
 /// Reset password using token
 /// Validates token, updates password, marks token as used
 pub async fn reset_password(
@@ -134,38 +159,6 @@ pub async fn reset_password(
     let mut hasher = Sha256::new();
     hasher.update(payload.token.as_bytes());
     let token_hash = format!("{:x}", hasher.finalize());
-
-    // Find token by hash
-    let token_row = sqlx::query(
-        "SELECT id, user_id, expires_at, used_at FROM password_reset_tokens WHERE token_hash = $1"
-    )
-    .bind(&token_hash)
-    .fetch_optional(&state.db)
-    .await
-    .map_err(|_| AppError::Internal)?;
-
-    let (token_id, user_id, expires_at, used_at): (Uuid, Uuid, chrono::DateTime<Utc>, Option<chrono::DateTime<Utc>>) = match token_row {
-        Some(row) => (
-            row.get("id"),
-            row.get("user_id"),
-            row.get("expires_at"),
-            row.get("used_at"),
-        ),
-        None => {
-            // Generic error - don't reveal if token doesn't exist
-            return Err(AppError::BadRequest("Invalid or expired reset token".to_string()));
-        }
-    };
-
-    // Validate token is not expired
-    if expires_at < Utc::now() {
-        return Err(AppError::BadRequest("Invalid or expired reset token".to_string()));
-    }
-
-    // Validate token is not already used
-    if used_at.is_some() {
-        return Err(AppError::BadRequest("Invalid or expired reset token".to_string()));
-    }
 
     // Validate password strength (minimum 8 characters)
     if payload.new_password.len() < 8 {
@@ -182,6 +175,22 @@ pub async fn reset_password(
     // Update password and mark token as used in a transaction
     let mut tx = state.db.begin().await.map_err(|_| AppError::Internal)?;
 
+    // Atomically claim the token inside the transaction to prevent races
+    let token_row = sqlx::query(claim_token_sql())
+    .bind(&Utc::now())
+    .bind(&token_hash)
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(|_| AppError::Internal)?;
+
+    let (token_id, user_id): (Uuid, Uuid) = match token_row {
+        Some(row) => (row.get("id"), row.get("user_id")),
+        None => {
+            // Generic error - don't reveal if token doesn't exist, expired, or already used
+            return Err(AppError::BadRequest("Invalid or expired reset token".to_string()));
+        }
+    };
+
     // Update user password
     sqlx::query(
         "UPDATE users SET password_hash = $1, updated_at = $2 WHERE id = $3"
@@ -189,16 +198,6 @@ pub async fn reset_password(
     .bind(&password_hash)
     .bind(&Utc::now())
     .bind(&user_id)
-    .execute(&mut *tx)
-    .await
-    .map_err(|_| AppError::Internal)?;
-
-    // Mark token as used
-    sqlx::query(
-        "UPDATE password_reset_tokens SET used_at = $1 WHERE id = $2"
-    )
-    .bind(&Utc::now())
-    .bind(&token_id)
     .execute(&mut *tx)
     .await
     .map_err(|_| AppError::Internal)?;
@@ -221,4 +220,11 @@ pub async fn reset_password(
     Ok(Json(ResetPasswordResponse {
         message: "Password has been reset successfully. You can now log in with your new password.".to_string(),
     }))
+}
+
+fn claim_token_sql() -> &'static str {
+    "UPDATE password_reset_tokens
+     SET used_at = $1
+     WHERE token_hash = $2 AND used_at IS NULL AND expires_at >= $1
+     RETURNING id, user_id"
 }
